@@ -1,7 +1,7 @@
 {
     "name": "detain/myadmin-authorizenet-payments",
     "type": "myadmin-plugin",
-    "description": "AuthorizeNet handling plugin for MyAdmin",
+    "description": "Authorizenet handling plugin for MyAdmin",
     "keywords": ["abuse","administration","spam"],
     "license": "LGPL-2.1",
     "authors": [
@@ -28,6 +28,6 @@
 		"codacy/coverage": "dev-master"
 	},
     "autoload": {
-        "psr-4": {"Detain\\MyAdminAuthorizeNet\\": "src/"}
+        "psr-4": {"Detain\\MyAdminAuthorizenet\\": "src/"}
     }
 }
