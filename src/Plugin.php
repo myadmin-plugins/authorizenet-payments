@@ -17,7 +17,7 @@ class Plugin {
 
 	public static function getHooks() {
 		return [
-			//'system.settings' => [__CLASS__, 'getSettings'],
+			'system.settings' => [__CLASS__, 'getSettings'],
 			//'ui.menu' => [__CLASS__, 'getMenu'],
 		];
 	}
@@ -41,8 +41,11 @@ class Plugin {
 
 	public static function getSettings(GenericEvent $event) {
 		$settings = $event->getSubject();
-		$settings->add_text_setting('General', 'Authorizenet', 'abuse_imap_user', 'Authorizenet IMAP User:', 'Authorizenet IMAP Username', ABUSE_IMAP_USER);
-		$settings->add_text_setting('General', 'Authorizenet', 'abuse_imap_pass', 'Authorizenet IMAP Pass:', 'Authorizenet IMAP Password', ABUSE_IMAP_PASS);
+		$settings->add_radio_setting('Billing', 'Authorize.Net', 'authorizenet_enable', 'Enable Authorize.net', 'Enable Authorize.net', AUTHORIZENET_ENABLE, [true, false], ['Enabled', 'Disabled']);
+		$settings->add_text_setting('Billing', 'Authorize.Net', 'authorizenet_login', 'Login Name', 'Login Name', (defined('AUTHORIZENET_LOGIN') ? AUTHORIZENET_LOGIN : ''));
+		$settings->add_text_setting('Billing', 'Authorize.Net', 'authorizenet_password', 'Password', 'Password', (defined('AUTHORIZENET_PASSWORD') ? AUTHORIZENET_PASSWORD : ''));
+		$settings->add_text_setting('Billing', 'Authorize.Net', 'authorizenet_key', 'API Key', 'API Key', (defined('AUTHORIZENET_KEY') ? AUTHORIZENET_KEY : ''));
+		$settings->add_text_setting('Billing', 'Authorize.Net', 'authorizenet_referer', 'Referer URL (optional)', 'Referer URL (optional)', (defined('AUTHORIZENET_REFERER') ? AUTHORIZENET_REFERER : ''));
 	}
 
 }
