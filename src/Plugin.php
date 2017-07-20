@@ -4,6 +4,11 @@ namespace Detain\MyAdminAuthorizenet;
 
 use Symfony\Component\EventDispatcher\GenericEvent;
 
+/**
+ * Class Plugin
+ *
+ * @package Detain\MyAdminAuthorizenet
+ */
 class Plugin {
 
 	public static $name = 'Authorizenet Plugin';
@@ -11,10 +16,15 @@ class Plugin {
 	public static $help = '';
 	public static $type = 'plugin';
 
-
+	/**
+	 * Plugin constructor.
+	 */
 	public function __construct() {
 	}
 
+	/**
+	 * @return array
+	 */
 	public static function getHooks() {
 		return [
 			'system.settings' => [__CLASS__, 'getSettings'],
@@ -22,6 +32,9 @@ class Plugin {
 		];
 	}
 
+	/**
+	 * @param \Symfony\Component\EventDispatcher\GenericEvent $event
+	 */
 	public static function getMenu(GenericEvent $event) {
 		$menu = $event->getSubject();
 		if ($GLOBALS['tf']->ima == 'admin') {
@@ -31,6 +44,9 @@ class Plugin {
 		}
 	}
 
+	/**
+	 * @param \Symfony\Component\EventDispatcher\GenericEvent $event
+	 */
 	public static function getRequirements(GenericEvent $event) {
 		$loader = $event->getSubject();
 		$loader->add_requirement('class.Authorizenet', '/../vendor/detain/myadmin-authorizenet-payments/src/Authorizenet.php');
@@ -39,6 +55,9 @@ class Plugin {
 		$loader->add_requirement('get_abuse_licenses', '/../vendor/detain/myadmin-authorizenet-payments/src/abuse.inc.php');
 	}
 
+	/**
+	 * @param \Symfony\Component\EventDispatcher\GenericEvent $event
+	 */
 	public static function getSettings(GenericEvent $event) {
 		$settings = $event->getSubject();
 		$settings->add_radio_setting('Billing', 'Authorize.Net', 'authorizenet_enable', 'Enable Authorize.net', 'Enable Authorize.net', AUTHORIZENET_ENABLE, [true, false], ['Enabled', 'Disabled']);
