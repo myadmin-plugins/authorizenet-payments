@@ -29,6 +29,7 @@ class Plugin {
 		return [
 			'system.settings' => [__CLASS__, 'getSettings'],
 			//'ui.menu' => [__CLASS__, 'getMenu'],
+			'function.requirements' => [__CLASS__, 'getRequirements']
 		];
 	}
 
@@ -49,10 +50,36 @@ class Plugin {
 	 */
 	public static function getRequirements(GenericEvent $event) {
 		$loader = $event->getSubject();
-		$loader->add_requirement('class.Authorizenet', '/../vendor/detain/myadmin-authorizenet-payments/src/Authorizenet.php');
-		$loader->add_requirement('deactivate_kcare', '/../vendor/detain/myadmin-authorizenet-payments/src/abuse.inc.php');
-		$loader->add_requirement('deactivate_abuse', '/../vendor/detain/myadmin-authorizenet-payments/src/abuse.inc.php');
-		$loader->add_requirement('get_abuse_licenses', '/../vendor/detain/myadmin-authorizenet-payments/src/abuse.inc.php');
+		$loader->add_requirement('charge_card_invoice', '/../vendor/detain/myadmin-authorizenet-payments/src/charge_card_invoice.php');
+		$loader->add_requirement('mask_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
+		$loader->add_requirement('valid_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
+		$loader->add_requirement('get_locked_ccs', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
+		$loader->add_requirement('select_cc_exp', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
+		$loader->add_requirement('can_use_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
+		$loader->add_requirement('format_cc_exp', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
+		$loader->add_requirement('make_cc_decline', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
+		$loader->add_requirement('email_cc_decline', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
+		$loader->add_requirement('parse_ccs', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
+		$loader->add_requirement('get_bad_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
+		$loader->add_requirement('charge_card', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
+		$loader->add_requirement('auth_charge_card', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
+		$loader->add_requirement('add_cc_new_data', '/../vendor/detain/myadmin-authorizenet-payments/src/add_cc.php');
+		$loader->add_requirement('get_cc_cats_and_fields', '/../vendor/detain/myadmin-authorizenet-payments/src/admin/view_cc_transaction.php');
+		$loader->add_requirement('manage_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/manage_cc.php');
+		$loader->add_requirement('add_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/add_cc.php');
+		$loader->add_requirement('verify_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/verify_cc.php');
+		$loader->add_requirement('verify_admin_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/verify_cc.php');
+		$loader->add_requirement('verify_cc_charge', '/../vendor/detain/myadmin-authorizenet-payments/src/verify_cc.php');
+		$loader->add_requirement('view_cc_transaction', '/../vendor/detain/myadmin-authorizenet-payments/src/admin/view_cc_transaction.php');
+		$loader->add_requirement('disable_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/admin/disable_cc.php');
+		$loader->add_requirement('disable_cc_whitelist', '/../vendor/detain/myadmin-authorizenet-payments/src/admin/disable_cc_whitelist.php');
+		$loader->add_requirement('get_authorizenet_fields', '/../vendor/detain/myadmin-authorizenet-payments/src/get_authorizenet_fields.php');
+		$loader->add_requirement('map_authorizenet_fields', '/../vendor/detain/myadmin-authorizenet-payments/src/map_authorizenet_fields.php');
+		$loader->add_requirement('enable_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/admin/enable_cc.php');
+		$loader->add_requirement('authorize_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/admin/authorize_cc.php');
+		$loader->add_requirement('enable_cc_whitelist', '/../vendor/detain/myadmin-authorizenet-payments/src/admin/enable_cc_whitelist.php');
+		$loader->add_requirement('class.AuthorizeNetCC', '/../vendor/detain/myadmin-authorizenet-payments/src/AuthorizeNetCC.php');
+		$loader->add_requirement('cc_refund', '/../vendor/detain/myadmin-authorizenet-payments/src/admin/cc_refund.php');
 	}
 
 	/**
