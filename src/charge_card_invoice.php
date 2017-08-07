@@ -27,6 +27,7 @@ function charge_card_invoice() {
 		$GLOBALS['tf']->accounts->set_db_module($module);
 		$GLOBALS['tf']->history->set_db_module($module);
 	}
+	function_requirements('charge_card');
 	//$table->set_title($GLOBALS['modules'][$module]['TBLNAME'].' Services Package Management');
 	if ($GLOBALS['tf']->ima == 'client')
 		$db->query("select * from invoices where invoices_custid={$custid} and invoices_id='" . (int)$GLOBALS['tf']->variables->request['invoice'] . "'", __LINE__, __FILE__);
