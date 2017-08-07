@@ -319,7 +319,7 @@ function get_bad_cc() {
  * Charges a given customers credit-card for the given amount
  *
  * @param integer        $custid    the id of the customer
- * @param bool           $amount    the amount to charge
+ * @param bool|float $amount    the amount to charge
  * @param bool|array|int $invoice   the invoices to charge, can be a single invoice id in a string, or an array of invoiceids.
  * @param string         $module    the module the invoices use.
  * @param bool|string    $returnURL defaults to false, dont include a return / try again url, true to use the current url, or a string specifying the url
