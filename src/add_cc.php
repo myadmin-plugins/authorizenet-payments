@@ -57,6 +57,7 @@ function add_cc($data, $prefix = '', $force = false) {
 		'text' => '',
 		'data' => $data
 	];
+	function_requirements('parse_ccs');
 	$ccs = parse_ccs($data);
 	$signupdays = get_signup_days($minimum_days);
 	if (isset($data['ccs_added']))
