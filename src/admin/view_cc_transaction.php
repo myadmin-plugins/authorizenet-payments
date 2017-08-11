@@ -1,8 +1,7 @@
 <?php
 	/**
 	* Creditcard Related Functionality
-	* Last Changed: $LastChangedDate: 2015-12-30 18:32:26 -0500 (Wed, 30 Dec 2015) $
-	* @author detain
+	* @author Joe Huss <detain@interserver.net>
 	* @copyright 2017
 	* @package MyAdmin
 	* @category Billing

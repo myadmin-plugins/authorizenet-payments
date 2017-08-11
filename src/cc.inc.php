@@ -1,8 +1,7 @@
 <?php
 /**
  * Billing Related Services
- * Last Changed: $LastChangedDate: 2016-10-31 04:23:11 -0400 (Mon, 31 Oct 2016) $
- * @author detain
+ * @author Joe Huss <detain@interserver.net>
  * @copyright 2017
  * @package MyAdmin
  * @category Billing
