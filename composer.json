@@ -34,7 +34,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Detain\\MyAdminAuthorizenet\\": "src\/"
+            "Detain\\MyAdminAuthorizenet\\": "src/"
         }
     }
 }
