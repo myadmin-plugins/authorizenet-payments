@@ -666,3 +666,25 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 	}
 	return $retval;
 }
+
+/**
+ * gets the cc bank number / bin for the given encrypted cc
+ *
+ * @param string $cc the encrypted cc number
+ * @return string the bank id number(bin)
+ */
+function get_cc_bank_number($cc) {
+	$cc = $GLOBALS['tf']->decrypt($cc);
+	return mb_substr($cc, 0, 6);
+}
+
+/**
+ * gets the cc last 4 digits for the given encrypted cc
+ *
+ * @param string $cc the encrypted cc number
+ * @return string the last 4 digits
+ */
+function get_cc_last_four($cc) {
+	$cc = $GLOBALS['tf']->decrypt($cc);
+	return mb_substr($cc, -4);
+}

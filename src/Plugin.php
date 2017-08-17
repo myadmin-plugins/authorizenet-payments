@@ -61,6 +61,8 @@ class Plugin {
 		$loader->add_requirement('email_cc_decline', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
 		$loader->add_requirement('parse_ccs', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
 		$loader->add_requirement('get_bad_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
+		$loader->add_requirement('get_cc_bank_number', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
+		$loader->add_requirement('get_cc_last_four', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
 		$loader->add_requirement('charge_card', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
 		$loader->add_requirement('auth_charge_card', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
 		$loader->add_requirement('add_cc_new_data', '/../vendor/detain/myadmin-authorizenet-payments/src/add_cc.php');
