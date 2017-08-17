@@ -91,7 +91,7 @@ function add_cc($data, $prefix = '', $force = false) {
 	add_cc_new_data($cc, $ccs, $data, $new_data, $prefix, $force);
 	if (!isset($data['maxmind_riskscore'])) {
 		myadmin_log('billing', 'info', 'Calling Update_maxmind()', __LINE__, __FILE__);
-		require_once 'include/accounts/maxmind.inc.php'; // This handles fraud protection
+		function_requirements('update_maxmind'); // This handles fraud protection
 		update_maxmind($data['account_id']);
 	}
 	if (!isset($data['fraudrecord_score'])) {

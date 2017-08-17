@@ -258,7 +258,7 @@ function manage_cc() {
 				}
 			if (isset($data['payment_method']) && !isset($orig_data['payment_method'])) {
 				if (!isset($tf->accounts->data['maxmind_riskscore'])) {
-					require_once 'include/accounts/maxmind.inc.php'; // This handles fraud protection
+					function_requirements('update_maxmind'); // This handles fraud protection
 					update_maxmind($tf->session->account_id);
 				}
 				if (!isset($tf->accounts->data['fraudrecord_score'])) {
