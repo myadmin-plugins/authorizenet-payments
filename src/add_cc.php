@@ -96,7 +96,7 @@ function add_cc($data, $prefix = '', $force = false) {
 	}
 	if (!isset($data['fraudrecord_score'])) {
 		myadmin_log('billing', 'info', 'Calling Update_fraudrecord()', __LINE__, __FILE__);
-		require_once 'include/accounts/fraudrecord.inc.php'; // This handles fraud protection
+		function_requirements('update_fraudrecord');
 		update_fraudrecord($data['account_id']);
 	}
 	$data = $tf->accounts->read($data['account_id']);

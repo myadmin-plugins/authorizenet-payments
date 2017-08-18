@@ -262,7 +262,7 @@ function manage_cc() {
 					update_maxmind($tf->session->account_id);
 				}
 				if (!isset($tf->accounts->data['fraudrecord_score'])) {
-					require_once 'include/accounts/fraudrecord.inc.php'; // This handles fraud protection
+					function_requirements('update_fraudrecord');
 					update_fraudrecord($tf->session->account_id);
 				}
 			}
