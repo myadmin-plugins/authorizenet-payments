@@ -334,7 +334,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 		}
 	}
 	$module = get_module_name($module);
-	$settings = get_module_settings($module);
+	$settings = \get_module_settings($module);
 	$db = get_module_db($module);
 	$GLOBALS['tf']->accounts->set_db_module($module);
 	$GLOBALS['tf']->history->set_db_module($module);
@@ -558,7 +558,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $charge_desc = '', $override_data = false) {
 	$custid = (int)$custid;
 	$module = get_module_name($module);
-	$settings = get_module_settings($module);
+	$settings = \get_module_settings($module);
 	$db = get_module_db($module);
 	$GLOBALS['tf']->accounts->set_db_module($module);
 	$GLOBALS['tf']->history->set_db_module($module);
