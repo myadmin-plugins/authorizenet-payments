@@ -19,7 +19,7 @@
 		add_js('isotope');
 		$GLOBALS['body_extra'] = ' data-spy="scroll" data-target="#scrollspy" style="position: relative;"';
 		$GLOBALS['tf']->add_html_head_css_file(URL_ROOT . '/css/view_paypal_transaction.css');
-		$GLOBALS['tf']->add_html_head_js_file('' . URL_ROOT . '/js/view_paypal_transaction.js');
+		$GLOBALS['tf']->add_html_head_js_file(URL_ROOT . '/js/view_paypal_transaction.js');
 		//$transaction_types = get_paypal_transaction_types();
 		$db = clone $GLOBALS['tf']->db;
 		$module = get_module_name((isset($GLOBALS['tf']->variables->request['module']) ? $GLOBALS['tf']->variables->request['module'] : 'default'));
