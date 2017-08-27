@@ -58,7 +58,7 @@ class Plugin {
 		$loader->add_requirement('can_use_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
 		$loader->add_requirement('format_cc_exp', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
 		$loader->add_requirement('make_cc_decline', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
-		$loader->add_requirement('email_cc_decline', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
+		$loader->add_page_requirement('email_cc_decline', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
 		$loader->add_requirement('parse_ccs', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
 		$loader->add_requirement('get_bad_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
 		$loader->add_requirement('get_cc_bank_number', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
@@ -68,7 +68,7 @@ class Plugin {
 		$loader->add_requirement('add_cc_new_data', '/../vendor/detain/myadmin-authorizenet-payments/src/add_cc.php');
 		$loader->add_requirement('get_cc_cats_and_fields', '/../vendor/detain/myadmin-authorizenet-payments/src/admin/view_cc_transaction.php');
 		$loader->add_page_requirement('manage_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/manage_cc.php');
-		$loader->add_requirement('add_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/add_cc.php');
+		$loader->add_page_requirement('add_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/add_cc.php');
 		$loader->add_requirement('verify_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/verify_cc.php');
 		$loader->add_requirement('verify_admin_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/verify_cc.php');
 		$loader->add_requirement('verify_cc_charge', '/../vendor/detain/myadmin-authorizenet-payments/src/verify_cc.php');
@@ -76,7 +76,7 @@ class Plugin {
 		$loader->add_page_requirement('disable_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/admin/disable_cc.php');
 		$loader->add_page_requirement('disable_cc_whitelist', '/../vendor/detain/myadmin-authorizenet-payments/src/admin/disable_cc_whitelist.php');
 		$loader->add_requirement('get_authorizenet_fields', '/../vendor/detain/myadmin-authorizenet-payments/src/get_authorizenet_fields.php');
-		$loader->add_requirement('map_authorizenet_fields', '/../vendor/detain/myadmin-authorizenet-payments/src/map_authorizenet_fields.php');
+		$loader->add_page_requirement('map_authorizenet_fields', '/../vendor/detain/myadmin-authorizenet-payments/src/map_authorizenet_fields.php');
 		$loader->add_page_requirement('enable_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/admin/enable_cc.php');
 		$loader->add_page_requirement('authorize_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/admin/authorize_cc.php');
 		$loader->add_page_requirement('enable_cc_whitelist', '/../vendor/detain/myadmin-authorizenet-payments/src/admin/enable_cc_whitelist.php');
