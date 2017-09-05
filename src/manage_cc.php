@@ -14,9 +14,8 @@ function manage_cc() {
 	} else {
 		$ccs = myadmin_unstringify($data['ccs']);
 	}
-	if (count($ccs) == 0 && isset($data['cc']) && $data['cc'] != '') {
+	if (count($ccs) == 0 && isset($data['cc']) && $data['cc'] != '')
 		$ccs[] = ['cc' => $tf->decrypt($data['cc']), 'cc_exp' => $data['cc_exp']];
-	}
 	if (isset($tf->variables->request['action'])) {
 		$action = $tf->variables->request['action'];
 	} else {
@@ -168,9 +167,8 @@ function manage_cc() {
 				$cc = $ccs[$idx];
 				unset($ccs[$idx]);
 				$new_data = ['ccs' => myadmin_stringify($ccs, 'json')];
-				if (isset($data['cc']) && isset($cc['cc']) && $tf->decrypt($cc['cc']) == $tf->decrypt($data['cc'])) {
+				if (isset($data['cc']) && isset($cc['cc']) && $tf->decrypt($cc['cc']) == $tf->decrypt($data['cc']))
 					$new_data['cc'] = '';
-				}
 				foreach ($GLOBALS['modules'] as $module => $settings) {
 					$tcustid = convert_custid($tf->session->account_id, $module);
 					if ($tcustid !== false) {
@@ -338,9 +336,8 @@ All credit cards must be verified before they can be used.  To verify them click
 			add_output($table->get_table().'</div><br><a href="'.$tf->link('index.php', 'choice=none.manage_cc&action=add&orig_url='.htmlspecial($orig_url)).'" style="color: white; padding: 0.1em 0.5em; background: none repeat-x scroll 50% 50% #004ccc; border-radius: 10px;" class="ui-button ui-widget ui-state-hover ui-corner-all">+ New Billing Source</a><br>');
 			break;
 	}
-	if (isset($tf->variables->request['returnURL'])) {
+	if (isset($tf->variables->request['returnURL']))
 		$tf->session->appsession('returnURL', $tf->variables->request['returnURL']);
-	}
 	$returnURL = $tf->session->appsession('returnURL');
 	if ($returnURL !== null) {
 		add_output('<a href="'.$tf->link('index.php', base64_decode($returnURL)).'" style="color: white; padding: 0.1em 0.5em; background: none repeat-x scroll 50% 50% #004ccc; border-radius: 10px;" class="ui-button ui-widget ui-state-hover ui-corner-all" >Return To Order</a>');

@@ -31,9 +31,8 @@
 				$GLOBALS['tf']->accounts->set_db_module($module);
 				$GLOBALS['tf']->history->set_db_module($module);
 				$custid = $GLOBALS['tf']->accounts->cross_reference($data['account_lid']);
-				if ($custid !== false) {
+				if ($custid !== false)
 					$GLOBALS['tf']->accounts->update($custid, $new_data);
-				}
 			}
 			add_output('CC WhiteList Enabled');
 		}

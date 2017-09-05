@@ -29,9 +29,8 @@ function map_authorizenet_fields($result, $fields) {
 	if (preg_match("/^(?P<code>[1-4]),(?P<subcode>[^,]*),(?P<reason_code>\d*),(?P<reason_text>[^,]*),(?P<auth_code>\w{0,6}),(?P<avs_code>[ABEGNPRSUWXYZ]?),(?P<trans_id>\d+),/iU", $result['data'], $matches)) {
 		for ($x = 0, $xMax = count($parts); $x <= $xMax; $x++)
 			unset($matches[$x]);
-		foreach ($matches as $key => $value) {
+		foreach ($matches as $key => $value)
 			$result['cc_result_'.$key] = $value;
-		}
 		unset($result['data']);
 		return $result;
 	}

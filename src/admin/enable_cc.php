@@ -35,9 +35,8 @@
 				$GLOBALS['tf']->accounts->set_db_module($module);
 				$GLOBALS['tf']->history->set_db_module($module);
 				$customer = $GLOBALS['tf']->accounts->cross_reference($lid);
-				if ($customer !== false) {
+				if ($customer !== false)
 					$GLOBALS['tf']->accounts->update($customer, $new_data);
-				}
 			}
 			add_output('CC Enabled');
 			if(isset($GLOBALS['tf']->variables->request['rd']) && $GLOBALS['tf']->variables->request['rd'] === 'ec') {

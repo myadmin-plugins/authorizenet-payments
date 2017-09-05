@@ -110,9 +110,8 @@ function select_cc_exp($default) {
 	$months = get_months();
 	$default_month = (int)mb_substr($default, 0, 2);
 	$default_year = mb_substr($default, 3);
-	if (mb_strlen($default_year) == 2) {
+	if (mb_strlen($default_year) == 2)
 		$default_year = '20'.$default_year;
-	}
 	$default_year = (int)$default_year;
 	$minyear = date('Y');
 	$maxyear = date('Y') + 10;
@@ -329,9 +328,8 @@ function get_bad_cc() {
 function charge_card($custid, $amount = false, $invoice = false, $module = 'default', $returnURL = false) {
 	$custid = (int)$custid;
 	if ($invoice) {
-		if (!is_array($invoice)) {
+		if (!is_array($invoice))
 			$invoice = [$invoice];
-		}
 	}
 	$module = get_module_name($module);
 	$settings = \get_module_settings($module);
@@ -422,9 +420,8 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			'x_Card_Num' => isset($cc) ? $cc : '',
 			'x_Exp_Date' => $cc_exp
 		];
-		if (isset($GLOBALS['tf']->variables->request['cc_ccv2']) && in_array(mb_strlen($GLOBALS['tf']->variables->request['cc_ccv2']), [3, 4])) {
+		if (isset($GLOBALS['tf']->variables->request['cc_ccv2']) && in_array(mb_strlen($GLOBALS['tf']->variables->request['cc_ccv2']), [3, 4]))
 			$args['x_Card_Code'] = $GLOBALS['tf']->variables->request['cc_ccv2'];
-		}
 		if ($invoice) {
 			$args['x_Invoice_Num'] = implode(',', $invoice);
 			$args['x_Description'] = 'Payment For Invoice '.implode(',', $invoice);
@@ -483,9 +480,8 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			$headers .= 'Content-type: text/html; charset=UTF-8'.EMAIL_NEWLINE;
 			$headers .= 'From: "' . $settings['TITLE'] . '" <' . $settings['EMAIL_FROM'].'>'.EMAIL_NEWLINE;
 
-			if ($cc_log['cc_result_reason_text'] == 'Declined  (Card reported lost or stolen - Contact card issuer for resolution.)') {
+			if ($cc_log['cc_result_reason_text'] == 'Declined  (Card reported lost or stolen - Contact card issuer for resolution.)')
 				mail('billing@interserver.net', 'Stolen Credit Card', print_r($cc_log, TRUE), $headers);
-			}
 			if (mb_strpos($cc_response, ',') === false) {
 				myadmin_log('billing', 'info', 'Invalid cc response', __LINE__, __FILE__);
 				admin_mail('Invalid CreditCard Response', print_r($cc_log, TRUE), $headers, FALSE, 'admin_email_cc_bad_response.tpl');
@@ -565,15 +561,13 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 	$retval = false;
 	$data = $GLOBALS['tf']->accounts->read($custid);
 	if ($override_data !== false) {
-		foreach ($override_data as $key => $value) {
+		foreach ($override_data as $key => $value)
 			$data[$key] = $value;
-		}
 	}
 	$amount = round((float)$amount, 2);
 	// do some extra sanity checks
-	if (!isset($data['name'])) {
+	if (!isset($data['name']))
 		$data['name'] = '';
-	}
 	if (mb_strpos($data['name'], ' ') !== false) {
 		$name = explode(' ', $data['name']);
 	} else {
@@ -585,9 +579,8 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 	$lid = $GLOBALS['tf']->accounts->cross_reference($custid);
 	$response['code'] = 0;
 	$badcc = get_bad_cc();
-	if (in_array($cc, $badcc)) {
+	if (in_array($cc, $badcc))
 		return $retval;
-	}
 	$orig_amount = $amount;
 	myadmin_log('billing', 'info', "Charging {$lid} ({$data['status']}) {$amount} Using Creditcard Ending In ".mask_cc($cc, TRUE), __LINE__, __FILE__);
 	if ($amount == 0) {
@@ -621,9 +614,8 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 			'x_Card_Num' => $cc,
 			'x_Exp_Date' => $cc_exp
 		];
-		if (isset($GLOBALS['tf']->variables->request['cc_ccv2']) && in_array(mb_strlen($GLOBALS['tf']->variables->request['cc_ccv2']), [3, 4])) {
+		if (isset($GLOBALS['tf']->variables->request['cc_ccv2']) && in_array(mb_strlen($GLOBALS['tf']->variables->request['cc_ccv2']), [3, 4]))
 			$args['x_Card_Code'] = $GLOBALS['tf']->variables->request['cc_ccv2'];
-		}
 		$options = [
 			CURLOPT_REFERER => 'https://admin.trouble-free.net/',
 			CURLOPT_SSL_VERIFYPEER => false, // whether or not to validate the ssl cert of the peer
