@@ -201,7 +201,7 @@ function can_use_cc($data, $cc_holder = false, $check_disabled_cc = true, $cc_fi
 		$GLOBALS['cc_reason'] = trim($reason);
 	if ($cc_usable == false) {
 		$reason = trim($reason);
-		//myadmin_log('billing', 'info', "can_use_cc() returned false because: {$reason}", __LINE__, __FILE__);
+		//myadmin_log('billing', 'debug', "can_use_cc() returned false because: {$reason}", __LINE__, __FILE__);
 	}
 	return $cc_usable;
 }
@@ -275,7 +275,7 @@ function email_cc_decline($custid, $invoice_id) {
 	$headers .= 'From: "'.$email['fromname'] . '" <' . $email['fromemail'].'>'.EMAIL_NEWLINE;
 	$headers .= 'Reply-To: "' . $email['fromname'] . '" <' . $email['fromemail'].'>'.EMAIL_NEWLINE;
 
-	myadmin_log('billing', 'info', '	Emailing CC Decline Message To '.$email['toname'], __LINE__, __FILE__);
+	myadmin_log('billing', 'debug', '	Emailing CC Decline Message To '.$email['toname'], __LINE__, __FILE__);
 	multi_mail($email['toemail'], $email['subject'], '<PRE>'.$email['invoice'].'</PRE>', $headers, 'ccdecline.tpl');
 }
 
@@ -384,16 +384,16 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 		if ($amount - $prepay_amount < 0)
 			$prepay_amount = $amount;
 		$amount = bcsub($amount, $prepay_amount, 2);
-		myadmin_log('billing', 'info', "Now Amount $amount  Prepay ${prepay_amount}", __LINE__, __FILE__);
+		myadmin_log('billing', 'debug', "Now Amount $amount  Prepay ${prepay_amount}", __LINE__, __FILE__);
 	}
 	$cc_parts = explode('/', (isset($data['cc_exp']) ? trim(str_replace(' ', '', (strpos($data['cc_exp'], '/') !== false ? $data['cc_exp'] : substr($data['cc_exp'], 0, 2).'/'.substr($data['cc_exp'], 2)))) : date('m/Y')));
 	$cc_exp = $cc_parts[0].'/'.(isset($cc_parts[1]) ? (mb_strlen($cc_parts[1]) == 2 ? '20'.$cc_parts[1] : $cc_parts[1]) : date('Y'));
-	myadmin_log('billing', 'info', "Charging {$lid} ({$data['status']}) ".($amount == $orig_amount ? $amount : $amount.' and the rest of the '.$orig_amount.' paid via prepay (had '.$prepay_amount.' prepays available)'). '} Using Creditcard ' . mask_cc($GLOBALS['tf']->decrypt($data['cc'])).' (disabled '.(isset($data['disable_cc']) && $data['disable_cc'] == 1 ? 'yes' : 'no').')', __LINE__, __FILE__);
+	myadmin_log('billing', 'notice', "Charging {$lid} ({$data['status']}) ".($amount == $orig_amount ? $amount : $amount.' and the rest of the '.$orig_amount.' paid via prepay (had '.$prepay_amount.' prepays available)'). '} Using Creditcard ' . mask_cc($GLOBALS['tf']->decrypt($data['cc'])).' (disabled '.(isset($data['disable_cc']) && $data['disable_cc'] == 1 ? 'yes' : 'no').')', __LINE__, __FILE__);
 	if ($amount == 0) {
 		// approve if they have no balance
 		$response['code'] = 1;
 	} elseif (trim($cc) == '') {
-		//myadmin_log('billing', 'info', 'Blank Credit Card', __LINE__, __FILE__);
+		//myadmin_log('billing', 'notice', 'Blank Credit Card', __LINE__, __FILE__);
 		$response['code'] = 0;
 		return $retval;
 	} else {
@@ -431,9 +431,9 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			CURLOPT_SSL_VERIFYPEER => false, // whether or not to validate the ssl cert of the peer
 			// 'CURLOPT_CAINFO' => '/usr/share/curl/curl-ca-bundle.crt', // this option really is only useful if CURLOIPT_SSL_VERIFYPEER is TRUE
 		];
-		//myadmin_log('billing', 'info', 'CC Request: '.str_replace("\n", '', var_export($args, TRUE)), __LINE__, __FILE__);
+		//myadmin_log('billing', 'debug', 'CC Request: '.str_replace("\n", '', var_export($args, TRUE)), __LINE__, __FILE__);
 		$cc_response = getcurlpage('https://secure.authorize.net/gateway/transact.dll', $args, $options);
-		//myadmin_log('billing', 'info', 'CC Response: '.$cc_response, __LINE__, __FILE__);
+		//myadmin_log('billing', 'debug', 'CC Response: '.$cc_response, __LINE__, __FILE__);
 		$tresponse = str_getcsv($cc_response);
 		$cc_log = [
 			'cc_id' => null,
@@ -461,7 +461,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			$retval = true;
 			if ($prepay_amount > 0) {
 				use_prepay_related_amount($invoice, $module, $prepay_amount);
-				myadmin_log('billing', 'info', '	CC Charge Successfully Used Partial Prepay Amount '.$prepay_amount, __LINE__, __FILE__);
+				myadmin_log('billing', 'notice', '	CC Charge Successfully Used Partial Prepay Amount '.$prepay_amount, __LINE__, __FILE__);
 				$subject = 'CC Charge Auto Used Partial Prepay';
 				$headers = '';
 
@@ -474,7 +474,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			handle_payment($custid, $orig_amount, $invoice, 11, $module, (isset($response['trans_id']) ? $response['trans_id'] : ''));
 			break;
 		default:
-			myadmin_log('billing', 'info', 'FAILURE (custid:'.$custid.',exp:'.$data['cc_exp'].',cc:'.mask_cc($cc, TRUE).',amount:'.$amount.', code:'.$response['code'].') raw: ' . $cc_response, __LINE__, __FILE__);
+			myadmin_log('billing', 'notice', 'FAILURE (custid:'.$custid.',exp:'.$data['cc_exp'].',cc:'.mask_cc($cc, TRUE).',amount:'.$amount.', code:'.$response['code'].') raw: ' . $cc_response, __LINE__, __FILE__);
 			$headers = '';
 			$headers .= 'MIME-Version: 1.0'.EMAIL_NEWLINE;
 			$headers .= 'Content-type: text/html; charset=UTF-8'.EMAIL_NEWLINE;
@@ -483,7 +483,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			if ($cc_log['cc_result_reason_text'] == 'Declined  (Card reported lost or stolen - Contact card issuer for resolution.)')
 				mail('billing@interserver.net', 'Stolen Credit Card', print_r($cc_log, TRUE), $headers);
 			if (mb_strpos($cc_response, ',') === false) {
-				myadmin_log('billing', 'info', 'Invalid cc response', __LINE__, __FILE__);
+				myadmin_log('billing', 'warning', 'Invalid cc response', __LINE__, __FILE__);
 				admin_mail('Invalid CreditCard Response', print_r($cc_log, TRUE), $headers, FALSE, 'admin_email_cc_bad_response.tpl');
 				$response['code'] = 0;
 				return $retval;
@@ -582,12 +582,12 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 	if (in_array($cc, $badcc))
 		return $retval;
 	$orig_amount = $amount;
-	myadmin_log('billing', 'info', "Charging {$lid} ({$data['status']}) {$amount} Using Creditcard Ending In ".mask_cc($cc, TRUE), __LINE__, __FILE__);
+	myadmin_log('billing', 'notice', "Charging {$lid} ({$data['status']}) {$amount} Using Creditcard Ending In ".mask_cc($cc, TRUE), __LINE__, __FILE__);
 	if ($amount == 0) {
 		// approve if they have no balance
 		$response['code'] = 1;
 	} elseif (trim($cc) == '') {
-		myadmin_log('billing', 'info', 'Blank Credit Card', __LINE__, __FILE__);
+		myadmin_log('billing', 'notice', 'Blank Credit Card', __LINE__, __FILE__);
 		$response['code'] = 0;
 	} else {
 		$args = [
@@ -621,9 +621,9 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 			CURLOPT_SSL_VERIFYPEER => false, // whether or not to validate the ssl cert of the peer
 			// 'CURLOPT_CAINFO' => '/usr/share/curl/curl-ca-bundle.crt', // this option really is only useful if CURLOIPT_SSL_VERIFYPEER is TRUE
 		];
-		myadmin_log('billing', 'info', 'CC Request: '.str_replace("\n", '', var_export($args, TRUE)), __LINE__, __FILE__);
+		myadmin_log('billing', 'debug', 'CC Request: '.str_replace("\n", '', var_export($args, TRUE)), __LINE__, __FILE__);
 		$cc_response = getcurlpage('https://secure.authorize.net/gateway/transact.dll', $args, $options);
-		myadmin_log('billing', 'info', 'CC Response: '.$cc_response, __LINE__, __FILE__);
+		myadmin_log('billing', 'debug', 'CC Response: '.$cc_response, __LINE__, __FILE__);
 		$tresponse = str_getcsv($cc_response);
 		$cc_log = [
 			'cc_id' => null,
@@ -652,7 +652,7 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 			return $retval;
 			break;
 		default:
-			myadmin_log('billing', 'info', 'FAILURE ('.$custid.' '.$cc_exp.' '.mask_cc($cc, TRUE).' '.$amount.')', __LINE__, __FILE__);
+			myadmin_log('billing', 'notice', 'FAILURE ('.$custid.' '.$cc_exp.' '.mask_cc($cc, TRUE).' '.$amount.')', __LINE__, __FILE__);
 			return $retval;
 			break;
 	}
