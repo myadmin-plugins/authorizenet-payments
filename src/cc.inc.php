@@ -469,7 +469,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 				$headers .= 'Content-type: text/html; charset=UTF-8'.EMAIL_NEWLINE;
 				$headers .= 'From: '.$settings['TITLE'].' <'.$settings['EMAIL_FROM'].'>'.EMAIL_NEWLINE;
 				$email = "Module $module<br>Original Amount: $orig_amount<br>Prepay Amount $prepay_amount<br>Charged Amount $amount<br>Invoices " . implode(',', $invoice).'<br>';
-				admin_mail($subject, $email, $headers, FALSE, 'client_email_payment_approved.tpl');
+				admin_mail($subject, $email, $headers, FALSE, 'client/payment_approved.tpl');
 			}
 			handle_payment($custid, $orig_amount, $invoice, 11, $module, (isset($response['trans_id']) ? $response['trans_id'] : ''));
 			break;
@@ -484,7 +484,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 				mail('billing@interserver.net', 'Stolen Credit Card', print_r($cc_log, TRUE), $headers);
 			if (mb_strpos($cc_response, ',') === false) {
 				myadmin_log('billing', 'warning', 'Invalid cc response', __LINE__, __FILE__);
-				admin_mail('Invalid CreditCard Response', print_r($cc_log, TRUE), $headers, FALSE, 'admin_email_cc_bad_response.tpl');
+				admin_mail('Invalid CreditCard Response', print_r($cc_log, TRUE), $headers, FALSE, 'admin/cc_bad_response.tpl');
 				$response['code'] = 0;
 				return $retval;
 			}
@@ -530,8 +530,8 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 				$smarty->assign('returnURL', $returnURL);
 			}
 			$smarty->assign('invoices', $rows);
-			$email = $smarty->fetch('email/client_email_payment_failed.tpl');
-			multi_mail(get_invoice_email($data), $subject, $email, $headers, 'client_email_payment_failed.tpl');
+			$email = $smarty->fetch('email/client/payment_failed.tpl');
+			multi_mail(get_invoice_email($data), $subject, $email, $headers, 'client/payment_failed.tpl');
 			//email_cc_decline($custid, $invoice);
 			//$GLOBALS['tf']->history->add('users', 'carddecline', $data['cc'], $data['cc_exp'], $custid);
 			break;
