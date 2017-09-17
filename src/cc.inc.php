@@ -621,7 +621,7 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 			CURLOPT_SSL_VERIFYPEER => false, // whether or not to validate the ssl cert of the peer
 			// 'CURLOPT_CAINFO' => '/usr/share/curl/curl-ca-bundle.crt', // this option really is only useful if CURLOIPT_SSL_VERIFYPEER is TRUE
 		];
-		myadmin_log('billing', 'debug', 'CC Request: '.str_replace("\n", '', var_export($args, TRUE)), __LINE__, __FILE__);
+		myadmin_log('billing', 'debug', 'CC Request: '.json_encode($args, TRUE), __LINE__, __FILE__);
 		$cc_response = getcurlpage('https://secure.authorize.net/gateway/transact.dll', $args, $options);
 		myadmin_log('billing', 'debug', 'CC Response: '.$cc_response, __LINE__, __FILE__);
 		$tresponse = str_getcsv($cc_response);
