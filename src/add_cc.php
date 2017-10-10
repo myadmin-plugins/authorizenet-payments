@@ -28,6 +28,9 @@ function add_cc_new_data($cc, $ccs, $data, $new_data, $prefix, $force = false) {
 			$new_data['payment_method'] = 'cc';
 			$new_data['cc'] = $cc['cc'];
 			$new_data['cc_exp'] = $cc['cc_exp'];
+			foreach (['name', 'address', 'city', 'state', 'zip', 'country'] as $field)
+				if (isset($cc[$field]) && $cc[$field] != '')
+					$new_data[$field] = $cc[$field];
 			$new_data['ccs'] = myadmin_stringify($ccs, 'json');
 		//} else
 			//$new_data['ccs'] = myadmin_stringify($ccs, 'json');
