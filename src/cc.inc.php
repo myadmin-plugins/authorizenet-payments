@@ -325,7 +325,7 @@ function get_bad_cc() {
  * @throws \Exception
  * @throws \SmartyException
  */
-function charge_card($custid, $amount = false, $invoice = false, $module = 'default', $returnURL = false) {
+function charge_card($custid, $amount = false, $invoice = false, $module = 'default', $returnURL = false, $pymt = true) {
 	$custid = (int)$custid;
 	if ($invoice) {
 		if (!is_array($invoice))
@@ -471,7 +471,8 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 				$email = "Module $module<br>Original Amount: $orig_amount<br>Prepay Amount $prepay_amount<br>Charged Amount $amount<br>Invoices " . implode(',', $invoice).'<br>';
 				admin_mail($subject, $email, $headers, FALSE, 'client/payment_approved.tpl');
 			}
-			handle_payment($custid, $orig_amount, $invoice, 11, $module, (isset($response['trans_id']) ? $response['trans_id'] : ''));
+			if($pymt)
+				handle_payment($custid, $orig_amount, $invoice, 11, $module, (isset($response['trans_id']) ? $response['trans_id'] : ''));
 			break;
 		default:
 			myadmin_log('billing', 'notice', 'FAILURE (custid:'.$custid.',exp:'.$data['cc_exp'].',cc:'.mask_cc($cc, TRUE).',amount:'.$amount.', code:'.$response['code'].') raw: ' . $cc_response, __LINE__, __FILE__);
