@@ -93,7 +93,7 @@ class Plugin {
 		$settings->add_text_setting('Billing', 'Authorize.Net', 'authorizenet_login', 'Login Name', 'Login Name', (defined('AUTHORIZENET_LOGIN') ? AUTHORIZENET_LOGIN : ''));
 		$settings->add_text_setting('Billing', 'Authorize.Net', 'authorizenet_password', 'Password', 'Password', (defined('AUTHORIZENET_PASSWORD') ? AUTHORIZENET_PASSWORD : ''));
 		$settings->add_text_setting('Billing', 'Authorize.Net', 'authorizenet_key', 'API Key', 'API Key', (defined('AUTHORIZENET_KEY') ? AUTHORIZENET_KEY : ''));
-		$settings->add_text_setting('Billing', 'Authorize.Net', 'authorizenet_referer', 'Referer URL (optional)', 'Referer URL (optional)', (defined('AUTHORIZENET_REFERER') ? AUTHORIZENET_REFERER : ''));
+		$settings->add_text_setting('Billing', 'Authorize.Net', 'authorizenet_referrer', 'Referer URL (optional)', 'Referer URL (optional)', (defined('AUTHORIZENET_REFERER') ? AUTHORIZENET_REFERER : ''));
 	}
 
 }
