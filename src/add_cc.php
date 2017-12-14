@@ -52,7 +52,7 @@ function add_cc_new_data($cc, $ccs, $data, $new_data, $prefix, $force = false) {
 function add_cc($data, $prefix = '', $force = false) {
 	$tf = $GLOBALS['tf'];
 	$minimum_days = 30;
-	$max_early_ccs = 2;
+	$max_early_ccs = 4;
 	$return = [
 		'idx' => '',
 		'status' => '',
