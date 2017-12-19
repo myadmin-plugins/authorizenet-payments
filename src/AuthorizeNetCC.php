@@ -112,7 +112,7 @@ class AuthorizeNetCC {
 			'cc_custid' => $custid,
 			'cc_timestamp' => mysql_now()
 		];
-		$rargs = $args;
+		$rargs = $this->Auth_Data;
 		unset($rargs['x_Login'], $rargs['x_Password'], $rargs['x_Delim_Data'], $rargs['x_Encap_Char']);
 		if(!empty($rargs)) {
 			foreach ($rargs as $field => $value)
