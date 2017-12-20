@@ -126,6 +126,10 @@ class AuthorizeNetCC {
 					$cc_log['cc_result_'.$fields[$idx]] = $value;
 			}
 		}
+		if (isset($cc_log['cc_request_trans_id'])) {
+			$cc_log['cc_result_trans_id'] = $cc_log['cc_request_trans_id'];
+			unset($cc_log['cc_request_trans_id']);
+		}
 		if($tresponse['0'] == 1) {
 			$db = clone $GLOBALS['tf']->db;
 			$db->query(make_insert_query('cc_log', $cc_log), __LINE__, __FILE__);
@@ -134,6 +138,5 @@ class AuthorizeNetCC {
 		//request_log($module, $custid, __FUNCTION__, 'authorizenet', 'auth_only', $rargs, $response);
 		myadmin_log('billing', 'info', 'Void Transaction - Completed values returned Response :'.json_encode($cc_log), __LINE__, __FILE__);
 		return $tresponse;
-		}
-
+	}
 }
