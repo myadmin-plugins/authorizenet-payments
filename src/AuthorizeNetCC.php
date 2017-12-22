@@ -4,7 +4,7 @@
 */
 class AuthorizeNetCC {
 
-	//Initializing authorize.net api login credentials and other details
+	// Initializing authorize.net api login credentials and other details
 	private $Auth_Data = [
 		'x_Login' => AUTHORIZENET_LOGIN,
 		'x_Password' => AUTHORIZENET_PASSWORD,
@@ -14,7 +14,8 @@ class AuthorizeNetCC {
 	];
 
 	/**
-	 * @function refund
+	 * refunds a transaction
+	 *
 	 * @param $cc_num (credit card number 16digits or last four digits)
 	 * @param $trans_id (16 digit Transaction Id)
 	 * @param $amount (Should be less than or equal to original transaction amount)
@@ -24,10 +25,12 @@ class AuthorizeNetCC {
 	 */
 	public function refund($cc_num, $trans_id, $amount, $custid) {
 
-		if(!$cc_num) return 'Error! Credit card Number is empty';
-		if(!$trans_id) return 'Error! Transaction id is empty';
-		if(!$amount) return 'Error! Amount is empty';
-
+		if (!$cc_num)
+			return 'Error! Credit card Number is empty';
+		if (!$trans_id)
+			return 'Error! Transaction id is empty';
+		if (!$amount)
+			return 'Error! Amount is empty';
 		$this->Auth_Data['x_type'] = 'CREDIT';
 		$this->Auth_Data['x_trans_id'] = $trans_id;
 		$this->Auth_Data['x_card_num'] = $cc_num;
@@ -66,7 +69,7 @@ class AuthorizeNetCC {
 			'', '', '', '', '', '', '', ''
 		];
 		foreach ($tresponse as $idx => $value) {
-			if ($fields[$idx] != '') {
+			if (isset($fields[$idx]) && $fields[$idx] != '') {
 				$response[$fields[$idx]] = $value;
 				if ($value != '')
 					$cc_log['cc_result_'.$fields[$idx]] = $value;
@@ -83,7 +86,8 @@ class AuthorizeNetCC {
 	}
 
 	/**
-	 * @function void transaction
+	 * void transaction
+	 *
 	 * @param $trans_id (16 digit Transaction Id)
 	 * @param $cc_num (credit card number 16digits or last four digits)
 	 * @param $custid
