@@ -6,6 +6,7 @@
  * @package MyAdmin
  * @category Billing
  */
+
 /**
  * charge_card_invoice()
  * charges an invoice to the clients creditcard.
