@@ -274,7 +274,6 @@ function email_cc_decline($custid, $invoice_id) {
 	$headers .= 'Content-type: text/html; charset=UTF-8'.EMAIL_NEWLINE;
 	$headers .= 'From: "'.$email['fromname'] . '" <' . $email['fromemail'].'>'.EMAIL_NEWLINE;
 	$headers .= 'Reply-To: "' . $email['fromname'] . '" <' . $email['fromemail'].'>'.EMAIL_NEWLINE;
-
 	myadmin_log('billing', 'debug', '	Emailing CC Decline Message To '.$email['toname'], __LINE__, __FILE__);
 	multi_mail($email['toemail'], $email['subject'], '<PRE>'.$email['invoice'].'</PRE>', $headers, 'ccdecline.tpl');
 }
@@ -316,16 +315,17 @@ function get_bad_cc() {
 /**
  * Charges a given customers credit-card for the given amount
  *
- * @param integer        $custid    the id of the customer
- * @param bool|float $amount    the amount to charge
- * @param bool|array|int $invoice   the invoices to charge, can be a single invoice id in a string, or an array of invoiceids.
- * @param string         $module    the module the invoices use.
- * @param bool|string    $returnURL defaults to false, dont include a return / try again url, true to use the current url, or a string specifying the url
+ * @param integer $custid the id of the customer
+ * @param bool|float $amount the amount to charge
+ * @param bool|array|int $invoice the invoices to charge, can be a single invoice id in a string, or an array of invoiceids.
+ * @param string $module the module the invoices use.
+ * @param bool|string $returnURL defaults to false, dont include a return / try again url, true to use the current url, or a string specifying the url
+ * @param bool $useHandlePayment defaults to true, whether or not to call the handle payment processing after a successfull charge
  * @return bool whether or not the charge was successfull.
  * @throws \Exception
  * @throws \SmartyException
  */
-function charge_card($custid, $amount = false, $invoice = false, $module = 'default', $returnURL = false, $pymt = true) {
+function charge_card($custid, $amount = false, $invoice = false, $module = 'default', $returnURL = false, $useHandlePayment = true) {
 	$custid = (int)$custid;
 	if ($invoice) {
 		if (!is_array($invoice))
@@ -384,7 +384,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 		if ($amount - $prepay_amount < 0)
 			$prepay_amount = $amount;
 		$amount = bcsub($amount, $prepay_amount, 2);
-		myadmin_log('billing', 'debug', "Now Amount $amount  Prepay ${prepay_amount}", __LINE__, __FILE__);
+		myadmin_log('billing', 'debug', "Now Amount {$amount}  Prepay {$prepay_amount}", __LINE__, __FILE__);
 	}
 	$cc_parts = explode('/', (isset($data['cc_exp']) ? trim(str_replace(' ', '', (strpos($data['cc_exp'], '/') !== false ? $data['cc_exp'] : substr($data['cc_exp'], 0, 2).'/'.substr($data['cc_exp'], 2)))) : date('m/Y')));
 	$cc_exp = $cc_parts[0].'/'.(isset($cc_parts[1]) ? (mb_strlen($cc_parts[1]) == 2 ? '20'.$cc_parts[1] : $cc_parts[1]) : date('Y'));
@@ -427,7 +427,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			$args['x_Description'] = 'Payment For Invoice '.implode(',', $invoice);
 		}
 		$options = [
-			CURLOPT_REFERER => 'https://admin.trouble-free.net/',
+			CURLOPT_REFERER => 'https://my.interserver.net/',
 			CURLOPT_SSL_VERIFYPEER => false, // whether or not to validate the ssl cert of the peer
 			// 'CURLOPT_CAINFO' => '/usr/share/curl/curl-ca-bundle.crt', // this option really is only useful if CURLOIPT_SSL_VERIFYPEER is TRUE
 		];
@@ -463,29 +463,19 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 				use_prepay_related_amount($invoice, $module, $prepay_amount);
 				myadmin_log('billing', 'notice', '	CC Charge Successfully Used Partial Prepay Amount '.$prepay_amount, __LINE__, __FILE__);
 				$subject = 'CC Charge Auto Used Partial Prepay';
-				$headers = '';
-
-				$headers .= 'MIME-Version: 1.0'.EMAIL_NEWLINE;
-				$headers .= 'Content-type: text/html; charset=UTF-8'.EMAIL_NEWLINE;
-				$headers .= 'From: '.$settings['TITLE'].' <'.$settings['EMAIL_FROM'].'>'.EMAIL_NEWLINE;
-				$email = "Module $module<br>Original Amount: $orig_amount<br>Prepay Amount $prepay_amount<br>Charged Amount $amount<br>Invoices " . implode(',', $invoice).'<br>';
-				admin_mail($subject, $email, $headers, FALSE, 'client/payment_approved.tpl');
+				$email = "Module {$module}<br>Original Amount: {$orig_amount}<br>Prepay Amount {$prepay_amount}<br>Charged Amount {$amount}<br>Invoices ".implode(',', $invoice).'<br>';
+				admin_mail($subject, $email, get_default_mail_headers($settings), FALSE, 'client/payment_approved.tpl');
 			}
-			if($pymt)
+			if($useHandlePayment === TRUE)
 				handle_payment($custid, $orig_amount, $invoice, 11, $module, (isset($response['trans_id']) ? $response['trans_id'] : ''));
 			break;
 		default:
 			myadmin_log('billing', 'notice', 'FAILURE (custid:'.$custid.',exp:'.$data['cc_exp'].',cc:'.mask_cc($cc, TRUE).',amount:'.$amount.', code:'.$response['code'].') raw: ' . $cc_response, __LINE__, __FILE__);
-			$headers = '';
-			$headers .= 'MIME-Version: 1.0'.EMAIL_NEWLINE;
-			$headers .= 'Content-type: text/html; charset=UTF-8'.EMAIL_NEWLINE;
-			$headers .= 'From: "' . $settings['TITLE'] . '" <' . $settings['EMAIL_FROM'].'>'.EMAIL_NEWLINE;
-
 			if ($cc_log['cc_result_reason_text'] == 'Declined  (Card reported lost or stolen - Contact card issuer for resolution.)')
-				mail('billing@interserver.net', 'Stolen Credit Card', print_r($cc_log, TRUE), $headers);
+				mail('billing@interserver.net', 'Stolen Credit Card', print_r($cc_log, TRUE), get_default_mail_headers($settings));
 			if (mb_strpos($cc_response, ',') === false) {
 				myadmin_log('billing', 'warning', 'Invalid cc response', __LINE__, __FILE__);
-				admin_mail('Invalid CreditCard Response', print_r($cc_log, TRUE), $headers, FALSE, 'admin/cc_bad_response.tpl');
+				admin_mail('Invalid CreditCard Response', print_r($cc_log, TRUE), get_default_mail_headers($settings), FALSE, 'admin/cc_bad_response.tpl');
 				$response['code'] = 0;
 				return $retval;
 			}
@@ -505,7 +495,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			if ($invoice) {
 				foreach ($invoice as $invoice_id) {
 					$invoice_id = (int)$invoice_id;
-					$db->query("select * from invoices where invoices_id=$invoice_id", __LINE__, __FILE__);
+					$db->query("select * from invoices where invoices_id={$invoice_id}", __LINE__, __FILE__);
 					if ($db->num_rows() > 0) {
 						$db->next_record(MYSQL_ASSOC);
 						$row = [];
@@ -532,7 +522,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			}
 			$smarty->assign('invoices', $rows);
 			$email = $smarty->fetch('email/client/payment_failed.tpl');
-			multi_mail(get_invoice_email($data), $subject, $email, $headers, 'client/payment_failed.tpl');
+			multi_mail(get_invoice_email($data), $subject, $email, get_default_mail_headers($settings), 'client/payment_failed.tpl');
 			//email_cc_decline($custid, $invoice);
 			//$GLOBALS['tf']->history->add('users', 'carddecline', $data['cc'], $data['cc_exp'], $custid);
 			break;
