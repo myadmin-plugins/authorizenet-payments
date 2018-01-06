@@ -453,6 +453,10 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			}
 		}
 		$db->query(make_insert_query('cc_log', $cc_log), __LINE__, __FILE__);
+		if (isset($response['trans_id'])) {
+			global $cc_trans_id;
+			$cc_trans_id = $response['trans_id'];
+		}
 		//request_log($module, $custid, __FUNCTION__, 'authorizenet', 'auth_capture', $rargs, $response);
 		unset($rargs);
 	}
