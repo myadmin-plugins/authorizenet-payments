@@ -251,7 +251,7 @@ function make_cc_decline($custid, $invoice_id) {
 		$smarty->assign('url', 'my.interserver.net');
 	else
 		$smarty->assign('url', DOMAIN . URLDIR);
-	$ret_invoice['invoice'] = $smarty->fetch('email/ccdecline.tpl');
+	$ret_invoice['invoice'] = $smarty->fetch('email/client/ccdecline.tpl');
 	$ret_invoice['toname'] = $data['name'];
 	$ret_invoice['toemail'] = get_invoices_email($data);
 	$ret_invoice['subject'] = 'Problem With Account '.$domain;
@@ -275,7 +275,7 @@ function email_cc_decline($custid, $invoice_id) {
 	$headers .= 'From: "'.$email['fromname'] . '" <' . $email['fromemail'].'>'.EMAIL_NEWLINE;
 	$headers .= 'Reply-To: "' . $email['fromname'] . '" <' . $email['fromemail'].'>'.EMAIL_NEWLINE;
 	myadmin_log('billing', 'debug', '	Emailing CC Decline Message To '.$email['toname'], __LINE__, __FILE__);
-	multi_mail($email['toemail'], $email['subject'], '<PRE>'.$email['invoice'].'</PRE>', $headers, 'ccdecline.tpl');
+	multi_mail($email['toemail'], $email['subject'], '<PRE>'.$email['invoice'].'</PRE>', $headers, 'client/ccdecline.tpl');
 }
 
 /**
