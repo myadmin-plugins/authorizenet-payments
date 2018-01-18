@@ -24,5 +24,5 @@ composer require detain/myadmin-authorizenet-payments
 
 ## License
 
-The Authorizenet handling plugin for MyAdmin class is licensed under the LGPL-v2 license.
+The Authorizenet handling plugin for MyAdmin class is licensed under the LGPL-v2.1 license.
 
