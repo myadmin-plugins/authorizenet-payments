@@ -22,14 +22,14 @@ function cc_refund() {
 		$table->csrf('cc_refund');
 		$table->set_title('Confirm Refund');
 		$table->set_options('cellpadding=10');
-		$table->set_post_location('iframe.php');
+		$table->set_post_location('index.php');
 		$table->add_hidden('transact_id', $GLOBALS['tf']->variables->request['transact_id']);
 		$table->add_hidden('amount', $GLOBALS['tf']->variables->request['amount']);
 		$table->add_hidden('card', $GLOBALS['tf']->variables->request['card']);
 		$table->add_hidden('cust_id', $GLOBALS['tf']->variables->request['cust_id']);
 		$table->add_hidden('inv', $GLOBALS['tf']->variables->request['inv']);
 		$table->add_field('Are you sure want to Refund ?', 'l');
-		$table->add_field($table->make_radio('confirmation', 'Yes', FALSE) . 'Yes' . $table->make_radio('confirmation', 'No', TRUE) . 'No', 'l');
+		$table->add_field($table->make_radio('confirmation', 'Yes', 'Yes') . 'Yes' . $table->make_radio('confirmation', 'No', TRUE) . 'No', 'l');
 		$table->add_row();
 		$table->set_colspan(2);
 		$table->add_field($table->make_submit('Confirm'));
@@ -73,6 +73,7 @@ function cc_refund() {
 					$db->query("update invoices set invoices_paid=0, invoices_type=2 where invoices_id = $inv_id");
 				}
 			}
+			$GLOBALS['tf']->redirect($GLOBALS['tf']->link('index.php', 'choice=none.view_cc_transaction&transaction='.$transact_ID.'&module='.$GLOBALS['tf']->variables->request['module']));
 		}
 	}
 }
