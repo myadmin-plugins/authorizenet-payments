@@ -56,6 +56,9 @@ function view_cc_transaction() {
 	$smarty->assign('transaction', $transaction);
 	$smarty->assign('paypal_cats', $cats);
 	$smarty->assign('module', $module);
+	if(isset($GLOBALS['tf']->variables->request['st_txt']))
+		$smarty->assign('st_txt', $GLOBALS['tf']->variables->request['st_txt']);
+	$smarty->assign('module', $module);
 	add_output($smarty->fetch('payments/view_cc_transaction.tpl'));
 }
 

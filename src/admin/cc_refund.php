@@ -27,6 +27,7 @@ function cc_refund() {
 		$table->add_hidden('amount', $GLOBALS['tf']->variables->request['amount']);
 		$table->add_hidden('card', $GLOBALS['tf']->variables->request['card']);
 		$table->add_hidden('cust_id', $GLOBALS['tf']->variables->request['cust_id']);
+		$table->add_hidden('module', $GLOBALS['tf']->variables->request['module']);
 		$table->add_hidden('inv', $GLOBALS['tf']->variables->request['inv']);
 		$table->add_field('Are you sure want to Refund ?', 'l');
 		$table->add_field($table->make_radio('confirmation', 'Yes', 'Yes') . 'Yes' . $table->make_radio('confirmation', 'No', TRUE) . 'No', 'l');
@@ -65,6 +66,7 @@ function cc_refund() {
 				add_output('Status : '.$status[$response_new['0']].' <br>Status Text: '.$response_new['3']);
 				if($status[$response_new['0']] == 'Approved') $invoice_update = true;
 			}
+			$st_txt = $status[$response['0']] == 'Declined' || $status[$response['0']] == 'Error' ? $status[$response_new['0']].'! '.$response_new['3'] : $status[$response['0']].'! '.$response['3'];
 			if($invoice_update) {
 				$db = clone $GLOBALS['tf']->db;
 				$inv = $db->real_escape($invoice_id);
