@@ -66,6 +66,7 @@ function cc_refund() {
 					add_output('Status : '.$status[$response_new['0']].' <br>Status Text: '.$response_new['3']);
 					if($status[$response_new['0']] == 'Approved') $invoice_update = true;
 				}
+				$st_txt = $status[$response['0']] == 'Declined' || $status[$response['0']] == 'Error' ? $status[$response_new['0']].'! '.$response_new['3'] : $status[$response['0']].'! '.$response['3'];
 				if($invoice_update) {
 					$db = clone $GLOBALS['tf']->db;
 					$inv = $db->real_escape($invoice_id);
@@ -74,7 +75,7 @@ function cc_refund() {
 						$db->query("update invoices set invoices_paid=0, invoices_type=2 where invoices_id = $inv_id");
 					}
 				}
-				$GLOBALS['tf']->redirect($GLOBALS['tf']->link('index.php', 'choice=none.view_cc_transaction&transaction='.$transact_ID.'&module='.$GLOBALS['tf']->variables->request['module']));
+				$GLOBALS['tf']->redirect($GLOBALS['tf']->link('index.php', 'choice=none.view_cc_transaction&transaction='.$transact_ID.'&module='.$GLOBALS['tf']->variables->request['module'].'&st_txt='.$st_txt));
 			}
 		}
 	}
