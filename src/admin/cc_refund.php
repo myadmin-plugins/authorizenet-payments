@@ -75,7 +75,7 @@ function cc_refund() {
 					$db->query("update invoices set invoices_paid=0, invoices_type=2 where invoices_id = $inv_id");
 				}
 			}
-			$GLOBALS['tf']->redirect($GLOBALS['tf']->link('index.php', 'choice=none.view_cc_transaction&transaction='.$transact_ID.'&module='.$GLOBALS['tf']->variables->request['module']));
+			$GLOBALS['tf']->redirect($GLOBALS['tf']->link('index.php', 'choice=none.view_cc_transaction&transaction='.$transact_ID.'&module='.$GLOBALS['tf']->variables->request['module']).'&st_txt='.$st_txt);
 		}
 	}
 }
