@@ -3,7 +3,6 @@
 function manage_cc() {
 	add_js('bootstrap');
 	add_js('font-awesome');
-	//add_js('card.stable');
 	add_js('card.jquery');
 	add_js('card');
 	global $tf;
