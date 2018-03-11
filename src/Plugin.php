@@ -89,7 +89,7 @@ class Plugin {
 	 */
 	public static function getSettings(GenericEvent $event) {
 		$settings = $event->getSubject();
-		$settings->add_radio_setting('Billing', 'Authorize.Net', 'authorizenet_enable', 'Enable Authorize.net', 'Enable Authorize.net', AUTHORIZENET_ENABLE, [true, false], ['Enabled', 'Disabled']);
+		$settings->add_radio_setting('Billing', 'Authorize.Net', 'authorizenet_enable', 'Enable Authorize.net', 'Enable Authorize.net', AUTHORIZENET_ENABLE, [TRUE, FALSE], ['Enabled', 'Disabled']);
 		$settings->add_text_setting('Billing', 'Authorize.Net', 'authorizenet_login', 'Login Name', 'Login Name', (defined('AUTHORIZENET_LOGIN') ? AUTHORIZENET_LOGIN : ''));
 		$settings->add_text_setting('Billing', 'Authorize.Net', 'authorizenet_password', 'Password', 'Password', (defined('AUTHORIZENET_PASSWORD') ? AUTHORIZENET_PASSWORD : ''));
 		$settings->add_text_setting('Billing', 'Authorize.Net', 'authorizenet_key', 'API Key', 'API Key', (defined('AUTHORIZENET_KEY') ? AUTHORIZENET_KEY : ''));

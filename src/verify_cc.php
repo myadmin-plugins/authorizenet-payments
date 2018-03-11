@@ -20,7 +20,7 @@ function verify_cc_charge($cc, $data) {
 	if (!isset($data['cc_amt1_'.$cc_decrypted])) {
 		$amt1 = mt_rand(1, 99) / 100;
 		$amt2 = mt_rand(1, 99) / 100;
-		myadmin_log('billing', 'info', "Charging {$data['account_lid']} CC {$cc_decrypted} Amounts {$amt1} and {$amt2}", __LINE__, __FILE__);
+		myadmin_log('billing', 'info', "charging {$data['account_lid']} CC {$cc_decrypted} Amounts {$amt1} and {$amt2}", __LINE__, __FILE__);
 		if (!auth_charge_card($data['account_id'], $cc_decrypted, $cc['cc_exp'], $amt1, 'default', 'Validation Random Charge', $cc)
 		 || !auth_charge_card($data['account_id'], $cc_decrypted, $cc['cc_exp'], $amt2, 'default', 'Validation Random Charge', $cc)) {
 			$return['status'] = 'error';
@@ -69,7 +69,7 @@ function verify_cc($cc, $data) {
 		$return['text'] = 'The Values matched!';
 		foreach ($GLOBALS['modules'] as $module => $settings) {
 			$tcustid = convert_custid($data['account_id'], $module);
-			if ($tcustid !== false) {
+			if ($tcustid !== FALSE) {
 				$tf->accounts->set_db_module($module);
 				if (isset($data['disable_cc']))
 					$tf->accounts->remove_key($tcustid, 'disable_cc');

@@ -18,8 +18,8 @@ function view_cc_transaction() {
 	add_js('font-awesome');
 	add_js('isotope');
 	$GLOBALS['body_extra'] = ' data-spy="scroll" data-target="#scrollspy" style="position: relative;"';
-	$GLOBALS['tf']->add_html_head_css_file(URL_ROOT . '/css/view_paypal_transaction.css');
-	$GLOBALS['tf']->add_html_head_js_file(URL_ROOT . '/js/view_paypal_transaction.js');
+	$GLOBALS['tf']->add_html_head_css_file(URL_ROOT.'/css/view_paypal_transaction.css');
+	$GLOBALS['tf']->add_html_head_js_file(URL_ROOT.'/js/view_paypal_transaction.js');
 	//$transaction_types = get_paypal_transaction_types();
 	$db = clone $GLOBALS['tf']->db;
 	$module = get_module_name((isset($GLOBALS['tf']->variables->request['module']) ? $GLOBALS['tf']->variables->request['module'] : 'default'));
@@ -45,7 +45,7 @@ function view_cc_transaction() {
 				$key = str_replace('result_', '', $key);
 				$key = ucwords(str_replace('_', ' ', $key));
 				if ($key == 'Custid')
-					$transaction[$key] = $table->make_link('choice=none.edit_customer3&amp;lid=' . $value, $value, FALSE, 'target="_blank" title="Edit Customer"');
+					$transaction[$key] = $table->make_link('choice=none.edit_customer3&amp;lid='.$value, $value, FALSE, 'target="_blank" title="Edit Customer"');
 				$transaction[$key] = $value;
 			}
 			$transactions[] = $transaction;
@@ -56,7 +56,7 @@ function view_cc_transaction() {
 	$smarty->assign('transaction', $transaction);
 	$smarty->assign('paypal_cats', $cats);
 	$smarty->assign('module', $module);
-	if(isset($GLOBALS['tf']->variables->request['st_txt']))
+	if (isset($GLOBALS['tf']->variables->request['st_txt']))
 		$smarty->assign('st_txt', $GLOBALS['tf']->variables->request['st_txt']);
 	$smarty->assign('module', $module);
 	add_output($smarty->fetch('payments/view_cc_transaction.tpl'));

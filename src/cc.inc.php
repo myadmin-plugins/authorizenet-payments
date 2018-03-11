@@ -108,11 +108,11 @@ function get_locked_ccs() {
  */
 function select_cc_exp($default) {
 	$months = get_months();
-	$default_month = (int)mb_substr($default, 0, 2);
+	$default_month = (int) mb_substr($default, 0, 2);
 	$default_year = mb_substr($default, 3);
 	if (mb_strlen($default_year) == 2)
 		$default_year = '20'.$default_year;
-	$default_year = (int)$default_year;
+	$default_year = (int) $default_year;
 	$minyear = date('Y');
 	$maxyear = date('Y') + 10;
 	$out = '<select name=exp_month>';
@@ -184,7 +184,7 @@ function can_use_cc($data, $cc_holder = false, $check_disabled_cc = true, $cc_fi
 				$reason .= "  MaxMind Fraud Score is {$data['maxmind_score']}/10.";
 				$cc_usable = false;
 			}
-			if (!isset($data['maxmind_riskscore']))  {
+			if (!isset($data['maxmind_riskscore'])) {
 				$reason .= '  MaxMind Fraud Risk Score is blank';
 				$cc_usable = false;
 			} elseif ($data['maxmind_riskscore'] >= MAXMIND_RISKSCORE_DISABLE_CC) {
@@ -250,7 +250,7 @@ function make_cc_decline($custid, $invoice_id) {
 	if (DOMAIN == 'interserver.net' || trim(DOMAIN) == '')
 		$smarty->assign('url', 'my.interserver.net');
 	else
-		$smarty->assign('url', DOMAIN . URLDIR);
+		$smarty->assign('url', DOMAIN.URLDIR);
 	$ret_invoice['invoice'] = $smarty->fetch('email/client/ccdecline.tpl');
 	$ret_invoice['toname'] = $data['name'];
 	$ret_invoice['toemail'] = get_invoices_email($data);
@@ -272,8 +272,8 @@ function email_cc_decline($custid, $invoice_id) {
 	$headers = '';
 	$headers .= 'MIME-Version: 1.0'.EMAIL_NEWLINE;
 	$headers .= 'Content-type: text/html; charset=UTF-8'.EMAIL_NEWLINE;
-	$headers .= 'From: "'.$email['fromname'] . '" <' . $email['fromemail'].'>'.EMAIL_NEWLINE;
-	$headers .= 'Reply-To: "' . $email['fromname'] . '" <' . $email['fromemail'].'>'.EMAIL_NEWLINE;
+	$headers .= 'From: "'.$email['fromname'].'" <'.$email['fromemail'].'>'.EMAIL_NEWLINE;
+	$headers .= 'Reply-To: "'.$email['fromname'].'" <'.$email['fromemail'].'>'.EMAIL_NEWLINE;
 	myadmin_log('billing', 'debug', '	Emailing CC Decline Message To '.$email['toname'], __LINE__, __FILE__);
 	multi_mail($email['toemail'], $email['subject'], '<PRE>'.$email['invoice'].'</PRE>', $headers, 'client/ccdecline.tpl');
 }
@@ -326,7 +326,7 @@ function get_bad_cc() {
  * @throws \SmartyException
  */
 function charge_card($custid, $amount = false, $invoice = false, $module = 'default', $returnURL = false, $useHandlePayment = true) {
-	$custid = (int)$custid;
+	$custid = (int) $custid;
 	if ($invoice) {
 		if (!is_array($invoice))
 			$invoice = [$invoice];
@@ -361,7 +361,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 		}
 	}
 	$lid = $GLOBALS['tf']->accounts->cross_reference($custid);
-	$amount = round((float)$amount, 2);
+	$amount = round((float) $amount, 2);
 	// do some extra sanity checks
 	$name = explode(' ', (!isset($data['name']) || trim($data['name']) == '' ? str_replace('@', ' ', $data['account_lid']) : $data['name']));
 	$first_name = $name[0];
@@ -388,7 +388,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 	}
 	$cc_parts = explode('/', (isset($data['cc_exp']) ? trim(str_replace(' ', '', (strpos($data['cc_exp'], '/') !== false ? $data['cc_exp'] : substr($data['cc_exp'], 0, 2).'/'.substr($data['cc_exp'], 2)))) : date('m/Y')));
 	$cc_exp = $cc_parts[0].'/'.(isset($cc_parts[1]) ? (mb_strlen($cc_parts[1]) == 2 ? '20'.$cc_parts[1] : $cc_parts[1]) : date('Y'));
-	myadmin_log('billing', 'notice', "Charging {$lid} ({$data['status']}) ".($amount == $orig_amount ? $amount : $amount.' and the rest of the '.$orig_amount.' paid via prepay (had '.$prepay_amount.' prepays available)'). '} Using Creditcard ' . mask_cc($GLOBALS['tf']->decrypt($data['cc'])).' (disabled '.(isset($data['disable_cc']) && $data['disable_cc'] == 1 ? 'yes' : 'no').')', __LINE__, __FILE__);
+	myadmin_log('billing', 'notice', "Charging {$lid} ({$data['status']}) ".($amount == $orig_amount ? $amount : $amount.' and the rest of the '.$orig_amount.' paid via prepay (had '.$prepay_amount.' prepays available)').'} Using Creditcard '.mask_cc($GLOBALS['tf']->decrypt($data['cc'])).' (disabled '.(isset($data['disable_cc']) && $data['disable_cc'] == 1 ? 'yes' : 'no').')', __LINE__, __FILE__);
 	if ($amount == 0) {
 		// approve if they have no balance
 		$response['code'] = 1;
@@ -470,11 +470,11 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 				$email = "Module {$module}<br>Original Amount: {$orig_amount}<br>Prepay Amount {$prepay_amount}<br>Charged Amount {$amount}<br>Invoices ".implode(',', $invoice).'<br>';
 				admin_mail($subject, $email, get_default_mail_headers($settings), FALSE, 'client/payment_approved.tpl');
 			}
-			if($useHandlePayment === TRUE)
+			if ($useHandlePayment === TRUE)
 				handle_payment($custid, $orig_amount, $invoice, 11, $module, (isset($response['trans_id']) ? $response['trans_id'] : ''));
 			break;
 		default:
-			myadmin_log('billing', 'notice', 'FAILURE (custid:'.$custid.',exp:'.$data['cc_exp'].',cc:'.mask_cc($cc, TRUE).',amount:'.$amount.', code:'.$response['code'].') raw: ' . $cc_response, __LINE__, __FILE__);
+			myadmin_log('billing', 'notice', 'FAILURE (custid:'.$custid.',exp:'.$data['cc_exp'].',cc:'.mask_cc($cc, TRUE).',amount:'.$amount.', code:'.$response['code'].') raw: '.$cc_response, __LINE__, __FILE__);
 			if ($cc_log['cc_result_reason_text'] == 'Declined  (Card reported lost or stolen - Contact card issuer for resolution.)')
 				mail('billing@interserver.net', 'Stolen Credit Card', print_r($cc_log, TRUE), get_default_mail_headers($settings));
 			if (mb_strpos($cc_response, ',') === false) {
@@ -494,11 +494,11 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			if (!defined(DOMAIN) || in_array(DOMAIN, ['interserver.net', 'misha.interserver.net', 'mymisha.interserver.net']) || trim(DOMAIN) == '')
 				$smarty->assign('domain', 'my.interserver.net');
 			else
-				$smarty->assign('domain', DOMAIN . URLDIR);
+				$smarty->assign('domain', DOMAIN.URLDIR);
 			$rows = [];
 			if ($invoice) {
 				foreach ($invoice as $invoice_id) {
-					$invoice_id = (int)$invoice_id;
+					$invoice_id = (int) $invoice_id;
 					$db->query("select * from invoices where invoices_id={$invoice_id}", __LINE__, __FILE__);
 					if ($db->num_rows() > 0) {
 						$db->next_record(MYSQL_ASSOC);
@@ -547,7 +547,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
  * @return bool whether or not the charge was successfull.
  */
 function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $charge_desc = '', $override_data = false) {
-	$custid = (int)$custid;
+	$custid = (int) $custid;
 	$module = get_module_name($module);
 	$settings = \get_module_settings($module);
 	$db = get_module_db($module);
@@ -559,7 +559,7 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 		foreach ($override_data as $key => $value)
 			$data[$key] = $value;
 	}
-	$amount = round((float)$amount, 2);
+	$amount = round((float) $amount, 2);
 	// do some extra sanity checks
 	if (!isset($data['name']))
 		$data['name'] = '';

@@ -30,9 +30,9 @@ function charge_card_invoice() {
 	function_requirements('charge_card');
 	//$table->set_title($GLOBALS['modules'][$module]['TBLNAME'].' Services Package Management');
 	if ($GLOBALS['tf']->ima == 'client')
-		$db->query("select * from invoices where invoices_custid={$custid} and invoices_id='" . (int)$GLOBALS['tf']->variables->request['invoice'] . "'", __LINE__, __FILE__);
+		$db->query("select * from invoices where invoices_custid={$custid} and invoices_id='".(int) $GLOBALS['tf']->variables->request['invoice']."'", __LINE__, __FILE__);
 	else
-		$db->query("select * from invoices where invoices_id='" . (int)$GLOBALS['tf']->variables->request['invoice'] . "'", __LINE__, __FILE__);
+		$db->query("select * from invoices where invoices_id='".(int) $GLOBALS['tf']->variables->request['invoice']."'", __LINE__, __FILE__);
 	if ($db->num_rows() > 0) {
 		$db->next_record(MYSQL_ASSOC);
 		$data = $GLOBALS['tf']->accounts->read($db->Record['invoices_custid']);

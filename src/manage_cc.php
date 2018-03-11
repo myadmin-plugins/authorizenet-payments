@@ -31,7 +31,7 @@ function manage_cc() {
 				break;
 			}
 			$cc = $ccs[$idx];
-			$get_amount = false;
+			$get_amount = FALSE;
 			if (isset($data['cc_fails_'.$tf->decrypt($cc['cc'])]) && $data['cc_fails_'.$tf->decrypt($cc['cc'])] > 3) {
 				add_output('Reached the max number of tries to authenticate this card');
 			} else {
@@ -77,10 +77,10 @@ function manage_cc() {
 								'cc_amt2_'.$tf->decrypt($cc['cc']) => $amt2
 							                                              ]
 							);
-							$get_amount = true;
+							$get_amount = TRUE;
 						}
 					} else {
-						$get_amount = true;
+						$get_amount = TRUE;
 					}
 				} else {
 					myadmin_log('billing', 'info', 'Passed '.$tf->variables->request['cc_amount1'].' '.$tf->variables->request['cc_amount2'], __LINE__, __FILE__);
@@ -93,7 +93,7 @@ function manage_cc() {
 						if (isset($data['disable_cc'])) {
 							foreach ($GLOBALS['modules'] as $module => $settings) {
 								$tcustid = convert_custid($tf->session->account_id, $module);
-								if ($tcustid !== false) {
+								if ($tcustid !== FALSE) {
 									$tf->accounts->set_db_module($module);
 									$tf->accounts->remove_key($tcustid, 'disable_cc');
 								}
@@ -101,7 +101,7 @@ function manage_cc() {
 						}
 						foreach ($GLOBALS['modules'] as $module => $settings) {
 							$tcustid = convert_custid($tf->session->account_id, $module);
-							if ($tcustid !== false) {
+							if ($tcustid !== FALSE) {
 								$tf->accounts->set_db_module($module);
 								$tf->accounts->update($tcustid, [
 									'payment_method' => 'cc',
@@ -113,12 +113,12 @@ function manage_cc() {
 						$tf->redirect($tf->link('index.php', 'choice=none.manage_cc&orig_url='.htmlspecial($orig_url)));
 					} else {
 						dialog('Verification Failed', 'Verification Failed. The values you have entered did not match the charged amounts. Please verify the values and try again. Only a limited amount of attempts is allowed before the account is locked. Please contact support if you need assistance.');
-						$get_amount = true;
+						$get_amount = TRUE;
 						$tf->accounts->update($tf->session->account_id, ['cc_fails_'.$tf->decrypt($cc['cc']) => isset($data['cc_fails_'.$tf->decrypt($cc['cc'])]) ? 1 + $data['cc_fails_'.$tf->decrypt($cc['cc'])] : 1]);
 					}
 				}
 			}
-			if ($get_amount == true) {
+			if ($get_amount == TRUE) {
 				$table = new TFTable;
 				$table->csrf('manage_cc_verify');
 				$table->add_hidden('orig_url', htmlspecial($orig_url));
@@ -147,7 +147,7 @@ function manage_cc() {
 				$idx = (int)$tf->variables->request['idx'];
 				foreach ($GLOBALS['modules'] as $module => $settings) {
 					$tcustid = convert_custid($GLOBALS['tf']->session->account_id, $module);
-					if ($tcustid !== false) {
+					if ($tcustid !== FALSE) {
 						$GLOBALS['tf']->accounts->set_db_module($module);
 						$GLOBALS['tf']->accounts->update($tcustid, [
 							'payment_method' => 'cc',
@@ -170,7 +170,7 @@ function manage_cc() {
 					$new_data['cc'] = '';
 				foreach ($GLOBALS['modules'] as $module => $settings) {
 					$tcustid = convert_custid($tf->session->account_id, $module);
-					if ($tcustid !== false) {
+					if ($tcustid !== FALSE) {
 						$tf->accounts->set_db_module($module);
 						$tf->accounts->update($tcustid, $new_data);
 					}
@@ -213,7 +213,7 @@ function manage_cc() {
 				}
 				foreach ($GLOBALS['modules'] as $module => $settings) {
 					$tcustid = convert_custid($tf->session->account_id, $module);
-					if ($tcustid !== false) {
+					if ($tcustid !== FALSE) {
 						$tf->accounts->set_db_module($module);
 						$tf->accounts->update($tcustid, $new_data);
 					}
@@ -235,18 +235,18 @@ function manage_cc() {
 			break;
 		case 'default':
 		default:
-			$payment_settings = false;
+			$payment_settings = FALSE;
 			$fields = ['payment_method'];
 			$methods = ['paypal'];
 			if (can_use_cc($data, FALSE, FALSE)) {
 				$fields[] = 'cc_auto';
-				$payment_settings = true;
+				$payment_settings = TRUE;
 				$methods[] = 'cc';
 			}
 			$new_data = [];
 			foreach ($fields as $field)
 				if (isset($tf->variables->request[$field])) {
-					if ($field == 'payment_method' && $payment_settings === false && !in_array($tf->variables->request[$field], $methods)) {
+					if ($field == 'payment_method' && $payment_settings === FALSE && !in_array($tf->variables->request[$field], $methods)) {
 						add_output('Invalid Payment Method Specified');
 					} else {
 						$new_data[$field] = $tf->variables->request[$field];
@@ -266,7 +266,7 @@ function manage_cc() {
 			if (count($new_data) > 0 && verify_csrf('manage_cc'))
 				foreach ($GLOBALS['modules'] as $module => $settings) {
 					$tcustid = convert_custid($tf->session->account_id, $module);
-					if ($tcustid !== false) {
+					if ($tcustid !== FALSE) {
 						$tf->accounts->set_db_module($module);
 						$tf->accounts->update($tcustid, $new_data);
 					}
@@ -296,20 +296,20 @@ All credit cards must be verified before they can be used.  To verify them click
 				$table->add_field('Ending In '.mb_substr($cc_hidden, mb_strlen($cc_hidden) - 4), 'l');
 				$table->set_col_options('style="border-top: 1px solid gray;"');
 				if (can_use_cc($data, $cc, FALSE))
-					$verified = true;
+					$verified = TRUE;
 				else
-					$verified = false;
+					$verified = FALSE;
 				if (isset($data['cc']) && isset($cc['cc']) && $tf->decrypt($cc['cc']) == $tf->decrypt($data['cc'])) {
 					$table->add_field('<a href="" style="color: white; padding: 0.1em 0.5em; background: none repeat-x scroll 50% 50% #c67605; border-radius: 10px;" class="ui-button ui-widget ui-state-hover ui-corner-all">Primary Billing Source</a>', 'r');
 				} else {
-					if ($verified == true)
+					if ($verified == TRUE)
 						$table->add_field('<a href="'.$tf->link('index.php', 'choice=none.manage_cc&action=primary&orig_url='.htmlspecial($orig_url).'&idx='.$idx).'" style="padding: 0.1em 0.5em; border-radius: 10px;" class="ui-button ui-widget ui-state-hover ui-corner-all">Make Primary</a>', 'r');
 					else
 						$table->add_field();
 				}
 				$table->set_col_options('style="border-top: 1px solid gray;"');
 				$table->add_field($cc['cc_exp']);
-				if ($verified == true) {
+				if ($verified == TRUE) {
 					$table->set_col_options('style="border-top: 1px solid gray;"');
 					$table->add_field('<a href="" style="padding: 0.1em 0.5em; border-radius: 10px;" class="ui-button ui-widget ui-state-hover ui-corner-all">Verified</a>');
 				} else {
@@ -320,15 +320,15 @@ All credit cards must be verified before they can be used.  To verify them click
 				$table->add_field('<a href="'.$tf->link('index.php', 'choice=none.manage_cc&action=delete&orig_url='.htmlspecial($orig_url).'&idx='.$idx).'" style="color: white; padding: 0.1em 0.5em; background: none repeat-x scroll 50% 50% #cc433c; border-radius: 10px;" class="ui-button ui-widget ui-state-hover ui-corner-all" >Remove</a>');
 				$table->add_row();
 			}
-			if ($payment_settings == true) {
+			if ($payment_settings == TRUE) {
 				$table->set_colspan(2);
-				$table->add_field($table->make_radio('payment_method', 'paypal', (isset($data['payment_method']) && $data['payment_method'] == 'paypal' ? true : false), '', 'Pay With PayPal') . $table->make_radio('payment_method', 'cc', (isset($data['payment_method']) && $data['payment_method'] == 'cc' ? true : false), '', '<span title="Add a Credit-Card First">Pay With Credit-Card</span>'), 'l');
+				$table->add_field($table->make_radio('payment_method', 'paypal', (isset($data['payment_method']) && $data['payment_method'] == 'paypal' ? TRUE : FALSE), '', 'Pay With PayPal') . $table->make_radio('payment_method', 'cc', (isset($data['payment_method']) && $data['payment_method'] == 'cc' ? TRUE : FALSE), '', '<span title="Add a Credit-Card First">Pay With Credit-Card</span>'), 'l');
 				$table->add_field('Automatically Charge CC');
 				$table->add_field(make_select('cc_auto', ['0', '1'], ['No', 'Yes'], (isset($data['cc_auto']) ? $data['cc_auto'] : '1')));
 				$table->add_field($table->make_submit('Update', FALSE, FALSE, 'style="color: white; padding: 0.1em 0.5em; background: none repeat-x scroll 50% 50% #004ccc; border-radius: 10px;" class="ui-button ui-widget ui-state-hover ui-corner-all"'));
 			} else {
 				$table->set_colspan(4);
-				$table->add_field($table->make_radio('payment_method', 'paypal', (isset($data['payment_method']) && $data['payment_method'] == 'paypal' ? true : false), '', 'Pay With PayPal') . $table->make_radio('payment_method', 'cc', FALSE, 'disabled="disabled" title="Add a Credit-Card First"', '<span title="Add a Credit-Card First">Pay With Credit-Card</span>'), 'l');
+				$table->add_field($table->make_radio('payment_method', 'paypal', (isset($data['payment_method']) && $data['payment_method'] == 'paypal' ? TRUE : FALSE), '', 'Pay With PayPal') . $table->make_radio('payment_method', 'cc', FALSE, 'disabled="disabled" title="Add a Credit-Card First"', '<span title="Add a Credit-Card First">Pay With Credit-Card</span>'), 'l');
 				$table->add_field($table->make_submit('Update', FALSE, FALSE, 'style="color: white; padding: 0.1em 0.5em; background: none repeat-x scroll 50% 50% #004ccc; border-radius: 10px;" class="ui-button ui-widget ui-state-hover ui-corner-all"'));
 			}
 			$table->add_row();
@@ -338,7 +338,7 @@ All credit cards must be verified before they can be used.  To verify them click
 	if (isset($tf->variables->request['returnURL']))
 		$tf->session->appsession('returnURL', $tf->variables->request['returnURL']);
 	$returnURL = $tf->session->appsession('returnURL');
-	if ($returnURL !== null) {
+	if ($returnURL !== NULL) {
 		add_output('<a href="'.$tf->link('index.php', base64_decode($returnURL)).'" style="color: white; padding: 0.1em 0.5em; background: none repeat-x scroll 50% 50% #004ccc; border-radius: 10px;" class="ui-button ui-widget ui-state-hover ui-corner-all" >Return To Order</a>');
 	} else {
 		add_output('<a href="'.$tf->link('index.php', 'choice=none.view_balance').'" style="color: white; padding: 0.1em 0.5em; background: none repeat-x scroll 50% 50% #004ccc; border-radius: 10px;" class="ui-button ui-widget ui-state-hover ui-corner-all" >View Balance / Make Payment</a>');
