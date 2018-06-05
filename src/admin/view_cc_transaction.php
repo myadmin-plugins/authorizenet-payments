@@ -45,7 +45,7 @@ function view_cc_transaction() {
 				$key = str_replace('result_', '', $key);
 				$key = ucwords(str_replace('_', ' ', $key));
 				if ($key == 'Custid')
-					$transaction[$key] = $table->make_link('choice=none.edit_customer3&amp;lid='.$value, $value, FALSE, 'target="_blank" title="Edit Customer"');
+					$transaction[$key] = $table->make_link('choice=none.edit_customer&amp;lid='.$value, $value, FALSE, 'target="_blank" title="Edit Customer"');
 				$transaction[$key] = $value;
 			}
 			$transactions[] = $transaction;
