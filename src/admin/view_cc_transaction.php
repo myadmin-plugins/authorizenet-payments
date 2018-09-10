@@ -7,7 +7,8 @@
 * @category Billing
 */
 
-function view_cc_transaction() {
+function view_cc_transaction()
+{
 	page_title('Credit Card Transaction Information');
 	function_requirements('has_acl');
 	if ($GLOBALS['tf']->ima != 'admin' || !has_acl('view_customer')) {
@@ -35,8 +36,8 @@ function view_cc_transaction() {
 		$db->query($query);
 	}
 	$table = new TFtable;
-		$transactions = [];
-		$smarty = new TFSmarty;
+	$transactions = [];
+	$smarty = new TFSmarty;
 	if ($db->num_rows() > 0) {
 		$transaction = [];
 		while ($db->next_record(MYSQL_ASSOC)) {
@@ -44,8 +45,9 @@ function view_cc_transaction() {
 				$key = str_replace('cc_', '', $key);
 				$key = str_replace('result_', '', $key);
 				$key = ucwords(str_replace('_', ' ', $key));
-				if ($key == 'Custid')
-					$transaction[$key] = $table->make_link('choice=none.edit_customer&amp;lid='.$value, $value, FALSE, 'target="_blank" title="Edit Customer"');
+				if ($key == 'Custid') {
+					$transaction[$key] = $table->make_link('choice=none.edit_customer&amp;lid='.$value, $value, false, 'target="_blank" title="Edit Customer"');
+				}
 				$transaction[$key] = $value;
 			}
 			$transactions[] = $transaction;
@@ -56,8 +58,9 @@ function view_cc_transaction() {
 	$smarty->assign('transaction', $transaction);
 	$smarty->assign('paypal_cats', $cats);
 	$smarty->assign('module', $module);
-	if (isset($GLOBALS['tf']->variables->request['st_txt']))
+	if (isset($GLOBALS['tf']->variables->request['st_txt'])) {
 		$smarty->assign('st_txt', $GLOBALS['tf']->variables->request['st_txt']);
+	}
 	$smarty->assign('module', $module);
 	add_output($smarty->fetch('payments/view_cc_transaction.tpl'));
 }
@@ -65,7 +68,8 @@ function view_cc_transaction() {
 /**
  * @return array
  */
-function get_cc_cats_and_fields() {
+function get_cc_cats_and_fields()
+{
 	return [
 		[
 			'name' => 'Transaction and Notification Information',

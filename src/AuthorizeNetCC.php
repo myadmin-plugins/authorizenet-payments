@@ -2,7 +2,8 @@
 /**
 * Class contains credit card functions
 */
-class AuthorizeNetCC {
+class AuthorizeNetCC
+{
 
 	// Initializing authorize.net api login credentials and other details
 	private $Auth_Data = [
@@ -23,14 +24,17 @@ class AuthorizeNetCC {
 	 * @return array|string
 	 * @description To refund Credit Card transactions which are less than 120 days
 	 */
-	public function refund($cc_num, $trans_id, $amount, $custid) {
-
-		if (!$cc_num)
+	public function refund($cc_num, $trans_id, $amount, $custid)
+	{
+		if (!$cc_num) {
 			return 'Error! Credit card Number is empty';
-		if (!$trans_id)
+		}
+		if (!$trans_id) {
 			return 'Error! Transaction id is empty';
-		if (!$amount)
+		}
+		if (!$amount) {
 			return 'Error! Amount is empty';
+		}
 		$this->Auth_Data['x_type'] = 'CREDIT';
 		$this->Auth_Data['x_trans_id'] = $trans_id;
 		$this->Auth_Data['x_card_num'] = $cc_num;
@@ -53,11 +57,13 @@ class AuthorizeNetCC {
 		$rargs = $this->Auth_Data;
 		unset($rargs['x_Login'], $rargs['x_Password'], $rargs['x_Delim_Data'], $rargs['x_Encap_Char']);
 		if (!empty($rargs)) {
-			foreach ($rargs as $field => $value)
-				if (mb_substr(strtolower($field), 2) == 'trans_id')
+			foreach ($rargs as $field => $value) {
+				if (mb_substr(strtolower($field), 2) == 'trans_id') {
 					$cc_log['cc_result_'.mb_substr(strtolower($field), 2)] = $value;
-				else
+				} else {
 					$cc_log['cc_request_'.mb_substr(strtolower($field), 2)] = $value;
+				}
+			}
 		}
 		$fields = [
 			'code', 'subcode', 'reason_code', 'reason_text', 'auth_code', 'avs_code', 'trans_id', 'invoice_num', 'description', 'amount',
@@ -71,8 +77,9 @@ class AuthorizeNetCC {
 		foreach ($tresponse as $idx => $value) {
 			if (isset($fields[$idx]) && $fields[$idx] != '') {
 				$response[$fields[$idx]] = $value;
-				if ($value != '')
+				if ($value != '') {
 					$cc_log['cc_result_'.$fields[$idx]] = $value;
+				}
 			}
 		}
 		if ($tresponse['0'] == 1) {
@@ -94,10 +101,14 @@ class AuthorizeNetCC {
 	 * @return array|string
 	 * @description To void Credit Card transactions
 	 */
-	public function voidTransaction($trans_id, $cc_num, $custid) {
-
-		if (!$cc_num) return 'Error! Credit card Number is empty';
-		if (!$trans_id) return 'Error! Transaction id is empty';
+	public function voidTransaction($trans_id, $cc_num, $custid)
+	{
+		if (!$cc_num) {
+			return 'Error! Credit card Number is empty';
+		}
+		if (!$trans_id) {
+			return 'Error! Transaction id is empty';
+		}
 
 		$this->Auth_Data['x_type'] = 'Void';
 		$this->Auth_Data['x_trans_id'] = $trans_id;
@@ -119,15 +130,17 @@ class AuthorizeNetCC {
 		$rargs = $this->Auth_Data;
 		unset($rargs['x_Login'], $rargs['x_Password'], $rargs['x_Delim_Data'], $rargs['x_Encap_Char']);
 		if (!empty($rargs)) {
-			foreach ($rargs as $field => $value)
+			foreach ($rargs as $field => $value) {
 				$cc_log['cc_request_'.mb_substr(strtolower($field), 2)] = $value;
+			}
 		}
 		$fields = ['code', 'subcode', 'reason_code', 'reason_text', 'auth_code', 'avs_code', 'trans_id', 'invoice_num', 'description', 'amount', 'method', 'trans_type', 'customer_id', 'first_name', 'last_name', 'company', 'address', 'city', 'state', 'zip', 'country', 'phone', 'fax', 'email', 'shipto_last_name', 'shipto_first_name', 'shipto_company', 'shipto_address', 'shipto_city', 'shipto_state', 'shipto_zip', 'shipto_country', 'tax', 'duty', 'freight', 'tax_exempt', 'purchase_order_num', 'md5', 'card_code', 'card_verification', '', '', '', '', '', '', '', '', '', '', 'account_num', 'card_type', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
 		foreach ($tresponse as $idx => $value) {
 			if ($fields[$idx] != '') {
 				$response[$fields[$idx]] = $value;
-				if ($value != '')
+				if ($value != '') {
 					$cc_log['cc_result_'.$fields[$idx]] = $value;
+				}
 			}
 		}
 		if (isset($cc_log['cc_request_trans_id'])) {

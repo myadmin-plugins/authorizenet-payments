@@ -5,7 +5,8 @@
  * @param $data
  * @return array
  */
-function verify_cc_charge($cc, $data) {
+function verify_cc_charge($cc, $data)
+{
 	$tf = $GLOBALS['tf'];
 	$return = [
 		'status' => '',
@@ -29,7 +30,7 @@ function verify_cc_charge($cc, $data) {
 			$tf->accounts->update($data['account_id'], [
 				'cc_amt1_'.$cc_decrypted => $amt1,
 				'cc_amt2_'.$cc_decrypted => $amt2
-			                                         ]
+													 ]
 			);
 			$return['status'] = 'ok';
 			$return['text'] = 'Successfully Charged Card';
@@ -46,7 +47,8 @@ function verify_cc_charge($cc, $data) {
  * @param $data
  * @return array
  */
-function verify_cc($cc, $data) {
+function verify_cc($cc, $data)
+{
 	$tf = $GLOBALS['tf'];
 	$return = [
 		'status' => '',
@@ -69,23 +71,24 @@ function verify_cc($cc, $data) {
 		$return['text'] = 'The Values matched!';
 		foreach ($GLOBALS['modules'] as $module => $settings) {
 			$tcustid = convert_custid($data['account_id'], $module);
-			if ($tcustid !== FALSE) {
+			if ($tcustid !== false) {
 				$tf->accounts->set_db_module($module);
-				if (isset($data['disable_cc']))
+				if (isset($data['disable_cc'])) {
 					$tf->accounts->remove_key($tcustid, 'disable_cc');
+				}
 				$tf->accounts->update($tcustid, [
 					'payment_method' => 'cc',
 					'cc' => $cc['cc'],
 					'cc_exp' => $cc['cc_exp'],
 					'cc_auth_'.$cc_decrypted => 1
-				                              ]
+											  ]
 				);
 			}
 		}
 	} else {
 		$tf->accounts->update($data['account_id'], [
 			'cc_fails_'.$cc_decrypted => isset($data['cc_fails_'.$cc_decrypted]) ? 1 + $data['cc_fails_'.$cc_decrypted] : 1
-		                                         ]
+												 ]
 		);
 		$return['text'] = 'Verification Failed. The values you have entered did not match the charged amounts. Please verify the values and try again. Only a limited amount of attempts is allowed before the account is locked. Please contact support if you need assistance.';
 		$return['status'] = 'failed';

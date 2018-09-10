@@ -13,19 +13,22 @@
 * @param bool $last
 * @return string
 */
-function mask_cc($cc, $last = true) {
+function mask_cc($cc, $last = true)
+{
 	if (mb_strlen($cc) > 6) {
 		$len = mb_strlen($cc) - 4;
 		$new = '';
 		if ($last === true) {
 			$out = '';
-			for ($x = 0; $x < $len; $x++)
+			for ($x = 0; $x < $len; $x++) {
 				$out .= '*';
+			}
 			$out .= mb_substr($cc, $len);
 		} else {
 			$out = mb_substr($cc, 0, 4);
-			for ($x = 0; $x < $len; $x++)
+			for ($x = 0; $x < $len; $x++) {
 				$out .= '*';
+			}
 		}
 		return $out;
 	}
@@ -38,7 +41,8 @@ function mask_cc($cc, $last = true) {
  * @param $cc
  * @return bool
  */
-function valid_cc($cc) {
+function valid_cc($cc)
+{
 	$schemes = [
 		'AMEX' => [
 			'/^3[47][0-9]{13}$/'
@@ -79,24 +83,29 @@ function valid_cc($cc) {
 		]
 	];
 	foreach ($schemas as $cc_type => $cc_regexes) {
-		foreach ($cc_regexes as $cc_regex)
-			if (preg_match($cc_regex, $cc))
+		foreach ($cc_regexes as $cc_regex) {
+			if (preg_match($cc_regex, $cc)) {
 				return true;
+			}
+		}
 	}
 }
 
 /**
  * @return array
  */
-function get_locked_ccs() {
+function get_locked_ccs()
+{
 	$ccs = [];
 	$accs = [];
 	$db = $GLOBALS['tf']->db;
 	$db->query("select account_value from accounts, accounts_ext where account_status='locked' and accounts.account_id=accounts_ext.account_id and account_key='cc' group by account_value", __LINE__,
 		__FILE__);
-	while ($db->next_record(MYSQL_ASSOC))
-		if (mb_strlen($db->Record['account_value']) > 10)
+	while ($db->next_record(MYSQL_ASSOC)) {
+		if (mb_strlen($db->Record['account_value']) > 10) {
 			$ccs[] = $db->Record['account_value'];
+		}
+	}
 	return $ccs;
 }
 
@@ -106,12 +115,14 @@ function get_locked_ccs() {
  * @param string default the current expiration date
  * @return string returns a select box of possible expiration dates
  */
-function select_cc_exp($default) {
+function select_cc_exp($default)
+{
 	$months = get_months();
 	$default_month = (int) mb_substr($default, 0, 2);
 	$default_year = mb_substr($default, 3);
-	if (mb_strlen($default_year) == 2)
+	if (mb_strlen($default_year) == 2) {
 		$default_year = '20'.$default_year;
+	}
 	$default_year = (int) $default_year;
 	$minyear = date('Y');
 	$maxyear = date('Y') + 10;
@@ -150,9 +161,11 @@ function select_cc_exp($default) {
  * @param bool $set_global_reason defaults to false, set to true to set a global cc_reason field w/ the reason why it was denied.
  * @return bool true if they can use cc's, false otherwise.
  */
-function can_use_cc($data, $cc_holder = false, $check_disabled_cc = true, $cc_field = 'cc', $set_global_reason = false) {
-	if ($cc_holder == false)
+function can_use_cc($data, $cc_holder = false, $check_disabled_cc = true, $cc_field = 'cc', $set_global_reason = false)
+{
+	if ($cc_holder == false) {
 		$cc_holder = $data;
+	}
 	// Alternate logic for the same thing, this just figures it out in reverse and in a single if statement.
 	// The new code adds a loggable reason for denying the use.
 	/*
@@ -197,8 +210,9 @@ function can_use_cc($data, $cc_holder = false, $check_disabled_cc = true, $cc_fi
 			}
 		}
 	}
-	if ($set_global_reason === true)
+	if ($set_global_reason === true) {
 		$GLOBALS['cc_reason'] = trim($reason);
+	}
 	if ($cc_usable == false) {
 		$reason = trim($reason);
 		//myadmin_log('billing', 'debug', "can_use_cc() returned false because: {$reason}", __LINE__, __FILE__);
@@ -211,11 +225,13 @@ function can_use_cc($data, $cc_holder = false, $check_disabled_cc = true, $cc_fi
  *
  * @return string the properly formatted expiration date
  */
-function format_cc_exp() {
+function format_cc_exp()
+{
 	$exp_month = (isset($GLOBALS['tf']->variables->request['exp_month']) ? $GLOBALS['tf']->variables->request['exp_month'] : 1);
 	$exp_year = (isset($GLOBALS['tf']->variables->request['exp_year']) ? $GLOBALS['tf']->variables->request['exp_year'] : date('Y'));
-	if (mb_strlen($exp_month) == 1)
+	if (mb_strlen($exp_month) == 1) {
 		$exp_month = '0'.$exp_month;
+	}
 	$value = $exp_month.'/'.$exp_year;
 	return $value;
 }
@@ -229,7 +245,8 @@ function format_cc_exp() {
  * @throws \Exception
  * @throws \SmartyException
  */
-function make_cc_decline($custid, $invoice_id) {
+function make_cc_decline($custid, $invoice_id)
+{
 	$admin_dir = INSTALL_ROOT;
 	$data = $GLOBALS['tf']->accounts->read($custid);
 	$domain = $GLOBALS['tf']->accounts->cross_reference($custid);
@@ -247,10 +264,11 @@ function make_cc_decline($custid, $invoice_id) {
 	$smarty->assign('company_name', $groupinfo['account_lid']);
 	$invoice_data = get_invoice($invoice_id);
 	$smarty->assign('customer_balance', $invoice_data['invoices_amount']);
-	if (DOMAIN == 'interserver.net' || trim(DOMAIN) == '')
+	if (DOMAIN == 'interserver.net' || trim(DOMAIN) == '') {
 		$smarty->assign('url', 'my.interserver.net');
-	else
+	} else {
 		$smarty->assign('url', DOMAIN.URLDIR);
+	}
 	$ret_invoice['invoice'] = $smarty->fetch('email/client/ccdecline.tpl');
 	$ret_invoice['toname'] = $data['name'];
 	$ret_invoice['toemail'] = get_invoices_email($data);
@@ -267,7 +285,8 @@ function make_cc_decline($custid, $invoice_id) {
  * @param mixed $invoice_id
  * @return void
  */
-function email_cc_decline($custid, $invoice_id) {
+function email_cc_decline($custid, $invoice_id)
+{
 	$email = make_cc_decline($custid, $invoice_id);
 	$headers = '';
 	$headers .= 'MIME-Version: 1.0'.PHP_EOL;
@@ -284,7 +303,8 @@ function email_cc_decline($custid, $invoice_id) {
  * @param array $data account data array
  * @return array the ccs array parsed and decrypted
  */
-function parse_ccs($data) {
+function parse_ccs($data)
+{
 	$tf = $GLOBALS['tf'];
 	$ccs = (isset($data['ccs']) ? myadmin_unstringify($data['ccs']) : []);
 	$repl = [' ', '_', '-'];
@@ -292,13 +312,17 @@ function parse_ccs($data) {
 	if (isset($data['cc']) && $data['cc'] != '') {
 		$cc = trim(str_replace($repl, $with, trim($tf->decrypt($data['cc']))));
 		$found = false;
-		if (count($ccs) > 0)
-			foreach ($ccs as $temp_cc)
-				if (trim(str_replace($repl, $with, $tf->decrypt($temp_cc['cc']))) == $cc)
+		if (count($ccs) > 0) {
+			foreach ($ccs as $temp_cc) {
+				if (trim(str_replace($repl, $with, $tf->decrypt($temp_cc['cc']))) == $cc) {
 					$found = true;
-		if ($found == false)
+				}
+			}
+		}
+		if ($found == false) {
 			$ccs[] = ['cc' => $cc, 'cc_exp' => isset($data['cc_exp']) ? $data['cc_exp'] : ''];
-			//$ccs[] = array('cc' => $tf->encrypt($cc), 'cc_exp' => isset($data['cc_exp']) ? $data['cc_exp'] : '');
+		}
+		//$ccs[] = array('cc' => $tf->encrypt($cc), 'cc_exp' => isset($data['cc_exp']) ? $data['cc_exp'] : '');
 	}
 	return $ccs;
 }
@@ -308,7 +332,8 @@ function parse_ccs($data) {
  *
  * @return array array of cc #s
  */
-function get_bad_cc() {
+function get_bad_cc()
+{
 	return myadmin_unstringify(trim(file_get_contents(INCLUDE_ROOT.'/config/bad_ccs.json')));
 }
 
@@ -325,11 +350,13 @@ function get_bad_cc() {
  * @throws \Exception
  * @throws \SmartyException
  */
-function charge_card($custid, $amount = false, $invoice = false, $module = 'default', $returnURL = false, $useHandlePayment = true) {
+function charge_card($custid, $amount = false, $invoice = false, $module = 'default', $returnURL = false, $useHandlePayment = true)
+{
 	$custid = (int) $custid;
 	if ($invoice) {
-		if (!is_array($invoice))
+		if (!is_array($invoice)) {
 			$invoice = [$invoice];
+		}
 	}
 	$module = get_module_name($module);
 	$settings = \get_module_settings($module);
@@ -344,14 +371,16 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 	}
 	if (!isset($data['cc'])) {
 		global $webpage;
-		if (isset($webpage) && $webpage == true)
+		if (isset($webpage) && $webpage == true) {
 			dialog('No CC On File', 'We have no credit-card on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.');
+		}
 		return $retval;
 	}
 	if (!isset($data['cc_exp'])) {
 		global $webpage;
-		if (isset($webpage) && $webpage == true)
+		if (isset($webpage) && $webpage == true) {
 			dialog('No CC Expiration Date On File', 'We have no credit-card exp date on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.');
+		}
 		return $retval;
 	}
 	if ($amount === false) {
@@ -374,15 +403,17 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 	$cc = str_replace([' ', '_', '-'], ['', '', ''], $cc);
 	$badcc = get_bad_cc();
 	if (in_array($cc, $badcc)) {
-		if (isset($webpage) && $webpage == true)
+		if (isset($webpage) && $webpage == true) {
 			dialog('Bad CC Number', 'This Credit-Card Number has been determined unusable or bad.');
+		}
 		return $retval;
 	}
 	$orig_amount = $amount;
 	$prepay_amount = get_prepay_related_amount($invoice, $module);
 	if ($prepay_amount > 0) {
-		if ($amount - $prepay_amount < 0)
+		if ($amount - $prepay_amount < 0) {
 			$prepay_amount = $amount;
+		}
 		$amount = bcsub($amount, $prepay_amount, 2);
 		myadmin_log('billing', 'debug', "Now Amount {$amount}  Prepay {$prepay_amount}", __LINE__, __FILE__);
 	}
@@ -420,8 +451,9 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			'x_Card_Num' => isset($cc) ? $cc : '',
 			'x_Exp_Date' => $cc_exp
 		];
-		if (isset($GLOBALS['tf']->variables->request['cc_ccv2']) && in_array(mb_strlen($GLOBALS['tf']->variables->request['cc_ccv2']), [3, 4]))
+		if (isset($GLOBALS['tf']->variables->request['cc_ccv2']) && in_array(mb_strlen($GLOBALS['tf']->variables->request['cc_ccv2']), [3, 4])) {
 			$args['x_Card_Code'] = $GLOBALS['tf']->variables->request['cc_ccv2'];
+		}
 		if ($invoice) {
 			$args['x_Invoice_Num'] = implode(',', $invoice);
 			$args['x_Description'] = 'Payment For Invoice '.implode(',', $invoice);
@@ -442,14 +474,16 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 		];
 		$rargs = $args;
 		unset($rargs['x_Login'], $rargs['x_Password'], $rargs['x_Delim_Data'], $rargs['x_Encap_Char']);
-		foreach ($rargs as $field => $value)
+		foreach ($rargs as $field => $value) {
 			$cc_log['cc_request_'.mb_substr(strtolower($field), 2)] = $value;
+		}
 		$fields = ['code', 'subcode', 'reason_code', 'reason_text', 'auth_code', 'avs_code', 'trans_id', 'invoice_num', 'description', 'amount', 'method', 'customer_id', 'trans_type', 'first_name', 'last_name', 'company', 'address', 'city', 'state', 'zip', 'country', 'phone', 'fax', 'email', 'shipto_last_name', 'shipto_first_name', 'shipto_company', 'shipto_address', 'shipto_city', 'shipto_state', 'shipto_zip', 'shipto_country', 'tax', 'duty', 'freight', 'tax_exempt', 'purchase_order_num', 'md5', 'card_code', 'card_verification', '', '', '', '', '', '', '', '', '', '', 'account_num', 'card_type', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
 		foreach ($tresponse as $idx => $value) {
 			if (isset($fields[$idx]) && $fields[$idx] != '') {
 				$response[$fields[$idx]] = $value;
-				if ($value != '')
+				if ($value != '') {
 					$cc_log['cc_result_'.$fields[$idx]] = $value;
+				}
 			}
 		}
 		$db->query(make_insert_query('cc_log', $cc_log), __LINE__, __FILE__);
@@ -468,18 +502,20 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 				myadmin_log('billing', 'notice', '	CC Charge Successfully Used Partial Prepay Amount '.$prepay_amount, __LINE__, __FILE__);
 				$subject = 'CC Charge Auto Used Partial Prepay';
 				$email = "Module {$module}<br>Original Amount: {$orig_amount}<br>Prepay Amount {$prepay_amount}<br>Charged Amount {$amount}<br>Invoices ".implode(',', $invoice).'<br>';
-				admin_mail($subject, $email, get_default_mail_headers($settings), FALSE, 'client/payment_approved.tpl');
+				admin_mail($subject, $email, get_default_mail_headers($settings), false, 'client/payment_approved.tpl');
 			}
-			if ($useHandlePayment === TRUE)
+			if ($useHandlePayment === true) {
 				handle_payment($custid, $orig_amount, $invoice, 11, $module, (isset($response['trans_id']) ? $response['trans_id'] : ''));
+			}
 			break;
 		default:
-			myadmin_log('billing', 'notice', 'FAILURE (custid:'.$custid.',exp:'.$data['cc_exp'].',cc:'.mask_cc($cc, TRUE).',amount:'.$amount.', code:'.$response['code'].') raw: '.$cc_response, __LINE__, __FILE__);
-			if ($cc_log['cc_result_reason_text'] == 'Declined  (Card reported lost or stolen - Contact card issuer for resolution.)')
-				mail('billing@interserver.net', 'Stolen Credit Card', print_r($cc_log, TRUE), get_default_mail_headers($settings));
+			myadmin_log('billing', 'notice', 'FAILURE (custid:'.$custid.',exp:'.$data['cc_exp'].',cc:'.mask_cc($cc, true).',amount:'.$amount.', code:'.$response['code'].') raw: '.$cc_response, __LINE__, __FILE__);
+			if ($cc_log['cc_result_reason_text'] == 'Declined  (Card reported lost or stolen - Contact card issuer for resolution.)') {
+				mail('billing@interserver.net', 'Stolen Credit Card', print_r($cc_log, true), get_default_mail_headers($settings));
+			}
 			if (mb_strpos($cc_response, ',') === false) {
 				myadmin_log('billing', 'warning', 'Invalid cc response', __LINE__, __FILE__);
-				admin_mail('Invalid CreditCard Response', print_r($cc_log, TRUE), get_default_mail_headers($settings), FALSE, 'admin/cc_bad_response.tpl');
+				admin_mail('Invalid CreditCard Response', print_r($cc_log, true), get_default_mail_headers($settings), false, 'admin/cc_bad_response.tpl');
 				$response['code'] = 0;
 				return $retval;
 			}
@@ -491,10 +527,11 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			$smarty->assign('service_name', $settings['TBLNAME']);
 			$smarty->assign('company', $settings['TITLE']);
 			$smarty->assign('name', $data['name']);
-			if (!defined(DOMAIN) || in_array(DOMAIN, ['interserver.net', 'misha.interserver.net', 'mymisha.interserver.net']) || trim(DOMAIN) == '')
+			if (!defined(DOMAIN) || in_array(DOMAIN, ['interserver.net', 'misha.interserver.net', 'mymisha.interserver.net']) || trim(DOMAIN) == '') {
 				$smarty->assign('domain', 'my.interserver.net');
-			else
+			} else {
 				$smarty->assign('domain', DOMAIN.URLDIR);
+			}
 			$rows = [];
 			if ($invoice) {
 				foreach ($invoice as $invoice_id) {
@@ -511,8 +548,9 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 						if ($serviceInfo !== false) {
 							$row[$settings['TBLNAME'].' ID'] = $serviceInfo[$settings['PREFIX'].'_id'];
 							$row[ucwords(str_replace('_', ' ', $settings['TITLE_FIELD']))] = $serviceInfo[$settings['TITLE_FIELD']];
-							if (isset($settings['TITLE_FIELD2']) && $settings['TITLE_FIELD2'] != '')
+							if (isset($settings['TITLE_FIELD2']) && $settings['TITLE_FIELD2'] != '') {
 								$row[ucwords(str_replace('_', ' ', $settings['TITLE_FIELD2']))] = $serviceInfo[$settings['TITLE_FIELD2']];
+							}
 							$row[$settings['TBLNAME'].' Type'] = $serviceInfo[$settings['PREFIX'].'_type'];
 						}
 						$rows[] = $row;
@@ -520,8 +558,9 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 				}
 			}
 			if ($returnURL !== false) {
-				if ($returnURL === true)
+				if ($returnURL === true) {
 					$returnURL = $GLOBALS['tf']->link($_SERVER['REQUEST_URI']);
+				}
 				$smarty->assign('returnURL', $returnURL);
 			}
 			$smarty->assign('invoices', $rows);
@@ -546,7 +585,8 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
  * @param bool|array $override_data (optional) array of data
  * @return bool whether or not the charge was successfull.
  */
-function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $charge_desc = '', $override_data = false) {
+function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $charge_desc = '', $override_data = false)
+{
 	$custid = (int) $custid;
 	$module = get_module_name($module);
 	$settings = \get_module_settings($module);
@@ -556,13 +596,15 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 	$retval = false;
 	$data = $GLOBALS['tf']->accounts->read($custid);
 	if ($override_data !== false) {
-		foreach ($override_data as $key => $value)
+		foreach ($override_data as $key => $value) {
 			$data[$key] = $value;
+		}
 	}
 	$amount = round((float) $amount, 2);
 	// do some extra sanity checks
-	if (!isset($data['name']))
+	if (!isset($data['name'])) {
 		$data['name'] = '';
+	}
 	if (mb_strpos($data['name'], ' ') !== false) {
 		$name = explode(' ', $data['name']);
 	} else {
@@ -574,10 +616,11 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 	$lid = $GLOBALS['tf']->accounts->cross_reference($custid);
 	$response['code'] = 0;
 	$badcc = get_bad_cc();
-	if (in_array($cc, $badcc))
+	if (in_array($cc, $badcc)) {
 		return $retval;
+	}
 	$orig_amount = $amount;
-	myadmin_log('billing', 'notice', "Charging {$lid} ({$data['status']}) {$amount} Using Creditcard Ending In ".mask_cc($cc, TRUE), __LINE__, __FILE__);
+	myadmin_log('billing', 'notice', "Charging {$lid} ({$data['status']}) {$amount} Using Creditcard Ending In ".mask_cc($cc, true), __LINE__, __FILE__);
 	if ($amount == 0) {
 		// approve if they have no balance
 		$response['code'] = 1;
@@ -609,14 +652,15 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 			'x_Card_Num' => $cc,
 			'x_Exp_Date' => $cc_exp
 		];
-		if (isset($GLOBALS['tf']->variables->request['cc_ccv2']) && in_array(mb_strlen($GLOBALS['tf']->variables->request['cc_ccv2']), [3, 4]))
+		if (isset($GLOBALS['tf']->variables->request['cc_ccv2']) && in_array(mb_strlen($GLOBALS['tf']->variables->request['cc_ccv2']), [3, 4])) {
 			$args['x_Card_Code'] = $GLOBALS['tf']->variables->request['cc_ccv2'];
+		}
 		$options = [
 			CURLOPT_REFERER => 'https://admin.trouble-free.net/',
 			CURLOPT_SSL_VERIFYPEER => false, // whether or not to validate the ssl cert of the peer
 			// 'CURLOPT_CAINFO' => '/usr/share/curl/curl-ca-bundle.crt', // this option really is only useful if CURLOIPT_SSL_VERIFYPEER is TRUE
 		];
-		myadmin_log('billing', 'debug', 'CC Request: '.json_encode($args, TRUE), __LINE__, __FILE__);
+		myadmin_log('billing', 'debug', 'CC Request: '.json_encode($args, true), __LINE__, __FILE__);
 		$cc_response = getcurlpage('https://secure.authorize.net/gateway/transact.dll', $args, $options);
 		myadmin_log('billing', 'debug', 'CC Response: '.$cc_response, __LINE__, __FILE__);
 		$tresponse = str_getcsv($cc_response);
@@ -627,14 +671,16 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 		];
 		$rargs = $args;
 		unset($rargs['x_Login'], $rargs['x_Password'], $rargs['x_Delim_Data'], $rargs['x_Encap_Char']);
-		foreach ($rargs as $field => $value)
+		foreach ($rargs as $field => $value) {
 			$cc_log['cc_request_'.mb_substr(strtolower($field), 2)] = $value;
+		}
 		$fields = ['code', 'subcode', 'reason_code', 'reason_text', 'auth_code', 'avs_code', 'trans_id', 'invoice_num', 'description', 'amount', 'method', 'customer_id', 'trans_type', 'first_name', 'last_name', 'company', 'address', 'city', 'state', 'zip', 'country', 'phone', 'fax', 'email', 'shipto_last_name', 'shipto_first_name', 'shipto_company', 'shipto_address', 'shipto_city', 'shipto_state', 'shipto_zip', 'shipto_country', 'tax', 'duty', 'freight', 'tax_exempt', 'purchase_order_num', 'md5', 'card_code', 'card_verification', '', '', '', '', '', '', '', '', '', '', 'account_num', 'card_type', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
 		foreach ($tresponse as $idx => $value) {
 			if (array_key_exists($idx, $fields) && $fields[$idx] != '') {
 				$response[$fields[$idx]] = $value;
-				if ($value != '')
+				if ($value != '') {
 					$cc_log['cc_result_'.$fields[$idx]] = $value;
+				}
 			}
 		}
 		$db->query(make_insert_query('cc_log', $cc_log), __LINE__, __FILE__);
@@ -647,7 +693,7 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 			return $retval;
 			break;
 		default:
-			myadmin_log('billing', 'notice', 'FAILURE ('.$custid.' '.$cc_exp.' '.mask_cc($cc, TRUE).' '.$amount.')', __LINE__, __FILE__);
+			myadmin_log('billing', 'notice', 'FAILURE ('.$custid.' '.$cc_exp.' '.mask_cc($cc, true).' '.$amount.')', __LINE__, __FILE__);
 			return $retval;
 			break;
 	}
@@ -660,7 +706,8 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
  * @param string $cc the encrypted cc number
  * @return string the bank id number(bin)
  */
-function get_cc_bank_number($cc) {
+function get_cc_bank_number($cc)
+{
 	$cc = $GLOBALS['tf']->decrypt($cc);
 	return mb_substr($cc, 0, 6);
 }
@@ -671,7 +718,8 @@ function get_cc_bank_number($cc) {
  * @param string $cc the encrypted cc number
  * @return string the last 4 digits
  */
-function get_cc_last_four($cc) {
+function get_cc_last_four($cc)
+{
 	$cc = $GLOBALS['tf']->decrypt($cc);
 	return mb_substr($cc, -4);
 }

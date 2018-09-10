@@ -5,7 +5,8 @@
  * with name and description and the idx of each element matches
  * @return array an array of  idx => name/description fields for authorize.net
  */
-function get_authorizenet_fields() {
+function get_authorizenet_fields()
+{
 	$fields = [
 		[
 			'name' => 'Response Code',

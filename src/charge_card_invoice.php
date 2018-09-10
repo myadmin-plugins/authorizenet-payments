@@ -15,7 +15,8 @@
  * @throws \Exception
  * @throws \SmartyException
  */
-function charge_card_invoice() {
+function charge_card_invoice()
+{
 	$custid = $GLOBALS['tf']->session->account_id;
 	$db = clone $GLOBALS['tf']->db;
 	$module = 'default';
@@ -29,15 +30,16 @@ function charge_card_invoice() {
 	}
 	function_requirements('charge_card');
 	//$table->set_title($GLOBALS['modules'][$module]['TBLNAME'].' Services Package Management');
-	if ($GLOBALS['tf']->ima == 'client')
+	if ($GLOBALS['tf']->ima == 'client') {
 		$db->query("select * from invoices where invoices_custid={$custid} and invoices_id='".(int) $GLOBALS['tf']->variables->request['invoice']."'", __LINE__, __FILE__);
-	else
+	} else {
 		$db->query("select * from invoices where invoices_id='".(int) $GLOBALS['tf']->variables->request['invoice']."'", __LINE__, __FILE__);
+	}
 	if ($db->num_rows() > 0) {
 		$db->next_record(MYSQL_ASSOC);
 		$data = $GLOBALS['tf']->accounts->read($db->Record['invoices_custid']);
 		if ((!isset($data['disable_cc']) || $data['disable_cc'] != 1) && verify_csrf_referrer(__LINE__, __FILE__)) {
-			if (charge_card($db->Record['invoices_custid'], $db->Record['invoices_amount'], $db->Record['invoices_id'], $module, TRUE)) {
+			if (charge_card($db->Record['invoices_custid'], $db->Record['invoices_amount'], $db->Record['invoices_id'], $module, true)) {
 				dialog('Credit Card Charged', 'The Creditcard Charge has been accepted.');
 				add_output('The Creditcard Charge has been accepted.');
 			} else {

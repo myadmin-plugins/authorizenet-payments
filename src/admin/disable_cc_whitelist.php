@@ -12,12 +12,13 @@
  *
  * @return bool|void
  */
-function disable_cc_whitelist() {
+function disable_cc_whitelist()
+{
 	page_title('Disable/Remove From CC White-List');
 	function_requirements('has_acl');
 	if ($GLOBALS['tf']->ima != 'admin' || !has_acl('client_billing')) {
 		dialog('Not admin', 'Not Admin or you lack the permissions to view this page.');
-		return FALSE;
+		return false;
 	}
 	$customer = $GLOBALS['tf']->variables->request['customer'];
 	$module = get_module_name((isset($GLOBALS['tf']->variables->request['module']) ? $GLOBALS['tf']->variables->request['module'] : 'default'));
@@ -31,8 +32,9 @@ function disable_cc_whitelist() {
 			$GLOBALS['tf']->accounts->set_db_module($module);
 			$GLOBALS['tf']->history->set_db_module($module);
 			$custid = $GLOBALS['tf']->accounts->cross_reference($data['account_lid']);
-			if ($custid !== FALSE)
+			if ($custid !== false) {
 				$GLOBALS['tf']->accounts->update($custid, $new_data);
+			}
 		}
 		add_output('CC WhiteList Disabled');
 	}

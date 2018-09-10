@@ -12,7 +12,8 @@
  *
  * @return bool|void
  */
-function authorize_cc() {
+function authorize_cc()
+{
 	page_title('Enable/Add To CC White-List');
 	function_requirements('has_acl');
 	if ($GLOBALS['tf']->ima != 'admin' || !has_acl('client_billing')) {
@@ -32,8 +33,9 @@ function authorize_cc() {
 			$GLOBALS['tf']->accounts->set_db_module($module);
 			$GLOBALS['tf']->history->set_db_module($module);
 			$custid = $GLOBALS['tf']->accounts->cross_reference($data['account_lid']);
-			if ($custid !== false)
+			if ($custid !== false) {
 				$GLOBALS['tf']->accounts->update($custid, $new_data);
+			}
 		}
 		add_output('Authorized CC');
 	}

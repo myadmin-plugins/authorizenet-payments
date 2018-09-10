@@ -12,7 +12,8 @@
  *
  * @return bool|void
  */
-function disable_cc() {
+function disable_cc()
+{
 	page_title('Disable Clients Credit Card');
 	function_requirements('has_acl');
 	if ($GLOBALS['tf']->ima != 'admin' || !has_acl('client_billing')) {
@@ -32,11 +33,12 @@ function disable_cc() {
 			$GLOBALS['tf']->accounts->set_db_module($module);
 			$GLOBALS['tf']->history->set_db_module($module);
 			$customer = $GLOBALS['tf']->accounts->cross_reference($lid);
-			if ($customer !== false)
+			if ($customer !== false) {
 				$GLOBALS['tf']->accounts->update($customer, $new_data);
+			}
 		}
 		add_output('CC Disabled');
-		if(isset($GLOBALS['tf']->variables->request['rd']) && $GLOBALS['tf']->variables->request['rd'] === 'ec') {
+		if (isset($GLOBALS['tf']->variables->request['rd']) && $GLOBALS['tf']->variables->request['rd'] === 'ec') {
 			myadmin_log('admin', 'info', "Admin - {$GLOBALS['tf']->session->account_id} disabled cc and now back to requested page.", __LINE__, __FILE__);
 			$GLOBALS['tf']->redirect($GLOBALS['tf']->link('index.php', 'choice=none.edit_customer&customer='.$customer));
 		}

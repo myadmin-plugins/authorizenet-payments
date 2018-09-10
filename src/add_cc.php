@@ -18,24 +18,29 @@
  * @param bool $force optoinally enable force adding circumventing can_use_cc check
  * @return void
  */
-function add_cc_new_data($cc, $ccs, $data, $new_data, $prefix, $force = FALSE) {
+function add_cc_new_data($cc, $ccs, $data, $new_data, $prefix, $force = false)
+{
 	$tf = $GLOBALS['tf'];
-	$remove_key = FALSE;
-	if ($force === TRUE || can_use_cc($data, $tf->variables->request, FALSE, $prefix.'cc')) {
-		if (isset($data['disable_cc']) && $data['disable_cc'] == 1)
-			$remove_key = TRUE;
+	$remove_key = false;
+	if ($force === true || can_use_cc($data, $tf->variables->request, false, $prefix.'cc')) {
+		if (isset($data['disable_cc']) && $data['disable_cc'] == 1) {
+			$remove_key = true;
+		}
 		//if (!isset($data['cc']) || $data['cc'] == '' || $tf->decrypt($data['cc']) == '' || sizeof($ccs) == 1) {
-			$new_data['payment_method'] = 'cc';
-			$new_data['cc'] = $cc['cc'];
-			$new_data['cc_exp'] = $cc['cc_exp'];
-			foreach (['name', 'address', 'city', 'state', 'zip', 'country'] as $field)
-				if (isset($cc[$field]) && $cc[$field] != '')
-					$new_data[$field] = $cc[$field];
-			$new_data['ccs'] = myadmin_stringify($ccs, 'json');
-		//} else
-			//$new_data['ccs'] = myadmin_stringify($ccs, 'json');
-	} else
+		$new_data['payment_method'] = 'cc';
+		$new_data['cc'] = $cc['cc'];
+		$new_data['cc_exp'] = $cc['cc_exp'];
+		foreach (['name', 'address', 'city', 'state', 'zip', 'country'] as $field) {
+			if (isset($cc[$field]) && $cc[$field] != '') {
+				$new_data[$field] = $cc[$field];
+			}
+		}
 		$new_data['ccs'] = myadmin_stringify($ccs, 'json');
+	//} else
+			//$new_data['ccs'] = myadmin_stringify($ccs, 'json');
+	} else {
+		$new_data['ccs'] = myadmin_stringify($ccs, 'json');
+	}
 	$tf->accounts->update($data['account_id'], $new_data);
 }
 
@@ -49,7 +54,8 @@ function add_cc_new_data($cc, $ccs, $data, $new_data, $prefix, $force = FALSE) {
  * @throws \Exception
  * @parram bool $force
  */
-function add_cc($data, $prefix = '', $force = FALSE) {
+function add_cc($data, $prefix = '', $force = false)
+{
 	$tf = $GLOBALS['tf'];
 	$minimum_days = 30;
 	$max_early_ccs = 4;
@@ -62,18 +68,20 @@ function add_cc($data, $prefix = '', $force = FALSE) {
 	function_requirements('parse_ccs');
 	$ccs = parse_ccs($data);
 	$signupdays = get_signup_days($minimum_days);
-	if (isset($data['ccs_added']))
+	if (isset($data['ccs_added'])) {
 		$ccs_added = $data['ccs_added'];
-	else
+	} else {
 		$ccs_added = count($ccs);
-	if ($force !== TRUE && $tf->ima != 'admin' && $signupdays < $minimum_days && (!isset($data['cc_whitelist']) || $data['cc_whitelist'] != 1) && $ccs_added >= $max_early_ccs) {
+	}
+	if ($force !== true && $tf->ima != 'admin' && $signupdays < $minimum_days && (!isset($data['cc_whitelist']) || $data['cc_whitelist'] != 1) && $ccs_added >= $max_early_ccs) {
 		$return['status'] = 'error';
 		$return['text'] = "New Accounts (those under {$minimum_days} old) are limited to {$max_early_ccs} Credit-Cards until they have reached the {$minimum_days} days.";
 		return $return;
 	}
 	$new_data = [];
-	if (preg_match('/^[0-9][0-9][0-9][0-9]$/', $tf->variables->request[$prefix.'cc_exp']))
+	if (preg_match('/^[0-9][0-9][0-9][0-9]$/', $tf->variables->request[$prefix.'cc_exp'])) {
 		$tf->variables->request[$prefix.'cc_exp'] = mb_substr($tf->variables->request[$prefix.'cc_exp'], 0, 2).'/20'.mb_substr($tf->variables->request[$prefix.'cc_exp'], 2);
+	}
 	$cc = [
 		'cc' => $tf->encrypt(trim(str_replace([' ', '_', '-'], ['', '', ''], $tf->variables->request[$prefix.'cc']))),
 		'cc_exp' => trim(str_replace([' ', '_', '-'], ['', '', ''], $tf->variables->request[$prefix.'cc_exp']))
@@ -81,8 +89,9 @@ function add_cc($data, $prefix = '', $force = FALSE) {
 	foreach (['name', 'address', 'city', 'state', 'zip', 'country'] as $field) {
 		if (isset($tf->variables->request[$prefix.$field]) && $tf->variables->request[$prefix.$field] != '') {
 			$cc[$field] = $tf->variables->request[$prefix.$field];
-			if (!isset($data[$field]) && !isset($new_data[$field]))
+			if (!isset($data[$field]) && !isset($new_data[$field])) {
 				$new_data[$field] = $tf->variables->request[$prefix.$field];
+			}
 		}
 	}
 	$ccs[] = $cc;
@@ -104,7 +113,7 @@ function add_cc($data, $prefix = '', $force = FALSE) {
 	}
 	$data = $tf->accounts->read($data['account_id']);
 	$return['idx'] = $idx;
-	if (can_use_cc($data, $tf->variables->request, FALSE, $prefix.'cc')) {
+	if (can_use_cc($data, $tf->variables->request, false, $prefix.'cc')) {
 		$return['status'] = 'ok';
 		$return['text'] = $tf->link('index.php', 'choice=none.manage_payment_types');
 	} else {
