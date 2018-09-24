@@ -366,7 +366,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 	$retval = false;
 	$data = $GLOBALS['tf']->accounts->read($custid);
 	if (isset($data['disable_cc']) && $data['disable_cc'] == 1) {
-		dialog('CC Disabled', 'CC is currently disabled.  Please set it as the primary card again in manage payment types so we can try the card again.');
+		dialog('CC Disabled', 'Payment type credit card is currently unavailable. Remove the credit card(s) you have on file and add them again. If you continue having issues please contact us.');
 		return $retval;
 	}
 	if (!isset($data['cc'])) {
