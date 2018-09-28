@@ -1,5 +1,5 @@
 {
-	"name": "detain/authorizenet-payments",
+	"name": "detain/myadmin-authorizenet-payments",
 	"type": "myadmin-plugin",
 	"description": "Authorizenet handling plugin for MyAdmin",
 	"keywords": [
