@@ -44,7 +44,7 @@ class Plugin
 		if ($GLOBALS['tf']->ima == 'admin') {
 			function_requirements('has_acl');
 			if (has_acl('client_billing')) {
-				$menu->add_link('admin', 'choice=none.abuse_admin', '/lib/webhostinghub-glyphs-icons/icons/development-16/Black/icon-spam.png', 'Authorizenet');
+				$menu->add_link('admin', 'choice=none.abuse_admin', '/lib/webhostinghub-glyphs-icons/icons/development-16/Black/icon-spam.png', __('Authorizenet'));
 			}
 		}
 	}
@@ -54,7 +54,10 @@ class Plugin
 	 */
 	public static function getRequirements(GenericEvent $event)
 	{
-		$loader = $event->getSubject();
+        /**
+         * @var \MyAdmin\Plugins\Loader $this->loader
+         */
+        $loader = $event->getSubject();
 		$loader->add_page_requirement('charge_card_invoice', '/../vendor/detain/myadmin-authorizenet-payments/src/charge_card_invoice.php');
 		$loader->add_requirement('mask_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
 		$loader->add_requirement('valid_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
@@ -92,13 +95,16 @@ class Plugin
 	/**
 	 * @param \Symfony\Component\EventDispatcher\GenericEvent $event
 	 */
-	public static function getSettings(GenericEvent $event)
-	{
-		$settings = $event->getSubject();
-		$settings->add_radio_setting('Billing', 'Authorize.Net', 'authorizenet_enable', 'Enable Authorize.net', 'Enable Authorize.net', AUTHORIZENET_ENABLE, [true, false], ['Enabled', 'Disabled']);
-		$settings->add_text_setting('Billing', 'Authorize.Net', 'authorizenet_login', 'Login Name', 'Login Name', (defined('AUTHORIZENET_LOGIN') ? AUTHORIZENET_LOGIN : ''));
-		$settings->add_text_setting('Billing', 'Authorize.Net', 'authorizenet_password', 'Password', 'Password', (defined('AUTHORIZENET_PASSWORD') ? AUTHORIZENET_PASSWORD : ''));
-		$settings->add_text_setting('Billing', 'Authorize.Net', 'authorizenet_key', 'API Key', 'API Key', (defined('AUTHORIZENET_KEY') ? AUTHORIZENET_KEY : ''));
-		$settings->add_text_setting('Billing', 'Authorize.Net', 'authorizenet_referrer', 'Referrer URL (optional)', 'Referrer URL (optional)', (defined('AUTHORIZENET_REFERER') ? AUTHORIZENET_REFERER : ''));
+    public static function getSettings(GenericEvent $event)
+    {
+        /**
+         * @var \MyAdmin\Settings $settings
+         **/
+        $settings = $event->getSubject();
+		$settings->add_radio_setting(__('Billing'), __('Authorize.Net'), 'authorizenet_enable', __('Enable Authorize.net'), __('Enable Authorize.net'), AUTHORIZENET_ENABLE, [true, false], ['Enabled', 'Disabled']);
+		$settings->add_text_setting(__('Billing'), __('Authorize.Net'), 'authorizenet_login', __('Login Name'), __('Login Name'), (defined('AUTHORIZENET_LOGIN') ? AUTHORIZENET_LOGIN : ''));
+		$settings->add_text_setting(__('Billing'), __('Authorize.Net'), 'authorizenet_password', __('Password'), __('Password'), (defined('AUTHORIZENET_PASSWORD') ? AUTHORIZENET_PASSWORD : ''));
+		$settings->add_text_setting(__('Billing'), __('Authorize.Net'), 'authorizenet_key', __('API Key'), __('API Key'), (defined('AUTHORIZENET_KEY') ? AUTHORIZENET_KEY : ''));
+		$settings->add_text_setting(__('Billing'), __('Authorize.Net'), 'authorizenet_referrer', __('Referrer URL (optional)'), __('Referrer URL (optional)'), (defined('AUTHORIZENET_REFERER') ? AUTHORIZENET_REFERER : ''));
 	}
 }
