@@ -100,10 +100,10 @@ class Plugin
          * @var \MyAdmin\Settings $settings
          **/
         $settings = $event->getSubject();
-		$settings->add_radio_setting(__('Billing'), __('Authorize.Net'), 'authorizenet_enable', __('Enable Authorize.net'), __('Enable Authorize.net'), AUTHORIZENET_ENABLE, [true, false], ['Enabled', 'Disabled']);
-		$settings->add_text_setting(__('Billing'), __('Authorize.Net'), 'authorizenet_login', __('Login Name'), __('Login Name'), (defined('AUTHORIZENET_LOGIN') ? AUTHORIZENET_LOGIN : ''));
-		$settings->add_text_setting(__('Billing'), __('Authorize.Net'), 'authorizenet_password', __('Password'), __('Password'), (defined('AUTHORIZENET_PASSWORD') ? AUTHORIZENET_PASSWORD : ''));
-		$settings->add_text_setting(__('Billing'), __('Authorize.Net'), 'authorizenet_key', __('API Key'), __('API Key'), (defined('AUTHORIZENET_KEY') ? AUTHORIZENET_KEY : ''));
-		$settings->add_text_setting(__('Billing'), __('Authorize.Net'), 'authorizenet_referrer', __('Referrer URL (optional)'), __('Referrer URL (optional)'), (defined('AUTHORIZENET_REFERER') ? AUTHORIZENET_REFERER : ''));
+		$settings->add_radio_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_enable', _('Enable Authorize.net'), _('Enable Authorize.net'), AUTHORIZENET_ENABLE, [true, false], ['Enabled', 'Disabled']);
+		$settings->add_text_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_login', _('Login Name'), _('Login Name'), (defined('AUTHORIZENET_LOGIN') ? AUTHORIZENET_LOGIN : ''));
+		$settings->add_text_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_password', _('Password'), _('Password'), (defined('AUTHORIZENET_PASSWORD') ? AUTHORIZENET_PASSWORD : ''));
+		$settings->add_text_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_key', _('API Key'), _('API Key'), (defined('AUTHORIZENET_KEY') ? AUTHORIZENET_KEY : ''));
+		$settings->add_text_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_referrer', _('Referrer URL (optional)'), _('Referrer URL (optional)'), (defined('AUTHORIZENET_REFERER') ? AUTHORIZENET_REFERER : ''));
 	}
 }
