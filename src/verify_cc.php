@@ -72,7 +72,6 @@ function verify_cc($cc, $data)
 		foreach ($GLOBALS['modules'] as $module => $settings) {
 			$tcustid = convert_custid($data['account_id'], $module);
 			if ($tcustid !== false) {
-				$tf->accounts->set_db_module($module);
 				if (isset($data['disable_cc'])) {
 					$tf->accounts->remove_key($tcustid, 'disable_cc');
 				}

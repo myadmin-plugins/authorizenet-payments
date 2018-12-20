@@ -23,8 +23,6 @@ function enable_cc()
 	if (verify_csrf_referrer(__LINE__, __FILE__)) {
 		$module = get_module_name((isset($GLOBALS['tf']->variables->request['module']) ? $GLOBALS['tf']->variables->request['module'] : 'default'));
 		myadmin_log('admin', 'info', "Module $module", __LINE__, __FILE__);
-		$GLOBALS['tf']->accounts->set_db_module($module);
-		$GLOBALS['tf']->history->set_db_module($module);
 		$customer = $GLOBALS['tf']->variables->request['customer'];
 		myadmin_log('admin', 'info', "Customer $customer", __LINE__, __FILE__);
 		$data = $GLOBALS['tf']->accounts->read($customer);
@@ -33,8 +31,6 @@ function enable_cc()
 		$new_data['disable_cc'] = 0;
 		myadmin_log('admin', 'info', "LID $lid", __LINE__, __FILE__);
 		foreach ($GLOBALS['modules'] as $module => $settings) {
-			$GLOBALS['tf']->accounts->set_db_module($module);
-			$GLOBALS['tf']->history->set_db_module($module);
 			$customer = $GLOBALS['tf']->accounts->cross_reference($lid);
 			if ($customer !== false) {
 				$GLOBALS['tf']->accounts->update($customer, $new_data);

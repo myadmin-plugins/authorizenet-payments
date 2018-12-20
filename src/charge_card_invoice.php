@@ -25,8 +25,6 @@ function charge_card_invoice()
 		$module = get_module_name($module);
 		$db = get_module_db($module);
 		$custid = get_custid($custid, $module);
-		$GLOBALS['tf']->accounts->set_db_module($module);
-		$GLOBALS['tf']->history->set_db_module($module);
 	}
 	function_requirements('charge_card');
 	//$table->set_title($GLOBALS['modules'][$module]['TBLNAME'].' Services Package Management');
