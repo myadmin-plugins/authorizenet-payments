@@ -154,7 +154,7 @@ function select_cc_exp($default)
  * there maxmind score and riskscore are under their respective cut-off limits.  It will fail if the
  * RiskScore is not set but allows the Score to not be set (since its being phased out)
  *
- * @param array $data the clients data from \Accounts->read()
+ * @param array $data the clients data
  * @param array|bool|false $cc_holder optional array that has the 'cc' field in it containing the cc if you dont want ot use data (like from request or the $cc  (parsed $ccs) )
  * @param bool $check_disabled_cc
  * @param string $cc_field optional field to specify the field in the cc holder that contains the cc number.
