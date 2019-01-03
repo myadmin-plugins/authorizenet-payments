@@ -21,6 +21,7 @@ function cc_refund()
 	if (!isset($GLOBALS['tf']->variables->request['confirmation']) || !verify_csrf('cc_refund')) {
 		$db = clone $GLOBALS['tf']->db;
         $invoices_arr = explode(',', $GLOBALS['tf']->variables->request['inv']);
+        $invAmount = 0;
 		foreach ($invoices_arr as $invoiceID) {
 			$db->query("SELECT * FROM invoices WHERE invoices_extra = {$invoiceID}");
 			if($db->num_rows() > 0) {
