@@ -18,30 +18,44 @@ function cc_refund()
 		add_output('Transaction ID is empty!');
 		return;
 	}
+	$desc = "Credit Card Payment {$GLOBALS['tf']->variables->request['transact_id']}";
+	if (isset($GLOBALS['tf']->variables->request['amount']))
+		$transactAmount = $GLOBALS['tf']->variables->request['amount'];
+	$db = clone $GLOBALS['tf']->db;
+	$db->query("SELECT * FROM invoices WHERE invoices_description = '$desc'");
+	$select_serv = '<select name="refund_amount_opt" onchange="update_partial_row()">';
+	$select_serv .= '<optgroup label="Refund All Services">';
+	$select_serv .= '<option value="Full">$'.$transactAmount.' Refund Full Amount</option>';
+	$select_serv .= '</optgroup>';
+	$select_serv .= '<optgroup label="Refund Any Service">';
+	if ($db->num_rows() > 0) {
+		while ($db->next_record(MYSQL_ASSOC)) {
+			$serviceAmount[$db->Record['invoices_id']] = $db->Record['invoices_amount'];
+			$select_serv .= '<option value="'.$db->Record['invoices_service'].'_'.$db->Record['invoices_extra'].'_'.$db->Record['invoices_amount'].'">'.'$'.$db->Record['invoices_amount'].' '.$db->Record['invoices_module'].' '.$db->Record['invoices_service'].'</option>';
+		}
+	}
+	$select_serv .= '</optgroup>';
+	$select_serv .= '</select>';
 	if (!isset($GLOBALS['tf']->variables->request['confirmation']) || !verify_csrf('cc_refund')) {
 		$db = clone $GLOBALS['tf']->db;
         $invoices_arr = explode(',', $GLOBALS['tf']->variables->request['inv']);
-        $invAmount = 0;
-		foreach ($invoices_arr as $invoiceID) {
-			$db->query("SELECT * FROM invoices WHERE invoices_extra = {$invoiceID}");
-			if($db->num_rows() > 0) {
-				$db->next_record(MYSQL_ASSOC);
-				$invAmount = bcadd($invAmount, $db->Record['invoices_amount'], 2);
-			}
-		}
 		$table = new TFTable;
 		$table->set_options('cellpadding="10px" cellspacing="10px"');
 		$table->csrf('cc_refund');
 		$table->set_title('Confirm Refund');
 		$table->set_post_location('index.php');
 		$table->add_hidden('transact_id', $GLOBALS['tf']->variables->request['transact_id']);
-		$table->add_hidden('amount', $invAmount);
 		$table->add_hidden('card', $GLOBALS['tf']->variables->request['card']);
 		$table->add_hidden('cust_id', $GLOBALS['tf']->variables->request['cust_id']);
 		$table->add_hidden('module', $GLOBALS['tf']->variables->request['module']);
 		$table->add_hidden('inv', $GLOBALS['tf']->variables->request['inv']);
-		$table->add_field('Amount', 'l');
-		$table->add_field($table->make_input('refund_amount', $invAmount, 25), 'l');
+		$table->add_hidden('amount', $transactAmount);
+		$table->add_hidden('transact_id', $GLOBALS['tf']->variables->request['transact_id']);
+		$table->add_field('Services', 'l');
+		$table->add_field($select_serv, 'l');
+		$table->add_row();
+		$table->add_field('Amount To be Refund', 'l');
+		$table->add_field($table->make_input('refund_amount',$transactAmount,25,false,'id="partialtext"'), 'l');
 		$table->add_row();
 		$table->add_field('Refund Options', 'l');
 		$table->add_field($table->make_radio('refund_opt', 'API') . 'Adjust the payment invoice', 'l');
@@ -62,18 +76,48 @@ function cc_refund()
 		$table->add_field($table->make_submit('Confirm'));
 		$table->add_row();
 		add_output($table->get_table());
+		$script = '<script>
+		$(function(){
+			update_partial_row();
+		});
+		function update_partial_row() {
+			opt_val = $("select[name=\'refund_amount_opt\']").val();
+			if(opt_val == \'Full\') {
+				$("select[name=\'refund_amount_opt\']").parents("tr").next().hide();
+			} else {
+				selectedAmount = opt_val.split("_");
+				$("#partialtext").val(selectedAmount[2]);
+				$("select[name=\'refund_amount_opt\']").parents("tr").next().show();
+			}
+		}
+		</script>';
+		add_output($script);
 	} elseif (isset($GLOBALS['tf']->variables->request['confirmation']) && $GLOBALS['tf']->variables->request['confirmation'] === 'Yes') {
 		$continue = true;
 		$transact_ID = $GLOBALS['tf']->variables->request['transact_id'];
+		if ($GLOBALS['tf']->variables->request['refund_amount_opt'] == 'Full') {
+			$continue = true;
+			$refund_type = 'Full';
+		} else {
+			list($serviceId, $invoiceId, $invoiceAmount) = explode('_', $GLOBALS['tf']->variables->request['refund_amount_opt']);
+			if ($GLOBALS['tf']->variables->request['amount'] >= $invoiceAmount) {
+				$continue = true;
+				if($invoiceAmount == $GLOBALS['tf']->variables->request['amount']) 
+					$refund_type = 'Full';
+				else
+					$refund_type = 'Partial';
+			} else {
+				$continue = false;
+				add_output('Error! You entered Refund amount is greater than invoice amount. Refund amount must be equal or lesser than invoice amount.');
+				return;
+			}
+		}
 		if ($continue === true) {
 			myadmin_log('admin', 'info', 'Going with CC Refund', __LINE__, __FILE__);
-			if (isset($GLOBALS['tf']->variables->request['refund_type'])) {
-				$refund_type = $GLOBALS['tf']->variables->request['refund_type'];
+			if ($refund_type == 'Full') {
+				$amount = $GLOBALS['tf']->variables->request['amount'];
 			} else {
-				$refund_type = 'Full';
-			}
-			if (isset($GLOBALS['tf']->variables->request['refund_amount'])) {
-				$amount = $GLOBALS['tf']->variables->request['refund_amount'] <= $GLOBALS['tf']->variables->request['amount'] ? $GLOBALS['tf']->variables->request['refund_amount'] : $GLOBALS['tf']->variables->request['amount'];
+				$amount = $GLOBALS['tf']->variables->request['refund_amount'];
 			}
 			if (isset($GLOBALS['tf']->variables->request['card'])) {
 				$card = $GLOBALS['tf']->variables->request['card'];
@@ -107,8 +151,11 @@ function cc_refund()
 				$dbC = clone $GLOBALS['tf']->db;
 				$dbU = clone $GLOBALS['tf']->db;
 				$inv = $invoice_id;
-                $invoices = explode(',', $invoice_id);
-                $invUpdateAmount = bcsub($GLOBALS['tf']->variables->request['amount'], $amount, 2);
+				if ($GLOBALS['tf']->variables->request['refund_amount_opt'] == 'Full')
+                	$invoices = explode(',', $invoice_id);
+                else
+                	$invoices = [$invoiceId];
+               	$invUpdateAmount = bcsub($GLOBALS['tf']->variables->request['amount'], $amount, 2);
                 foreach ($invoices as $inv) {
 					$dbC->query("SELECT * FROM invoices WHERE invoices_extra = {$inv}");
 					if($dbC->num_rows() > 0) {
