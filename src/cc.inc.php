@@ -689,7 +689,7 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 			return $retval;
 			break;
 		default:
-			myadmin_log('billing', 'notice', 'FAILURE ('.$custid.' '.$cc_exp.' '.mask_cc($cc, true).' '.$amount.')', __LINE__, __FILE__);
+			myadmin_log('billing', 'notice', 'FAILURE ('.$custid.' '.$cc_exp.' '.mask_cc($cc, true).' '.$amount.')', __LINE__, __FILE__, $module);
 			return $retval;
 			break;
 	}

@@ -38,7 +38,7 @@ function enable_cc()
 		}
 		add_output('CC Enabled');
 		if (isset($GLOBALS['tf']->variables->request['rd']) && $GLOBALS['tf']->variables->request['rd'] === 'ec') {
-			myadmin_log('admin', 'info', "Admin - {$GLOBALS['tf']->session->account_id} enabled cc and now back to requested page.", __LINE__, __FILE__);
+			myadmin_log('admin', 'info', "Admin - {$GLOBALS['tf']->session->account_id} enabled cc and now back to requested page.", __LINE__, __FILE__, $module);
 			$GLOBALS['tf']->redirect($GLOBALS['tf']->link('index.php', 'choice=none.edit_customer&customer='.$customer));
 		}
 	}
