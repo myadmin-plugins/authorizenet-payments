@@ -43,8 +43,8 @@ class Plugin
 		$menu = $event->getSubject();
 		if ($GLOBALS['tf']->ima == 'admin') {
 			function_requirements('has_acl');
-            if (has_acl('client_billing')) {
-            }
+			if (has_acl('client_billing')) {
+			}
 		}
 	}
 
@@ -53,10 +53,10 @@ class Plugin
 	 */
 	public static function getRequirements(GenericEvent $event)
 	{
-        /**
-         * @var \MyAdmin\Plugins\Loader $this->loader
-         */
-        $loader = $event->getSubject();
+		/**
+		 * @var \MyAdmin\Plugins\Loader $this->loader
+		 */
+		$loader = $event->getSubject();
 		$loader->add_page_requirement('charge_card_invoice', '/../vendor/detain/myadmin-authorizenet-payments/src/charge_card_invoice.php');
 		$loader->add_requirement('mask_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
 		$loader->add_requirement('valid_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
@@ -94,12 +94,12 @@ class Plugin
 	/**
 	 * @param \Symfony\Component\EventDispatcher\GenericEvent $event
 	 */
-    public static function getSettings(GenericEvent $event)
-    {
-        /**
-         * @var \MyAdmin\Settings $settings
-         **/
-        $settings = $event->getSubject();
+	public static function getSettings(GenericEvent $event)
+	{
+		/**
+		 * @var \MyAdmin\Settings $settings
+		 **/
+		$settings = $event->getSubject();
 		$settings->add_radio_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_enable', _('Enable Authorize.net'), _('Enable Authorize.net'), AUTHORIZENET_ENABLE, [true, false], ['Enabled', 'Disabled']);
 		$settings->add_text_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_login', _('Login Name'), _('Login Name'), (defined('AUTHORIZENET_LOGIN') ? AUTHORIZENET_LOGIN : ''));
 		$settings->add_text_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_password', _('Password'), _('Password'), (defined('AUTHORIZENET_PASSWORD') ? AUTHORIZENET_PASSWORD : ''));
