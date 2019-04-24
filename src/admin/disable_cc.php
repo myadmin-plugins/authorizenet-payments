@@ -16,7 +16,7 @@ function disable_cc()
 {
 	page_title('Disable Clients Credit Card');
 	function_requirements('has_acl');
-	if ($GLOBALS['tf']->ima != 'admin' || !has_acl('client_billing')) {
+	if ($GLOBALS['tf']->ima != 'admin' || !has_acl('edit_customer')) {
 		dialog('Not admin', 'Not Admin or you lack the permissions to view this page.');
 		return false;
 	}
