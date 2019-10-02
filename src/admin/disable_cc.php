@@ -16,7 +16,7 @@ function disable_cc()
 {
 	page_title('Disable Clients Credit Card');
 	function_requirements('has_acl');
-	if ($GLOBALS['tf']->ima != 'admin' || !has_acl('client_billing')) {
+	if ($GLOBALS['tf']->ima != 'admin' || !has_acl('edit_customer')) {
 		dialog('Not admin', 'Not Admin or you lack the permissions to view this page.');
 		return false;
 	}
@@ -35,7 +35,7 @@ function disable_cc()
 		}
 		add_output('CC Disabled');
 		if (isset($GLOBALS['tf']->variables->request['rd']) && $GLOBALS['tf']->variables->request['rd'] === 'ec') {
-			myadmin_log('admin', 'info', "Admin - {$GLOBALS['tf']->session->account_id} disabled cc and now back to requested page.", __LINE__, __FILE__);
+			myadmin_log('admin', 'info', "Admin - {$GLOBALS['tf']->session->account_id} disabled cc and now back to requested page.", __LINE__, __FILE__, $module);
 			$GLOBALS['tf']->redirect($GLOBALS['tf']->link('index.php', 'choice=none.edit_customer&customer='.$customer));
 		}
 	}

@@ -19,8 +19,9 @@ function cc_refund()
 		return;
 	}
 	$desc = "Credit Card Payment {$GLOBALS['tf']->variables->request['transact_id']}";
-	if (isset($GLOBALS['tf']->variables->request['amount']))
+	if (isset($GLOBALS['tf']->variables->request['amount'])) {
 		$transactAmount = $GLOBALS['tf']->variables->request['amount'];
+	}
 	$db = clone $GLOBALS['tf']->db;
 	$db->query("SELECT * FROM invoices WHERE invoices_description = '$desc'");
 	$select_serv = '<select name="refund_amount_opt" onchange="update_partial_row()">';
@@ -38,7 +39,7 @@ function cc_refund()
 	$select_serv .= '</select>';
 	if (!isset($GLOBALS['tf']->variables->request['confirmation']) || !verify_csrf('cc_refund')) {
 		$db = clone $GLOBALS['tf']->db;
-        $invoices_arr = explode(',', $GLOBALS['tf']->variables->request['inv']);
+		$invoices_arr = explode(',', $GLOBALS['tf']->variables->request['inv']);
 		$table = new TFTable;
 		$table->set_options('cellpadding="10px" cellspacing="10px"');
 		$table->csrf('cc_refund');
@@ -55,7 +56,7 @@ function cc_refund()
 		$table->add_field($select_serv, 'l');
 		$table->add_row();
 		$table->add_field('Amount To be Refund', 'l');
-		$table->add_field($table->make_input('refund_amount',$transactAmount,25,false,'id="partialtext"'), 'l');
+		$table->add_field($table->make_input('refund_amount', $transactAmount, 25, false, 'id="partialtext"'), 'l');
 		$table->add_row();
 		$table->add_field('Refund Options', 'l');
 		$table->add_field($table->make_radio('refund_opt', 'API', 'API') . 'Adjust the payment invoice', 'l');
@@ -102,10 +103,11 @@ function cc_refund()
 			list($serviceId, $invoiceId, $invoiceAmount) = explode('_', $GLOBALS['tf']->variables->request['refund_amount_opt']);
 			if ($GLOBALS['tf']->variables->request['amount'] >= $invoiceAmount) {
 				$continue = true;
-				if($invoiceAmount == $GLOBALS['tf']->variables->request['amount']) 
+				if ($invoiceAmount == $GLOBALS['tf']->variables->request['amount']) {
 					$refund_type = 'Full';
-				else
+				} else {
 					$refund_type = 'Partial';
+				}
 			} else {
 				$continue = false;
 				add_output('Error! You entered Refund amount is greater than invoice amount. Refund amount must be equal or lesser than invoice amount.');
@@ -151,23 +153,26 @@ function cc_refund()
 				$dbC = clone $GLOBALS['tf']->db;
 				$dbU = clone $GLOBALS['tf']->db;
 				$inv = $invoice_id;
-				if ($GLOBALS['tf']->variables->request['refund_amount_opt'] == 'Full')
-                	$invoices = explode(',', $invoice_id);
-                else
-                	$invoices = [$invoiceId];
-               	$invUpdateAmount = bcsub($GLOBALS['tf']->variables->request['amount'], $amount, 2);
-                foreach ($invoices as $inv) {
+				if ($GLOBALS['tf']->variables->request['refund_amount_opt'] == 'Full') {
+					$invoices = explode(',', $invoice_id);
+				} else {
+					$invoices = [$invoiceId];
+				}
+				$invUpdateAmount = bcsub($GLOBALS['tf']->variables->request['amount'], $amount, 2);
+				foreach ($invoices as $inv) {
 					$dbC->query("SELECT * FROM invoices WHERE invoices_extra = {$inv}");
-					if($dbC->num_rows() > 0) {
+					if ($dbC->num_rows() > 0) {
 						$dbC->next_record(MYSQL_ASSOC);
 						$updateInv = $dbC->Record;
-						if($GLOBALS['tf']->variables->request['refund_opt'] == 'API' || $GLOBALS['tf']->variables->request['refund_opt'] == 'APISCIU')
+						if ($GLOBALS['tf']->variables->request['refund_opt'] == 'API' || $GLOBALS['tf']->variables->request['refund_opt'] == 'APISCIU') {
 							$dbU->query("UPDATE invoices SET invoices_amount={$invUpdateAmount} WHERE invoices_id = {$updateInv['invoices_id']}");
+						}
 
-						if($GLOBALS['tf']->variables->request['refund_opt'] == 'APISCIU')
+						if ($GLOBALS['tf']->variables->request['refund_opt'] == 'APISCIU') {
 							$dbU->query("UPDATE invoices SET invoices_paid = 0 WHERE invoices_id = {$inv}");
+						}
 
-						if($GLOBALS['tf']->variables->request['refund_opt'] == 'DPIDCI') {
+						if ($GLOBALS['tf']->variables->request['refund_opt'] == 'DPIDCI') {
 							$dbU->query("UPDATE invoices SET invoices_amount={$invUpdateAmount},invoices_deleted=1 WHERE invoices_id = {$updateInv['invoices_id']}");
 							$dbU->query("UPDATE invoices SET invoices_paid = 0,invoices_deleted=1 WHERE invoices_id = {$inv}");
 						}

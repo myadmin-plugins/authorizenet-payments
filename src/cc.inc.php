@@ -99,8 +99,11 @@ function get_locked_ccs()
 	$ccs = [];
 	$accs = [];
 	$db = $GLOBALS['tf']->db;
-	$db->query("select account_value from accounts, accounts_ext where account_status='locked' and accounts.account_id=accounts_ext.account_id and account_key='cc' group by account_value", __LINE__,
-		__FILE__);
+	$db->query(
+		"select account_value from accounts, accounts_ext where account_status='locked' and accounts.account_id=accounts_ext.account_id and account_key='cc' group by account_value",
+		__LINE__,
+		__FILE__
+	);
 	while ($db->next_record(MYSQL_ASSOC)) {
 		if (mb_strlen($db->Record['account_value']) > 10) {
 			$ccs[] = $db->Record['account_value'];
@@ -689,7 +692,7 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 			return $retval;
 			break;
 		default:
-			myadmin_log('billing', 'notice', 'FAILURE ('.$custid.' '.$cc_exp.' '.mask_cc($cc, true).' '.$amount.')', __LINE__, __FILE__);
+			myadmin_log('billing', 'notice', 'FAILURE ('.$custid.' '.$cc_exp.' '.mask_cc($cc, true).' '.$amount.')', __LINE__, __FILE__, $module);
 			return $retval;
 			break;
 	}

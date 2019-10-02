@@ -27,7 +27,9 @@ function verify_cc_charge($cc, $data)
 			$return['status'] = 'error';
 			$return['text'] = 'There was a problem with this credit card, check the cards available amount and try again.';
 		} else {
-			$tf->accounts->update($data['account_id'], [
+			$tf->accounts->update(
+				$data['account_id'],
+				[
 				'cc_amt1_'.$cc_decrypted => $amt1,
 				'cc_amt2_'.$cc_decrypted => $amt2
 													 ]
@@ -75,7 +77,9 @@ function verify_cc($cc, $data)
 				if (isset($data['disable_cc'])) {
 					$tf->accounts->remove_key($tcustid, 'disable_cc');
 				}
-				$tf->accounts->update($tcustid, [
+				$tf->accounts->update(
+					$tcustid,
+					[
 					'payment_method' => 'cc',
 					'cc' => $cc['cc'],
 					'cc_exp' => $cc['cc_exp'],
@@ -85,7 +89,9 @@ function verify_cc($cc, $data)
 			}
 		}
 	} else {
-		$tf->accounts->update($data['account_id'], [
+		$tf->accounts->update(
+			$data['account_id'],
+			[
 			'cc_fails_'.$cc_decrypted => isset($data['cc_fails_'.$cc_decrypted]) ? 1 + $data['cc_fails_'.$cc_decrypted] : 1
 												 ]
 		);

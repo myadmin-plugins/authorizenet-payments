@@ -153,7 +153,7 @@ class AuthorizeNetCC
 		}
 
 		//request_log($module, $custid, __FUNCTION__, 'authorizenet', 'auth_only', $rargs, $response);
-		myadmin_log('billing', 'info', 'Void Transaction - Completed values returned Response :'.json_encode($cc_log), __LINE__, __FILE__);
+		myadmin_log('billing', 'info', 'Void Transaction - Completed values returned Response :'.json_encode($cc_log), __LINE__, __FILE__, $module);
 		return $tresponse;
 	}
 }
