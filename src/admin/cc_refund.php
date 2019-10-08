@@ -140,6 +140,7 @@ function cc_refund()
 				$invoice_update = true;
 			}
 			add_output('Status : '.$status[$response['0']].' <br>Status Text: '.$response['3']);
+			myadmin_log('admin', 'info', json_encode($response), __LINE__, __FILE__);
 			if ($status[$response['0']] == 'Declined' || $status[$response['0']] == 'Error') {
 				add_output('<br><br>Initializing Void Transaction<br>');
 				$response_new = $cc_obj->voidTransaction($transact_ID, $cc_num, $cust_id);
