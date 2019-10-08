@@ -23,7 +23,8 @@ function cc_refund()
 		$transactAmount = $GLOBALS['tf']->variables->request['amount'];
 	}
 	$db = clone $GLOBALS['tf']->db;
-	$db->query("SELECT * FROM invoices WHERE invoices_description = '$desc'");
+	//$db->query("SELECT * FROM invoices WHERE invoices_description = '$desc'");
+	$db->query("SELECT * FROM invoices WHERE invoices_id IN ({$GLOBALS['tf']->variables->request['inv']})");
 	$select_serv = '<select name="refund_amount_opt" onchange="update_partial_row()">';
 	$select_serv .= '<optgroup label="Refund All Services">';
 	$select_serv .= '<option value="Full">$'.$transactAmount.' Refund Full Amount</option>';
@@ -32,7 +33,7 @@ function cc_refund()
 	if ($db->num_rows() > 0) {
 		while ($db->next_record(MYSQL_ASSOC)) {
 			$serviceAmount[$db->Record['invoices_id']] = $db->Record['invoices_amount'];
-			$select_serv .= '<option value="'.$db->Record['invoices_service'].'_'.$db->Record['invoices_extra'].'_'.$db->Record['invoices_amount'].'">'.'$'.$db->Record['invoices_amount'].' '.$db->Record['invoices_module'].' '.$db->Record['invoices_service'].'</option>';
+			$select_serv .= '<option value="'.$db->Record['invoices_service'].'_'.$db->Record['invoices_id'].'_'.$db->Record['invoices_amount'].'">'.'$'.$db->Record['invoices_amount'].' '.$db->Record['invoices_module'].' '.$db->Record['invoices_service'].'</option>';
 		}
 	}
 	$select_serv .= '</optgroup>';
