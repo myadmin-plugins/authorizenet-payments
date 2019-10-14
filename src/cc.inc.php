@@ -367,20 +367,20 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 	$retval = false;
 	$data = $GLOBALS['tf']->accounts->read($custid);
 	if (isset($data['disable_cc']) && $data['disable_cc'] == 1) {
-		add_output('<div class="alert alert-danger"><strong>Error! CC Disabled! </strong>Payment type credit card is currently unavailable. Remove the credit card(s) you have on file and add them again. If you continue having issues please contact us.</div>');
+		add_output('<div class="container alert alert-danger"><strong>Error! CC Disabled! </strong>Payment type credit card is currently unavailable. Remove the credit card(s) you have on file and add them again. If you continue having issues please contact us.</div>');
 		return $retval;
 	}
 	if (!isset($data['cc'])) {
 		global $webpage;
 		if (isset($webpage) && $webpage == true) {
-			add_output('<div class="alert alert-danger"><strong>Error! No CC On File! </strong>We have no credit-card on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.</div>');
+			add_output('<div class="container alert alert-danger"><strong>Error! No CC On File! </strong>We have no credit-card on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.</div>');
 		}
 		return $retval;
 	}
 	if (!isset($data['cc_exp'])) {
 		global $webpage;
 		if (isset($webpage) && $webpage == true) {
-			add_output('<div class="alert alert-danger"><strong>Error! No CC Expiration Date On File! </strong>We have no credit-card exp date on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.</div>');
+			add_output('<div class="container alert alert-danger"><strong>Error! No CC Expiration Date On File! </strong>We have no credit-card exp date on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.</div>');
 		}
 		return $retval;
 	}
@@ -405,7 +405,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 	$badcc = get_bad_cc();
 	if (in_array($cc, $badcc)) {
 		if (isset($webpage) && $webpage == true) {
-			add_output('<div class="alert alert-danger"><strong>Error! Bad CC Number! </strong>This Credit-Card Number has been determined unusable or bad.</div>');
+			add_output('<div class="container alert alert-danger"><strong>Error! Bad CC Number! </strong>This Credit-Card Number has been determined unusable or bad.</div>');
 		}
 		return $retval;
 	}
@@ -426,7 +426,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 		$response['code'] = 1;
 	} elseif (trim($cc) == '') {
 		//myadmin_log('billing', 'notice', 'Blank Credit Card', __LINE__, __FILE__);
-		add_output('<div class="alert alert-danger"><strong>Error! Blank Credit Card! </strong>No Credit Card number found.</div>');
+		add_output('<div class="container alert alert-danger"><strong>Error! Blank Credit Card! </strong>No Credit Card number found.</div>');
 		$response['code'] = 0;
 		return $retval;
 	} else {
@@ -512,7 +512,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			break;
 		default:
 			myadmin_log('billing', 'notice', 'FAILURE (custid:'.$custid.',exp:'.$data['cc_exp'].',cc:'.mask_cc($cc, true).',amount:'.$amount.', code:'.$response['code'].') raw: '.$cc_response, __LINE__, __FILE__);
-			add_output('<div class="alert alert-danger"><strong>Error! Transaction declined! </strong>'.$cc_log['cc_result_reason_text'].'.</div>');
+			add_output('<div class="container alert alert-danger"><div style="width: 40%;text-align: left;margin-left: 10%;"><strong>Error! Your credit card has declined the transaction. </strong><br><br><p>The most common reasons for declines are:</p><ul><li>Incorrect credit card number or expiration date</li><li>Insufficient funds in your credit card</li><li>The bank declined based on purchase history</li><li>The bank\'s fraud rules blocked the transaction</li></ul><br><p>Please contact your bank for reason and try again.</p></div></div>');
 			if ($cc_log['cc_result_reason_text'] == 'Declined  (Card reported lost or stolen - Contact card issuer for resolution.)') {
 				mail('billing@interserver.net', 'Stolen Credit Card', print_r($cc_log, true), get_default_mail_headers($settings));
 			}
