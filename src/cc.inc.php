@@ -367,20 +367,20 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 	$retval = false;
 	$data = $GLOBALS['tf']->accounts->read($custid);
 	if (isset($data['disable_cc']) && $data['disable_cc'] == 1) {
-		dialog('CC Disabled', 'Payment type credit card is currently unavailable. Remove the credit card(s) you have on file and add them again. If you continue having issues please contact us.');
+		add_output('<div class="alert alert-danger"><strong>Error! CC Disabled! </strong>Payment type credit card is currently unavailable. Remove the credit card(s) you have on file and add them again. If you continue having issues please contact us.</div>');
 		return $retval;
 	}
 	if (!isset($data['cc'])) {
 		global $webpage;
 		if (isset($webpage) && $webpage == true) {
-			dialog('No CC On File', 'We have no credit-card on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.');
+			add_output('<div class="alert alert-danger"><strong>Error! No CC On File! </strong>We have no credit-card on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.</div>');
 		}
 		return $retval;
 	}
 	if (!isset($data['cc_exp'])) {
 		global $webpage;
 		if (isset($webpage) && $webpage == true) {
-			dialog('No CC Expiration Date On File', 'We have no credit-card exp date on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.');
+			add_output('<div class="alert alert-danger"><strong>Error! No CC Expiration Date On File! </strong>We have no credit-card exp date on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.</div>');
 		}
 		return $retval;
 	}
@@ -405,7 +405,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 	$badcc = get_bad_cc();
 	if (in_array($cc, $badcc)) {
 		if (isset($webpage) && $webpage == true) {
-			dialog('Bad CC Number', 'This Credit-Card Number has been determined unusable or bad.');
+			add_output('<div class="alert alert-danger"><strong>Error! Bad CC Number! </strong>This Credit-Card Number has been determined unusable or bad.</div>');
 		}
 		return $retval;
 	}
@@ -426,6 +426,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 		$response['code'] = 1;
 	} elseif (trim($cc) == '') {
 		//myadmin_log('billing', 'notice', 'Blank Credit Card', __LINE__, __FILE__);
+		add_output('<div class="alert alert-danger"><strong>Error! Blank Credit Card! </strong>No Credit Card number found.</div>');
 		$response['code'] = 0;
 		return $retval;
 	} else {
