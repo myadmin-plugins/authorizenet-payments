@@ -512,6 +512,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			break;
 		default:
 			myadmin_log('billing', 'notice', 'FAILURE (custid:'.$custid.',exp:'.$data['cc_exp'].',cc:'.mask_cc($cc, true).',amount:'.$amount.', code:'.$response['code'].') raw: '.$cc_response, __LINE__, __FILE__);
+			add_output('<div class="alert alert-danger"><strong>Error! Transaction declined! </strong>'.$cc_log['cc_result_reason_text'].'.</div>');
 			if ($cc_log['cc_result_reason_text'] == 'Declined  (Card reported lost or stolen - Contact card issuer for resolution.)') {
 				mail('billing@interserver.net', 'Stolen Credit Card', print_r($cc_log, true), get_default_mail_headers($settings));
 			}
