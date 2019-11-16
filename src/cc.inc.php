@@ -504,7 +504,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 				myadmin_log('billing', 'notice', '	CC Charge Successfully Used Partial Prepay Amount '.$prepay_amount, __LINE__, __FILE__);
 				$subject = 'CC Charge Auto Used Partial Prepay';
 				$email = "Module {$module}<br>Original Amount: {$orig_amount}<br>Prepay Amount {$prepay_amount}<br>Charged Amount {$amount}<br>Invoices ".implode(',', $invoice).'<br>';
-				admin_mail($subject, $email, get_default_mail_headers($settings), false, 'client/payment_approved.tpl');
+				(new MyAdmin\Mail())->adminMail($subject, $email, false, 'client/payment_approved.tpl');
 			}
 			if ($useHandlePayment === true) {
 				handle_payment($custid, $orig_amount, $invoice, 11, $module, (isset($response['trans_id']) ? $response['trans_id'] : ''));
@@ -518,7 +518,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			}
 			if (mb_strpos($cc_response, ',') === false) {
 				myadmin_log('billing', 'warning', 'Invalid cc response', __LINE__, __FILE__);
-				admin_mail('Invalid CreditCard Response', print_r($cc_log, true), get_default_mail_headers($settings), false, 'admin/cc_bad_response.tpl');
+				(new MyAdmin\Mail())->adminMail('Invalid CreditCard Response', print_r($cc_log, true), false, 'admin/cc_bad_response.tpl');
 				$response['code'] = 0;
 				return $retval;
 			}
