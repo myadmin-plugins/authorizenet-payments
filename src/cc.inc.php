@@ -291,13 +291,8 @@ function make_cc_decline($custid, $invoice_id)
 function email_cc_decline($custid, $invoice_id)
 {
 	$email = make_cc_decline($custid, $invoice_id);
-	$headers = '';
-	$headers .= 'MIME-Version: 1.0'.PHP_EOL;
-	$headers .= 'Content-type: text/html; charset=UTF-8'.PHP_EOL;
-	$headers .= 'From: "'.$email['fromname'].'" <'.$email['fromemail'].'>'.PHP_EOL;
-	$headers .= 'Reply-To: "'.$email['fromname'].'" <'.$email['fromemail'].'>'.PHP_EOL;
 	myadmin_log('billing', 'debug', '	Emailing CC Decline Message To '.$email['toname'], __LINE__, __FILE__);
-	multi_mail($email['toemail'], $email['subject'], '<PRE>'.$email['invoice'].'</PRE>', $headers, 'client/ccdecline.tpl');
+	multi_mail($email['toemail'], $email['subject'], '<PRE>'.$email['invoice'].'</PRE>', false, 'client/ccdecline.tpl');
 }
 
 /**
