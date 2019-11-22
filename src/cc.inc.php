@@ -1,11 +1,11 @@
 <?php
 /**
- * Billing Related Services
- * @author Joe Huss <detain@interserver.net>
- * @copyright 2019
- * @package MyAdmin
- * @category Billing
- */
+* Billing Related Services
+* @author Joe Huss <detain@interserver.net>
+* @copyright 2019
+* @package MyAdmin
+* @category Billing
+*/
 
 
 /**
@@ -38,9 +38,9 @@ function mask_cc($cc, $last = true)
 
 
 /**
- * @param $cc
- * @return bool
- */
+* @param $cc
+* @return bool
+*/
 function valid_cc($cc)
 {
 	$schemes = [
@@ -92,8 +92,8 @@ function valid_cc($cc)
 }
 
 /**
- * @return array
- */
+* @return array
+*/
 function get_locked_ccs()
 {
 	$ccs = [];
@@ -113,11 +113,11 @@ function get_locked_ccs()
 }
 
 /**
- * creates a select box for creditcard expiration dates
- *
- * @param string default the current expiration date
- * @return string returns a select box of possible expiration dates
- */
+* creates a select box for creditcard expiration dates
+*
+* @param string default the current expiration date
+* @return string returns a select box of possible expiration dates
+*/
 function select_cc_exp($default)
 {
 	$months = get_months();
@@ -152,18 +152,18 @@ function select_cc_exp($default)
 }
 
 /**
- * Checks whether or not the customer is allowed to use creditcards.  The current logic for this allows
- * CC use if they are white-listed for cc use, or if they have there creditcard authorized, or if both
- * there maxmind score and riskscore are under their respective cut-off limits.  It will fail if the
- * RiskScore is not set but allows the Score to not be set (since its being phased out)
- *
- * @param array $data the clients data
- * @param array|bool|false $cc_holder optional array that has the 'cc' field in it containing the cc if you dont want ot use data (like from request or the $cc  (parsed $ccs) )
- * @param bool $check_disabled_cc
- * @param string $cc_field optional field to specify the field in the cc holder that contains the cc number.
- * @param bool $set_global_reason defaults to false, set to true to set a global cc_reason field w/ the reason why it was denied.
- * @return bool true if they can use cc's, false otherwise.
- */
+* Checks whether or not the customer is allowed to use creditcards.  The current logic for this allows
+* CC use if they are white-listed for cc use, or if they have there creditcard authorized, or if both
+* there maxmind score and riskscore are under their respective cut-off limits.  It will fail if the
+* RiskScore is not set but allows the Score to not be set (since its being phased out)
+*
+* @param array $data the clients data
+* @param array|bool|false $cc_holder optional array that has the 'cc' field in it containing the cc if you dont want ot use data (like from request or the $cc  (parsed $ccs) )
+* @param bool $check_disabled_cc
+* @param string $cc_field optional field to specify the field in the cc holder that contains the cc number.
+* @param bool $set_global_reason defaults to false, set to true to set a global cc_reason field w/ the reason why it was denied.
+* @return bool true if they can use cc's, false otherwise.
+*/
 function can_use_cc($data, $cc_holder = false, $check_disabled_cc = true, $cc_field = 'cc', $set_global_reason = false)
 {
 	if ($cc_holder == false) {
@@ -174,18 +174,18 @@ function can_use_cc($data, $cc_holder = false, $check_disabled_cc = true, $cc_fi
 	/*
 	$cc_usable = false;
 	if (
-		(
-			(isset($data['cc_whitelist']) && $data['cc_whitelist'] == 1)
-			|| (isset($cc_holder[$cc_field]) && isset($data['cc_auth_'.$GLOBALS['tf']->decrypt($cc_holder[$cc_field])]))
-			|| (
-				(!isset($data['maxmind_score']) || $data['maxmind_score'] <= MAXMIND_SCORE_DISABLE_CC)
-				&& (isset($data['maxmind_riskscore']) && $data['maxmind_riskscore'] <= MAXMIND_RISKSCORE_DISABLE_CC)
-			)
-		)
-		&& (isset($cc_holder[$cc_field]) && $GLOBALS['tf']->decrypt($cc_holder[$cc_field]) != '')
-		&& ($check_disabled_cc === false || !isset($data['disable_cc']) || $data['disable_cc'] != 1)
+	(
+	(isset($data['cc_whitelist']) && $data['cc_whitelist'] == 1)
+	|| (isset($cc_holder[$cc_field]) && isset($data['cc_auth_'.$GLOBALS['tf']->decrypt($cc_holder[$cc_field])]))
+	|| (
+	(!isset($data['maxmind_score']) || $data['maxmind_score'] <= MAXMIND_SCORE_DISABLE_CC)
+	&& (isset($data['maxmind_riskscore']) && $data['maxmind_riskscore'] <= MAXMIND_RISKSCORE_DISABLE_CC)
+	)
+	)
+	&& (isset($cc_holder[$cc_field]) && $GLOBALS['tf']->decrypt($cc_holder[$cc_field]) != '')
+	&& ($check_disabled_cc === false || !isset($data['disable_cc']) || $data['disable_cc'] != 1)
 	) {
-		$cc_usable = true;
+	$cc_usable = true;
 	}
 	*/
 	$cc_usable = true;
@@ -224,10 +224,10 @@ function can_use_cc($data, $cc_holder = false, $check_disabled_cc = true, $cc_fi
 }
 
 /**
- * formats the form posted cc expiration month and year into the format used in our accounts table
- *
- * @return string the properly formatted expiration date
- */
+* formats the form posted cc expiration month and year into the format used in our accounts table
+*
+* @return string the properly formatted expiration date
+*/
 function format_cc_exp()
 {
 	$exp_month = (isset($GLOBALS['tf']->variables->request['exp_month']) ? $GLOBALS['tf']->variables->request['exp_month'] : 1);
@@ -240,14 +240,14 @@ function format_cc_exp()
 }
 
 /**
- * generates a cc decline email body
- *
- * @param int $custid     the customer id #
- * @param int $invoice_id the invoice id #
- * @return array array w/ the information needed to send an email or display the cc decline
- * @throws \Exception
- * @throws \SmartyException
- */
+* generates a cc decline email body
+*
+* @param int $custid     the customer id #
+* @param int $invoice_id the invoice id #
+* @return array array w/ the information needed to send an email or display the cc decline
+* @throws \Exception
+* @throws \SmartyException
+*/
 function make_cc_decline($custid, $invoice_id)
 {
 	$admin_dir = INSTALL_ROOT;
@@ -282,12 +282,12 @@ function make_cc_decline($custid, $invoice_id)
 }
 
 /**
- * sends a cc decline email
- *
- * @param int $custid
- * @param mixed $invoice_id
- * @return void
- */
+* sends a cc decline email
+*
+* @param int $custid
+* @param mixed $invoice_id
+* @return void
+*/
 function email_cc_decline($custid, $invoice_id)
 {
 	$email = make_cc_decline($custid, $invoice_id);
@@ -296,11 +296,11 @@ function email_cc_decline($custid, $invoice_id)
 }
 
 /**
- * given the account data array, it parses out and returns an array of ccs
- *
- * @param array $data account data array
- * @return array the ccs array parsed and decrypted
- */
+* given the account data array, it parses out and returns an array of ccs
+*
+* @param array $data account data array
+* @return array the ccs array parsed and decrypted
+*/
 function parse_ccs($data)
 {
 	$tf = $GLOBALS['tf'];
@@ -326,28 +326,28 @@ function parse_ccs($data)
 }
 
 /**
- * gets a list of bad cc numbers
- *
- * @return array array of cc #s
- */
+* gets a list of bad cc numbers
+*
+* @return array array of cc #s
+*/
 function get_bad_cc()
 {
 	return myadmin_unstringify(trim(file_get_contents(INCLUDE_ROOT.'/config/bad_ccs.json')));
 }
 
 /**
- * Charges a given customers credit-card for the given amount
- *
- * @param integer $custid the id of the customer
- * @param bool|float $amount the amount to charge
- * @param bool|array|int $invoice the invoices to charge, can be a single invoice id in a string, or an array of invoiceids.
- * @param string $module the module the invoices use.
- * @param bool|string $returnURL defaults to false, dont include a return / try again url, true to use the current url, or a string specifying the url
- * @param bool $useHandlePayment defaults to true, whether or not to call the handle payment processing after a successfull charge
- * @return bool whether or not the charge was successfull.
- * @throws \Exception
- * @throws \SmartyException
- */
+* Charges a given customers credit-card for the given amount
+*
+* @param integer $custid the id of the customer
+* @param bool|float $amount the amount to charge
+* @param bool|array|int $invoice the invoices to charge, can be a single invoice id in a string, or an array of invoiceids.
+* @param string $module the module the invoices use.
+* @param bool|string $returnURL defaults to false, dont include a return / try again url, true to use the current url, or a string specifying the url
+* @param bool $useHandlePayment defaults to true, whether or not to call the handle payment processing after a successfull charge
+* @return bool whether or not the charge was successfull.
+* @throws \Exception
+* @throws \SmartyException
+*/
 function charge_card($custid, $amount = false, $invoice = false, $module = 'default', $returnURL = false, $useHandlePayment = true)
 {
 	$custid = (int) $custid;
@@ -572,17 +572,17 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 }
 
 /**
- * performs an AUTH_ONLY type charge on a creditcard
- *
- * @param integer $custid customer id
- * @param string $cc credit card number
- * @param string $cc_exp cc expiration date in MM/YYYY format
- * @param float $amount amount to charge
- * @param string $module (optional) module to use
- * @param string $charge_desc (optional) description of charge
- * @param bool|array $override_data (optional) array of data
- * @return bool whether or not the charge was successfull.
- */
+* performs an AUTH_ONLY type charge on a creditcard
+*
+* @param integer $custid customer id
+* @param string $cc credit card number
+* @param string $cc_exp cc expiration date in MM/YYYY format
+* @param float $amount amount to charge
+* @param string $module (optional) module to use
+* @param string $charge_desc (optional) description of charge
+* @param bool|array $override_data (optional) array of data
+* @return bool whether or not the charge was successfull.
+*/
 function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $charge_desc = '', $override_data = false)
 {
 	$custid = (int) $custid;
@@ -697,11 +697,11 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 }
 
 /**
- * gets the cc bank number / bin for the given encrypted cc
- *
- * @param string $cc the encrypted cc number
- * @return string the bank id number(bin)
- */
+* gets the cc bank number / bin for the given encrypted cc
+*
+* @param string $cc the encrypted cc number
+* @return string the bank id number(bin)
+*/
 function get_cc_bank_number($cc)
 {
 	$cc = $GLOBALS['tf']->decrypt($cc);
@@ -709,11 +709,11 @@ function get_cc_bank_number($cc)
 }
 
 /**
- * gets the cc last 4 digits for the given encrypted cc
- *
- * @param string $cc the encrypted cc number
- * @return string the last 4 digits
- */
+* gets the cc last 4 digits for the given encrypted cc
+*
+* @param string $cc the encrypted cc number
+* @return string the last 4 digits
+*/
 function get_cc_last_four($cc)
 {
 	$cc = $GLOBALS['tf']->decrypt($cc);
