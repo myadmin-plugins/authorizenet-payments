@@ -509,7 +509,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			myadmin_log('billing', 'notice', 'FAILURE (custid:'.$custid.',exp:'.$data['cc_exp'].',cc:'.mask_cc($cc, true).',amount:'.$amount.', code:'.$response['code'].') raw: '.$cc_response, __LINE__, __FILE__);
 			add_output('<div class="container alert alert-danger"><div style="width: 40%;text-align: left;margin-left: 10%;"><strong>Error! Your credit card has declined the transaction. </strong><br><br><p>The most common reasons for declines are:</p><ul><li>Incorrect credit card number or expiration date</li><li>Insufficient funds in your credit card</li><li>The bank declined based on purchase history</li><li>The bank\'s fraud rules blocked the transaction</li></ul><br><p>Please contact your bank for reason and try again.</p></div></div>');
 			if ($cc_log['cc_result_reason_text'] == 'Declined  (Card reported lost or stolen - Contact card issuer for resolution.)') {
-				mail('billing@interserver.net', 'Stolen Credit Card', print_r($cc_log, true), get_default_mail_headers($settings));
+				(new \MyAdmin\Mail())->adminMail('Stolen Credit Card', print_r($cc_log, true), 'billing@interserver.net', '');
 			}
 			if (mb_strpos($cc_response, ',') === false) {
 				myadmin_log('billing', 'warning', 'Invalid cc response', __LINE__, __FILE__);
@@ -563,7 +563,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			}
 			$smarty->assign('invoices', $rows);
 			$email = $smarty->fetch('email/client/payment_failed.tpl');
-			multi_mail(get_invoice_email($data), $subject, $email, get_default_mail_headers($settings), 'client/payment_failed.tpl');
+			(new \MyAdmin\Mail())->multiMail($subject, $email, get_invoice_email($data), 'client/payment_failed.tpl');
 			//email_cc_decline($custid, $invoice);
 			//$GLOBALS['tf']->history->add('users', 'carddecline', $data['cc'], $data['cc_exp'], $custid);
 			break;
