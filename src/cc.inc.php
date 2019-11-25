@@ -292,7 +292,7 @@ function email_cc_decline($custid, $invoice_id)
 {
 	$email = make_cc_decline($custid, $invoice_id);
 	myadmin_log('billing', 'debug', '	Emailing CC Decline Message To '.$email['toname'], __LINE__, __FILE__);
-	multi_mail($email['toemail'], $email['subject'], '<PRE>'.$email['invoice'].'</PRE>', false, 'client/ccdecline.tpl');
+	(new \MyAdmin\Mail())->multiMail($email['subject'], '<PRE>'.$email['invoice'].'</PRE>', $email['toemail'], 'client/ccdecline.tpl');
 }
 
 /**
