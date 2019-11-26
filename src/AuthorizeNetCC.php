@@ -134,7 +134,7 @@ class AuthorizeNetCC
 				$cc_log['cc_request_'.mb_substr(strtolower($field), 2)] = $value;
 			}
 		}
-		$fields = ['code', 'subcode', 'reason_code', 'reason_text', 'auth_code', 'avs_code', 'trans_id', 'invoice_num', 'description', 'amount', 'method', 'trans_type', 'customer_id', 'first_name', 'last_name', 'company', 'address', 'city', 'state', 'zip', 'country', 'phone', 'fax', 'email', 'shipto_last_name', 'shipto_first_name', 'shipto_company', 'shipto_address', 'shipto_city', 'shipto_state', 'shipto_zip', 'shipto_country', 'tax', 'duty', 'freight', 'tax_exempt', 'purchase_order_num', 'md5', 'card_code', 'card_verification', '', '', '', '', '', '', '', '', '', '', 'account_num', 'card_type', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
+		$fields = ['code', 'subcode', 'reason_code', 'reason_text', 'auth_code', 'avs_code', 'trans_id', 'invoice_num', 'description', 'amount', 'method', 'trans_type', 'customer_id', 'first_name', 'last_name', 'company', 'address', 'city', 'state', 'zip', 'country', 'phone', 'fax', 'email', 'shipto_last_name', 'shipto_first_name', 'shipto_company', 'shipto_address', 'shipto_city', 'shipto_state', 'shipto_zip', 'shipto_country', 'tax', 'duty', 'freight', 'tax_exempt', 'purchase_order_num', 'md5', 'card_code', 'card_verification', '', '', '', '', '', '', '', '', '', '', 'account_num', 'card_type', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
 		foreach ($tresponse as $idx => $value) {
 			if ($fields[$idx] != '') {
 				$response[$fields[$idx]] = $value;
@@ -153,7 +153,7 @@ class AuthorizeNetCC
 		}
 
 		//request_log($module, $custid, __FUNCTION__, 'authorizenet', 'auth_only', $rargs, $response);
-		myadmin_log('billing', 'info', 'Void Transaction - Completed values returned Response :'.json_encode($cc_log), __LINE__, __FILE__, $module);
+		myadmin_log('billing', 'info', 'Void Transaction - Completed values returned Response :'.json_encode($cc_log), __LINE__, __FILE__);
 		return $tresponse;
 	}
 }
