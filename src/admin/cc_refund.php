@@ -210,7 +210,17 @@ function cc_refund()
 						}
 					}
 				}
-				$GLOBALS['tf']->history->add('cc_refund', $transact_ID, $amount, $amount, $cust_id);
+				$db->query(make_insert_query('history_log', [
+					'history_id' => null,
+					'history_sid' => $GLOBALS['tf']->session->sessionid,
+					'history_timestamp' => mysql_now(),
+					'history_creator' => $GLOBALS['tf']->session->account_id,
+					'history_owner' => $cust_id,
+					'history_section' => 'cc_refund',
+					'history_type' => $transact_ID,
+					'history_new_value' => "Refunded {$amount}",
+					'history_old_value' => "Previous Amount {$invoiceAmount}"
+				]), __LINE__, __FILE__);
 			}
 			$GLOBALS['tf']->redirect($GLOBALS['tf']->link('index.php', 'choice=none.view_cc_transaction&transaction='.$transact_ID.'&module='.$GLOBALS['tf']->variables->request['module'].'&st_txt='.$st_txt));
 		}
