@@ -160,7 +160,13 @@ function cc_refund()
 				} else {
 					$invoices = [$invoiceId];
 				}
-				$invUpdateAmount = bcsub($GLOBALS['tf']->variables->request['amount'], $amount, 2);
+				if ($GLOBALS['tf']->variables->request['refund_amount_opt'] == 'Full') {
+					$invUpdateAmount = bcsub($amount, $amount, 2);
+				} else {
+					$invUpdateAmount = bcsub($invoiceAmount, $amount, 2);	
+				}
+				$invoice = new \MyAdmin\Orm\Invoice($db);
+				$now = mysql_now();
 				foreach ($invoices as $inv) {
 					$dbC->query("SELECT * FROM invoices WHERE invoices_extra = {$inv}");
 					if ($dbC->num_rows() > 0) {
@@ -168,6 +174,18 @@ function cc_refund()
 						$updateInv = $dbC->Record;
 						if ($GLOBALS['tf']->variables->request['refund_opt'] == 'API' || $GLOBALS['tf']->variables->request['refund_opt'] == 'APISCIU') {
 							$dbU->query("UPDATE invoices SET invoices_amount={$invUpdateAmount} WHERE invoices_id = {$updateInv['invoices_id']}");
+							$invoice->setDescription($updateInv['invoices_description'])
+					            ->setAmount($amount)
+					            ->setCustid($updateInv['invoices_custid'])
+					            ->setType(2)
+					            ->setDate($now)
+					            ->setGroup(0)
+					            ->setDueDate($now)
+					            ->setExtra($updateInv['invoices_extra'])
+					            ->setService($updateInv['invoices_service'])
+					            ->setPaid(0)
+					            ->setModule($updateInv['invoices_module'])
+					            ->save();
 						}
 
 						if ($GLOBALS['tf']->variables->request['refund_opt'] == 'APISCIU') {
@@ -176,12 +194,26 @@ function cc_refund()
 
 						if ($GLOBALS['tf']->variables->request['refund_opt'] == 'DPIDCI') {
 							$dbU->query("UPDATE invoices SET invoices_amount={$invUpdateAmount},invoices_deleted=1 WHERE invoices_id = {$updateInv['invoices_id']}");
+							$invoice->setDescription($updateInv['invoices_description'])
+					            ->setAmount($amount)
+					            ->setCustid($updateInv['invoices_custid'])
+					            ->setType(2)
+					            ->setDate($now)
+					            ->setGroup(0)
+					            ->setDueDate($now)
+					            ->setExtra($updateInv['invoices_extra'])
+					            ->setService($updateInv['invoices_service'])
+					            ->setPaid(0)
+					            ->setModule($updateInv['invoices_module'])
+					            ->save();
 							$dbU->query("UPDATE invoices SET invoices_paid = 0,invoices_deleted=1 WHERE invoices_id = {$inv}");
 						}
 					}
 				}
+				$GLOBALS['tf']->history->add('cc_refund', $transact_ID, $amount, $amount, $cust_id);
 			}
 			$GLOBALS['tf']->redirect($GLOBALS['tf']->link('index.php', 'choice=none.view_cc_transaction&transaction='.$transact_ID.'&module='.$GLOBALS['tf']->variables->request['module'].'&st_txt='.$st_txt));
 		}
 	}
 }
+
