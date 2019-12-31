@@ -160,18 +160,16 @@ function cc_refund()
 				} else {
 					$invoices = [$invoiceId];
 				}
-				if ($GLOBALS['tf']->variables->request['refund_amount_opt'] == 'Full') {
-					$invUpdateAmount = bcsub($amount, $amount, 2);
-				} else {
-					$invUpdateAmount = bcsub($invoiceAmount, $amount, 2);	
-				}
+				
 				$invoice = new \MyAdmin\Orm\Invoice($db);
 				$now = mysql_now();
 				foreach ($invoices as $inv) {
 					$dbC->query("SELECT * FROM invoices WHERE invoices_extra = {$inv}");
+
 					if ($dbC->num_rows() > 0) {
 						$dbC->next_record(MYSQL_ASSOC);
 						$updateInv = $dbC->Record;
+						$invUpdateAmount = bcsub($updateInv['invoices_amount'], $amount, 2);
 						if ($GLOBALS['tf']->variables->request['refund_opt'] == 'API' || $GLOBALS['tf']->variables->request['refund_opt'] == 'APISCIU') {
 							$dbU->query("UPDATE invoices SET invoices_amount={$invUpdateAmount} WHERE invoices_id = {$updateInv['invoices_id']}");
 							$invoice->setDescription("REFUND: {$updateInv['invoices_description']}")
@@ -218,8 +216,8 @@ function cc_refund()
 					'history_owner' => $cust_id,
 					'history_section' => 'cc_refund',
 					'history_type' => $transact_ID,
-					'history_new_value' => "Refunded {$amount}",
-					'history_old_value' => "Previous Amount {$invoiceAmount}"
+					'history_new_value' => "Refunded {$amount} from {$invUpdateAmount}",
+					'history_old_value' => "Invoice Amount {$invoiceAmount}"
 				]), __LINE__, __FILE__);
 			}
 			$GLOBALS['tf']->redirect($GLOBALS['tf']->link('index.php', 'choice=none.view_cc_transaction&transaction='.$transact_ID.'&module='.$GLOBALS['tf']->variables->request['module'].'&st_txt='.$st_txt));
