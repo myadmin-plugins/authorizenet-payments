@@ -174,7 +174,7 @@ function cc_refund()
 						$updateInv = $dbC->Record;
 						if ($GLOBALS['tf']->variables->request['refund_opt'] == 'API' || $GLOBALS['tf']->variables->request['refund_opt'] == 'APISCIU') {
 							$dbU->query("UPDATE invoices SET invoices_amount={$invUpdateAmount} WHERE invoices_id = {$updateInv['invoices_id']}");
-							$invoice->setDescription($updateInv['invoices_description'])
+							$invoice->setDescription("REFUND: {$updateInv['invoices_description']}")
 					            ->setAmount($amount)
 					            ->setCustid($updateInv['invoices_custid'])
 					            ->setType(2)
@@ -194,7 +194,7 @@ function cc_refund()
 
 						if ($GLOBALS['tf']->variables->request['refund_opt'] == 'DPIDCI') {
 							$dbU->query("UPDATE invoices SET invoices_amount={$invUpdateAmount},invoices_deleted=1 WHERE invoices_id = {$updateInv['invoices_id']}");
-							$invoice->setDescription($updateInv['invoices_description'])
+							$invoice->setDescription("REFUND: {$updateInv['invoices_description']}")
 					            ->setAmount($amount)
 					            ->setCustid($updateInv['invoices_custid'])
 					            ->setType(2)
