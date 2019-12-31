@@ -102,7 +102,7 @@ function cc_refund()
 			$refund_type = 'Full';
 		} else {
 			list($serviceId, $invoiceId, $invoiceAmount) = explode('_', $GLOBALS['tf']->variables->request['refund_amount_opt']);
-			if ($GLOBALS['tf']->variables->request['amount'] >= $invoiceAmount) {
+			if ($invoiceAmount == $GLOBALS['tf']->variables->request['amount'] || $GLOBALS['tf']->variables->request['refund_amount'] <= $invoiceAmount) {
 				$continue = true;
 				if ($invoiceAmount == $GLOBALS['tf']->variables->request['amount']) {
 					$refund_type = 'Full';
