@@ -100,6 +100,7 @@ function cc_refund()
 		if ($GLOBALS['tf']->variables->request['refund_amount_opt'] == 'Full') {
 			$continue = true;
 			$refund_type = 'Full';
+			$invoiceAmount = $GLOBALS['tf']->variables->request['amount'];
 		} else {
 			list($serviceId, $invoiceId, $invoiceAmount) = explode('_', $GLOBALS['tf']->variables->request['refund_amount_opt']);
 			if ($invoiceAmount == $GLOBALS['tf']->variables->request['amount'] || $GLOBALS['tf']->variables->request['refund_amount'] <= $invoiceAmount) {
