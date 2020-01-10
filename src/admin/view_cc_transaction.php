@@ -45,10 +45,24 @@ function view_cc_transaction()
 				$key = str_replace('cc_', '', $key);
 				$key = str_replace('result_', '', $key);
 				$key = ucwords(str_replace('_', ' ', $key));
-				if ($key == 'Custid') {
-					$transaction[$key] = $table->make_link('choice=none.edit_customer&amp;lid='.$value, $value, false, 'target="_blank" title="Edit Customer"');
+				if ($key == 'Trans Id') {
+					$temp_trans_id = $value;
 				}
-				$transaction[$key] = $value;
+				if ($key == 'Custid') {
+					//$transaction[$key] = $table->make_link('choice=none.edit_customer&amp;lid='.$value, $value, false, 'target="_blank" title="Edit Customer"');
+				} elseif ($key == 'Invoice Num') {
+					$db_check_invoice = get_module_db($module);
+					$db_check_invoice->query("SELECT * FROM invoices WHERE LOWER(invoices_description) LIKE 'Credit Card Payment $temp_trans_id'");
+					if ($db_check_invoice->num_rows() > 0) {
+						$invoice_arr = [];
+						while ($db_check_invoice->next_record(MYSQL_ASSOC)) {
+							$invoice_arr[] = $db_check_invoice->Record['invoices_id'];
+						}
+					}
+					$transaction[$key] = implode(',', $invoice_arr);
+				} else {
+					$transaction[$key] = $value;
+				}
 			}
 			$transactions[] = $transaction;
 		}
