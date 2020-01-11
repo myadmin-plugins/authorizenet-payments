@@ -49,6 +49,7 @@ function view_cc_transaction()
 					$temp_trans_id = $value;
 				}
 				if ($key == 'Custid') {
+					$transaction[$key] = $value;
 					//$transaction[$key] = $table->make_link('choice=none.edit_customer&amp;lid='.$value, $value, false, 'target="_blank" title="Edit Customer"');
 				} elseif ($key == 'Invoice Num') {
 					$db_check_invoice = get_module_db($module);
