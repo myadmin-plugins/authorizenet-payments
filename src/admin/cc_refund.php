@@ -22,8 +22,16 @@ function cc_refund()
 	if (isset($GLOBALS['tf']->variables->request['amount'])) {
 		$transactAmount = $GLOBALS['tf']->variables->request['amount'];
 	}
+	$db_check_invoice = clone $GLOBALS['tf']->db;
+	$db_check_invoice->query("SELECT * FROM invoices WHERE LOWER(invoices_description) LIKE '$desc'");
+	if ($db_check_invoice->num_rows() > 0) {
+		$invoice_arr = [];
+		while ($db_check_invoice->next_record(MYSQL_ASSOC)) {
+			$invoice_arr[] = $db_check_invoice->Record['invoices_id'];
+		}
+	}
+	$GLOBALS['tf']->variables->request['inv'] = implode(',', $invoice_arr);
 	$db = clone $GLOBALS['tf']->db;
-	//$db->query("SELECT * FROM invoices WHERE invoices_description = '$desc'");
 	$db->query("SELECT * FROM invoices WHERE invoices_id IN ({$GLOBALS['tf']->variables->request['inv']})");
 	$select_serv = '<select name="refund_amount_opt" onchange="update_partial_row()">';
 	$select_serv .= '<optgroup label="Refund All Services">';
@@ -126,6 +134,7 @@ function cc_refund()
 			} else {
 				$amount = $GLOBALS['tf']->variables->request['refund_amount'];
 			}
+			myadmin_log('admin', 'info', 'Refund amount : '.$amount, __LINE__, __FILE__);
 			if (isset($GLOBALS['tf']->variables->request['card'])) {
 				$card = $GLOBALS['tf']->variables->request['card'];
 			}
@@ -157,6 +166,7 @@ function cc_refund()
 			if ($invoice_update) {
 				$db = clone $GLOBALS['tf']->db;
 				$dbC = clone $GLOBALS['tf']->db;
+				$dbD = clone $GLOBALS['tf']->db;
 				$dbU = clone $GLOBALS['tf']->db;
 				$inv = $invoice_id;
 				if ($GLOBALS['tf']->variables->request['refund_amount_opt'] == 'Full') {
@@ -164,18 +174,23 @@ function cc_refund()
 				} else {
 					$invoices = [$invoiceId];
 				}
-				
+				myadmin_log('admin', 'info', json_encode($invoices), __LINE__, __FILE__);
 				$invoice = new \MyAdmin\Orm\Invoice($db);
 				$now = mysql_now();
 				foreach ($invoices as $inv) {
-					$dbC->query("SELECT * FROM invoices WHERE invoices_extra = {$inv}");
-
+					myadmin_log('admin', 'debug', "SELECT * FROM invoices WHERE invoices_id = {$inv}", __LINE__, __FILE__);
+					$dbC->query("SELECT * FROM invoices WHERE invoices_id = {$inv}");
+					myadmin_log('admin', 'debug', "Payment Invoice record ".$dbC->num_rows(), __LINE__, __FILE__);
 					if ($dbC->num_rows() > 0) {
+						
 						$dbC->next_record(MYSQL_ASSOC);
+						$dbD->query("SELECT * FROM invoices WHERE invoices_id = {$dbC->Record['invoices_extra']}");
+						$dbD->next_record(MYSQL_ASSOC);
+						$invCharge = $dbD->Record;
 						$updateInv = $dbC->Record;
 						$invUpdateAmount = bcsub($updateInv['invoices_amount'], $amount, 2);
 						if ($GLOBALS['tf']->variables->request['refund_opt'] == 'API' || $GLOBALS['tf']->variables->request['refund_opt'] == 'APISCIU') {
-							$dbU->query("UPDATE invoices SET invoices_amount={$invUpdateAmount} WHERE invoices_id = {$updateInv['invoices_id']}");
+							$dbU->query("UPDATE invoices SET invoices_amount={$invUpdateAmount} WHERE invoices_id = $inv");
 							$invoice->setDescription("REFUND: {$updateInv['invoices_description']}")
 					            ->setAmount($amount)
 					            ->setCustid($updateInv['invoices_custid'])
@@ -183,17 +198,15 @@ function cc_refund()
 					            ->setDate($now)
 					            ->setGroup(0)
 					            ->setDueDate($now)
-					            ->setExtra($updateInv['invoices_extra'])
+					            ->setExtra($inv)
 					            ->setService($updateInv['invoices_service'])
 					            ->setPaid(0)
 					            ->setModule($updateInv['invoices_module'])
 					            ->save();
 						}
-
 						if ($GLOBALS['tf']->variables->request['refund_opt'] == 'APISCIU') {
-							$dbU->query("UPDATE invoices SET invoices_paid = 0 WHERE invoices_id = {$inv}");
+							$dbU->query("UPDATE invoices SET invoices_paid = 0 WHERE invoices_id = {$invCharge['invoices_id']}");
 						}
-
 						if ($GLOBALS['tf']->variables->request['refund_opt'] == 'DPIDCI') {
 							$dbU->query("UPDATE invoices SET invoices_amount={$invUpdateAmount},invoices_deleted=1 WHERE invoices_id = {$updateInv['invoices_id']}");
 							$invoice->setDescription("REFUND: {$updateInv['invoices_description']}")
@@ -203,12 +216,12 @@ function cc_refund()
 					            ->setDate($now)
 					            ->setGroup(0)
 					            ->setDueDate($now)
-					            ->setExtra($updateInv['invoices_extra'])
+					            ->setExtra($inv)
 					            ->setService($updateInv['invoices_service'])
 					            ->setPaid(0)
 					            ->setModule($updateInv['invoices_module'])
 					            ->save();
-							$dbU->query("UPDATE invoices SET invoices_paid = 0,invoices_deleted=1 WHERE invoices_id = {$inv}");
+							$dbU->query("UPDATE invoices SET invoices_paid = 0,invoices_deleted=1 WHERE invoices_id = {$invCharge['invoices_id']}");
 						}
 					}
 				}
@@ -220,7 +233,7 @@ function cc_refund()
 					'history_owner' => $cust_id,
 					'history_section' => 'cc_refund',
 					'history_type' => $transact_ID,
-					'history_new_value' => "Refunded {$amount} from {$invUpdateAmount}",
+					'history_new_value' => "Refunded {$amount}",
 					'history_old_value' => "Invoice Amount {$invoiceAmount}"
 				]), __LINE__, __FILE__);
 			}
@@ -228,4 +241,3 @@ function cc_refund()
 		}
 	}
 }
-
