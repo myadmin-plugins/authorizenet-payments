@@ -82,13 +82,14 @@ function valid_cc($cc)
 			'/^4([0-9]{12}|[0-9]{15})$/'
 		]
 	];
-	foreach ($schemas as $cc_type => $cc_regexes) {
+	foreach ($schemes as $cc_type => $cc_regexes) {
 		foreach ($cc_regexes as $cc_regex) {
 			if (preg_match($cc_regex, $cc)) {
 				return true;
 			}
 		}
 	}
+	return false;
 }
 
 /**

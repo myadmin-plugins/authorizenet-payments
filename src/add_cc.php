@@ -78,6 +78,12 @@ function add_cc($data, $prefix = '', $force = false)
 		$return['text'] = "New Accounts (those under {$minimum_days} old) are limited to {$max_early_ccs} Credit-Cards until they have reached the {$minimum_days} days.";
 		return $return;
 	}
+	function_requirements('valid_cc');
+	if (!valid_cc(trim(str_replace([' ', '_', '-'], ['', '', ''], $tf->variables->request[$prefix.'cc'])))) {
+		$return['status'] = 'error';
+		$return['text'] = "Invalid card format.";
+		return $return;
+	}
 	$new_data = [];
 	if (preg_match('/^[0-9][0-9][0-9][0-9]$/', $tf->variables->request[$prefix.'cc_exp'])) {
 		$tf->variables->request[$prefix.'cc_exp'] = mb_substr($tf->variables->request[$prefix.'cc_exp'], 0, 2).'/20'.mb_substr($tf->variables->request[$prefix.'cc_exp'], 2);
