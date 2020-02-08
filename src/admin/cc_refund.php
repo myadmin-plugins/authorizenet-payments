@@ -114,9 +114,9 @@ function cc_refund()
 			$invoiceAmount = $GLOBALS['tf']->variables->request['amount'];
 		} else {
 			list($serviceId, $invoiceId, $invoiceAmount) = explode('_', $GLOBALS['tf']->variables->request['refund_amount_opt']);
-			if ($invoiceAmount == $GLOBALS['tf']->variables->request['amount'] || $GLOBALS['tf']->variables->request['refund_amount'] <= $invoiceAmount) {
+			if ($invoiceAmount == $GLOBALS['tf']->variables->request['refund_amount'] || $GLOBALS['tf']->variables->request['refund_amount'] <= $invoiceAmount) {
 				$continue = true;
-				if ($invoiceAmount == $GLOBALS['tf']->variables->request['amount']) {
+				if ($invoiceAmount == $GLOBALS['tf']->variables->request['refund_amount']) {
 					$refund_type = 'Full';
 				} else {
 					$refund_type = 'Partial';
