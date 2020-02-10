@@ -144,6 +144,7 @@ function cc_refund()
 			if (isset($GLOBALS['tf']->variables->request['inv'])) {
 				$invoice_id = $GLOBALS['tf']->variables->request['inv'];
 			}
+			$refundTransactionID = $transact_ID;
 			$cc_num = mb_substr($card, -4);
 			$cc_obj = new AuthorizeNetCC;
 			$response = $cc_obj->refund($cc_num, $transact_ID, $amount, $cust_id);
@@ -151,6 +152,7 @@ function cc_refund()
 			$invoice_update = false;
 			if ($status[$response['0']] == 'Approved') {
 				$invoice_update = true;
+				$refundTransactionID = $response[6];
 			}
 			add_output('Status : '.$status[$response['0']].' <br>Status Text: '.$response['3']);
 			myadmin_log('admin', 'info', json_encode($response), __LINE__, __FILE__);
@@ -160,6 +162,7 @@ function cc_refund()
 				add_output('Status : '.$status[$response_new['0']].' <br>Status Text: '.$response_new['3']);
 				if ($status[$response_new['0']] == 'Approved') {
 					$invoice_update = true;
+					$refundTransactionID = $response[6];
 				}
 			}
 			$st_txt = $status[$response['0']] == 'Declined' || $status[$response['0']] == 'Error' ? $status[$response_new['0']].'! '.$response_new['3'] : $status[$response['0']].'! '.$response['3'];
@@ -237,7 +240,7 @@ function cc_refund()
 					'history_old_value' => "Invoice Amount {$invoiceAmount}"
 				]), __LINE__, __FILE__);
 			}
-			$GLOBALS['tf']->redirect($GLOBALS['tf']->link('index.php', 'choice=none.view_cc_transaction&transaction='.$transact_ID.'&module='.$GLOBALS['tf']->variables->request['module'].'&st_txt='.$st_txt));
+			$GLOBALS['tf']->redirect($GLOBALS['tf']->link('index.php', 'choice=none.view_cc_transaction&transaction='.$refundTransactionID.'&module='.$GLOBALS['tf']->variables->request['module'].'&st_txt='.$st_txt));
 		}
 	}
 }
