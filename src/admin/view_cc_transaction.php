@@ -22,9 +22,9 @@ function view_cc_transaction()
 	$GLOBALS['tf']->add_html_head_css_file(URL_ROOT.'/css/view_paypal_transaction.css');
 	$GLOBALS['tf']->add_html_head_js_file(URL_ROOT.'/js/view_paypal_transaction.js');
 	//$transaction_types = get_paypal_transaction_types();
+	$module = get_module_name((isset($GLOBALS['tf']->variables->request['module']) ? $GLOBALS['tf']->variables->request['module'] : 'default'));
 	$db = clone $GLOBALS['tf']->db;
 	$db_check_invoice = get_module_db($module);
-	$module = get_module_name((isset($GLOBALS['tf']->variables->request['module']) ? $GLOBALS['tf']->variables->request['module'] : 'default'));
 
 	if (isset($GLOBALS['tf']->variables->request['transaction'])) {
 		$transaction = $db->real_escape($GLOBALS['tf']->variables->request['transaction']);
