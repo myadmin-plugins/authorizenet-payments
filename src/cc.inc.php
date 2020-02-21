@@ -510,7 +510,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			myadmin_log('billing', 'notice', 'FAILURE (custid:'.$custid.',exp:'.$data['cc_exp'].',cc:'.mask_cc($cc, true).',amount:'.$amount.', code:'.$response['code'].') raw: '.$cc_response, __LINE__, __FILE__);
 			add_output('<div class="container alert alert-danger"><div style="width: 40%;text-align: left;margin-left: 10%;"><strong>Error! Your credit card has declined the transaction. </strong><br><br><p>The most common reasons for declines are:</p><ul><li>Incorrect credit card number or expiration date</li><li>Insufficient funds in your credit card</li><li>The bank declined based on purchase history</li><li>The bank\'s fraud rules blocked the transaction</li></ul><br><p>Please contact your bank for reason and try again.</p></div></div>');
 			if ($cc_log['cc_result_reason_text'] == 'Declined  (Card reported lost or stolen - Contact card issuer for resolution.)') {
-				(new \MyAdmin\Mail())->adminMail('Stolen Credit Card', print_r($cc_log, true), 'billing@interserver.net', '');
+				(new \MyAdmin\Mail())->adminMail('Stolen Credit Card', print_r($cc_log, true), 'billing@interserver.net', 'admin/cc_bad_response.tpl');
 			}
 			if (mb_strpos($cc_response, ',') === false) {
 				myadmin_log('billing', 'warning', 'Invalid cc response', __LINE__, __FILE__);
