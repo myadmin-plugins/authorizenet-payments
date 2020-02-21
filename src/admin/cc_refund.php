@@ -116,11 +116,12 @@ function cc_refund()
 			list($serviceId, $invoiceId, $invoiceAmount) = explode('_', $GLOBALS['tf']->variables->request['refund_amount_opt']);
 			if ($invoiceAmount == $GLOBALS['tf']->variables->request['refund_amount'] || $GLOBALS['tf']->variables->request['refund_amount'] <= $invoiceAmount) {
 				$continue = true;
-				if ($invoiceAmount == $GLOBALS['tf']->variables->request['refund_amount']) {
+				$refund_type = 'Partial';
+				/*if ($invoiceAmount == $GLOBALS['tf']->variables->request['refund_amount']) {
 					$refund_type = 'Full';
 				} else {
 					$refund_type = 'Partial';
-				}
+				}*/
 			} else {
 				$continue = false;
 				add_output('Error! You entered Refund amount is greater than invoice amount. Refund amount must be equal or lesser than invoice amount.');
