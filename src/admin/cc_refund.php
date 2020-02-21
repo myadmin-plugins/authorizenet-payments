@@ -163,7 +163,7 @@ function cc_refund()
 				add_output('Status : '.$status[$response_new['0']].' <br>Status Text: '.$response_new['3']);
 				if ($status[$response_new['0']] == 'Approved') {
 					$invoice_update = true;
-					$refundTransactionID = $response[6];
+					$refundTransactionID = $response[6] == 0 ? $transact_ID : $response[6];
 				}
 			}
 			$st_txt = $status[$response['0']] == 'Declined' || $status[$response['0']] == 'Error' ? $status[$response_new['0']].'! '.$response_new['3'] : $status[$response['0']].'! '.$response['3'];
