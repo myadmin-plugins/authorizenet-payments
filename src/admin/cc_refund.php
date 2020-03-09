@@ -18,12 +18,21 @@ function cc_refund()
 		add_output('Transaction ID is empty!');
 		return;
 	}
+	$GLOBALS['tf']->variables->request['transact_id'] = (int)$GLOBALS['tf']->variables->request['transact_id'];
+	$query = "select * from cc_log where cc_result_trans_id='{$GLOBALS['tf']->variables->request['transact_id']}'";
+	$db = clone $GLOBALS['tf']->db;
+	$db->query($query, __LINE__, __FILE__);
+	if ($db->num_rows() == 0) {
+		add_output('no cc_log entry found');
+		return;
+	}
+	$db->next_record(MYSQL_ASSOC);
 	$desc = "Credit Card Payment {$GLOBALS['tf']->variables->request['transact_id']}";
 	if (isset($GLOBALS['tf']->variables->request['amount'])) {
 		$transactAmount = $GLOBALS['tf']->variables->request['amount'];
 	}
 	$db_check_invoice = clone $GLOBALS['tf']->db;
-	$db_check_invoice->query("SELECT * FROM invoices WHERE LOWER(invoices_description) LIKE '$desc'");
+	$db_check_invoice->query("SELECT * FROM invoices WHERE invoices_custid={$db->Record['invoices_custid']} and invoices_description='Credit Card Payment {$GLOBALS['tf']->variables->request['transact_id']}'", __LINE__, __FILE__);
 	if ($db_check_invoice->num_rows() > 0) {
 		$invoice_arr = [];
 		while ($db_check_invoice->next_record(MYSQL_ASSOC)) {
@@ -196,17 +205,17 @@ function cc_refund()
 						if ($GLOBALS['tf']->variables->request['refund_opt'] == 'API' || $GLOBALS['tf']->variables->request['refund_opt'] == 'APISCIU') {
 							$dbU->query("UPDATE invoices SET invoices_amount={$invUpdateAmount} WHERE invoices_id = $inv");
 							$invoice->setDescription("REFUND: {$updateInv['invoices_description']}")
-					            ->setAmount($amount)
-					            ->setCustid($updateInv['invoices_custid'])
-					            ->setType(2)
-					            ->setDate($now)
-					            ->setGroup(0)
-					            ->setDueDate($now)
-					            ->setExtra($inv)
-					            ->setService($updateInv['invoices_service'])
-					            ->setPaid(0)
-					            ->setModule($updateInv['invoices_module'])
-					            ->save();
+								->setAmount($amount)
+								->setCustid($updateInv['invoices_custid'])
+								->setType(2)
+								->setDate($now)
+								->setGroup(0)
+								->setDueDate($now)
+								->setExtra($inv)
+								->setService($updateInv['invoices_service'])
+								->setPaid(0)
+								->setModule($updateInv['invoices_module'])
+								->save();
 						}
 						if ($GLOBALS['tf']->variables->request['refund_opt'] == 'APISCIU') {
 							$dbU->query("UPDATE invoices SET invoices_paid = 0 WHERE invoices_id = {$invCharge['invoices_id']}");
@@ -214,17 +223,17 @@ function cc_refund()
 						if ($GLOBALS['tf']->variables->request['refund_opt'] == 'DPIDCI') {
 							$dbU->query("UPDATE invoices SET invoices_amount={$invUpdateAmount},invoices_deleted=1 WHERE invoices_id = {$updateInv['invoices_id']}");
 							$invoice->setDescription("REFUND: {$updateInv['invoices_description']}")
-					            ->setAmount($amount)
-					            ->setCustid($updateInv['invoices_custid'])
-					            ->setType(2)
-					            ->setDate($now)
-					            ->setGroup(0)
-					            ->setDueDate($now)
-					            ->setExtra($inv)
-					            ->setService($updateInv['invoices_service'])
-					            ->setPaid(0)
-					            ->setModule($updateInv['invoices_module'])
-					            ->save();
+								->setAmount($amount)
+								->setCustid($updateInv['invoices_custid'])
+								->setType(2)
+								->setDate($now)
+								->setGroup(0)
+								->setDueDate($now)
+								->setExtra($inv)
+								->setService($updateInv['invoices_service'])
+								->setPaid(0)
+								->setModule($updateInv['invoices_module'])
+								->save();
 							$dbU->query("UPDATE invoices SET invoices_paid = 0,invoices_deleted=1 WHERE invoices_id = {$invCharge['invoices_id']}");
 						}
 					}

@@ -53,7 +53,7 @@ function view_cc_transaction()
 					$transaction[$key] = $value;
 					//$transaction[$key] = $table->make_link('choice=none.edit_customer&amp;lid='.$value, $value, false, 'target="_blank" title="Edit Customer"');
 				} elseif ($key == 'Invoice Num') {
-					$db_check_invoice->query("SELECT * FROM invoices WHERE LOWER(invoices_description) LIKE 'Credit Card Payment $temp_trans_id'");
+					$db_check_invoice->query("SELECT * FROM invoices WHERE invoices_custid={$db->Record['cc_custid']} and invoices_description='Credit Card Payment {$temp_trans_id}'", __LINE__, __FILE__);
 					if ($db_check_invoice->num_rows() > 0) {
 						$invoice_arr = [];
 						while ($db_check_invoice->next_record(MYSQL_ASSOC)) {
