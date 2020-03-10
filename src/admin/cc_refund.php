@@ -32,7 +32,7 @@ function cc_refund()
 		$transactAmount = $GLOBALS['tf']->variables->request['amount'];
 	}
 	$db_check_invoice = clone $GLOBALS['tf']->db;
-	$db_check_invoice->query("SELECT * FROM invoices WHERE invoices_custid={$db->Record['invoices_custid']} and invoices_description='Credit Card Payment {$GLOBALS['tf']->variables->request['transact_id']}'", __LINE__, __FILE__);
+	$db_check_invoice->query("SELECT * FROM invoices WHERE invoices_custid={$db->Record['cc_custid']} and invoices_description='Credit Card Payment {$GLOBALS['tf']->variables->request['transact_id']}'", __LINE__, __FILE__);
 	if ($db_check_invoice->num_rows() > 0) {
 		$invoice_arr = [];
 		while ($db_check_invoice->next_record(MYSQL_ASSOC)) {
