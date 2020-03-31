@@ -41,6 +41,7 @@ class AuthorizeNetCC
 		$this->Auth_Data['x_exp_date'] = '';
 		$this->Auth_Data['x_amount'] = $amount;
 		$this->Auth_Data['x_description'] = 'Refund Credit Card Payment';
+		$this->Auth_Data['x_duplicate_window'] = '-1';
 		$options = [
 			CURLOPT_REFERER => 'https://admin.trouble-free.net/',
 			CURLOPT_SSL_VERIFYPEER => false, // whether or not to validate the ssl cert of the peer
