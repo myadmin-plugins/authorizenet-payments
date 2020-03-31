@@ -80,10 +80,10 @@ function cc_refund()
 		$table->add_field($table->make_input('refund_amount', $transactAmount, 25, false, 'id="partialtext"'), 'l');
 		$table->add_row();
 		$table->add_field('Refund Options', 'l');
-		$table->add_field($table->make_radio('refund_opt', 'API', 'API') . 'Adjust the payment invoice', 'l');
+		$table->add_field($table->make_radio('refund_opt', 'API') . 'Adjust the payment invoice', 'l');
 		$table->add_row();
 		$table->add_field("", 'l');
-		$table->add_field($table->make_radio('refund_opt', 'APISCIU') . 'Adjust payment invoice + set charge invoice unpaid', 'l');
+		$table->add_field($table->make_radio('refund_opt', 'APISCIU', 'APISCIU') . 'Adjust payment invoice + set charge invoice unpaid', 'l');
 		$table->add_row();
 		$table->add_field("", 'l');
 		$table->add_field($table->make_radio('refund_opt', 'DPIDCI') . 'Delete payment invoice + Delete charge invoice', 'l');
