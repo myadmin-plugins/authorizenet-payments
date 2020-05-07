@@ -212,7 +212,7 @@ function manage_cc()
 				$smarty->assign('action', 'add');
 				$smarty->assign('csrf_token', get_csrf('manage_cc_add'));
 				$smarty->assign('choice', 'none.manage_cc');
-				add_output($smarty->fetch('payments/manage_cc_jquery.tpl'));
+				add_output($smarty->fetch('billing/payments/manage_cc_jquery.tpl'));
 				//            $table->add_field('<a href="'.$tf->link('index.php', 'choice=none.manage_cc&action=default&orig_url='.htmlspecial($orig_url)).'" style="padding: 0.1em 0.5em; border-radius: 10px;" class="ui-button ui-widget ui-state-hover ui-corner-all">Cancel</a>');
 			}
 			break;

@@ -77,7 +77,7 @@ function view_cc_transaction()
 		$smarty->assign('st_txt', $GLOBALS['tf']->variables->request['st_txt']);
 	}
 	$smarty->assign('module', $module);
-	add_output($smarty->fetch('payments/view_cc_transaction.tpl'));
+	add_output($smarty->fetch('billing/payments/view_cc_transaction.tpl'));
 }
 
 /**
