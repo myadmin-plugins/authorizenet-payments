@@ -94,10 +94,10 @@ function cc_refund()
 		}
 		function confirm_dialog(event) {
 			event.preventDefault();
-	        var c = confirm("Are you sure want to refund?");
-	        if(c){
-	            $("form#ccrefundform").submit();
-	          }
+			var c = confirm("Are you sure want to refund?");
+			if(c){
+				$("form#ccrefundform").submit();
+			  }
 		}
 		</script>';
 		add_output($script);
@@ -120,13 +120,13 @@ function cc_refund()
 				$invoiceIds[] = $explodedValues[1];
 				$invoiceAmounts[] = $explodedValues[2];
 			}
-			myadmin_log('admin', 'info', 'Refund amount : '.$amount, __LINE__, __FILE__);
 			if ($GLOBALS['tf']->variables->request['amount'] == $GLOBALS['tf']->variables->request['refund_amount']) {
 				$refund_type = 'Full';
 			} else {
 				$refund_type = 'Partial';
 			}
 			$amount = $GLOBALS['tf']->variables->request['refund_amount'];
+			myadmin_log('admin', 'info', 'Refund ('.$refund_type.') amount : '.$amount, __LINE__, __FILE__);
 			if (isset($GLOBALS['tf']->variables->request['card'])) {
 				$card = $GLOBALS['tf']->variables->request['card'];
 			}
