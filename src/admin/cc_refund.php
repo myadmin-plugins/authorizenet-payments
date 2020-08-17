@@ -104,8 +104,8 @@ function cc_refund()
 	} elseif (isset($GLOBALS['tf']->variables->request['confirmed']) && $GLOBALS['tf']->variables->request['confirmed'] == 'yes') {
 		$continue = true;
 		$transact_ID = $GLOBALS['tf']->variables->request['transact_id'];
-		if ($GLOBALS['tf']->variables->request['refund_amount'] > $GLOBALS['tf']->variables->request['amount']) {
-			add_output('Error! You entered Refund amount greater than invoice amount. Refund amount must be equal or lesser than invoice amount.');
+		if ($GLOBALS['tf']->variables->request['amount'] < $GLOBALS['tf']->variables->request['refund_amount']) {
+			add_output('<div class="alert alert-danger">Error! Refund amount greater than paid amount, must be lesser or equal.</div>');
 			$continue = false;
 		}
 		if ($GLOBALS['tf']->variables->request['refund_amount'] <= 0) {
@@ -116,9 +116,7 @@ function cc_refund()
 			myadmin_log('admin', 'info', 'Going with CC Refund', __LINE__, __FILE__);
 			foreach ($GLOBALS['tf']->variables->request['refund_amount_opt'] as $values) {
 				$explodedValues = explode('_', $values);
-				$serviceIds[] = $explodedValues[0];
 				$invoiceIds[] = $explodedValues[1];
-				$invoiceAmounts[] = $explodedValues[2];
 			}
 			if ($GLOBALS['tf']->variables->request['amount'] == $GLOBALS['tf']->variables->request['refund_amount']) {
 				$refund_type = 'Full';
@@ -167,6 +165,8 @@ function cc_refund()
 				$invoice = new \MyAdmin\Orm\Invoice($db);
 				$now = mysql_now();
 				$amountRemaining = $amount;
+				$invTotal = count($invoiceIds);
+				$invLoop = 0;
 				foreach ($invoiceIds as $inv) {
 					myadmin_log('admin', 'debug', "SELECT * FROM invoices WHERE invoices_id = {$inv}", __LINE__, __FILE__);
 					$dbC->query("SELECT * FROM invoices WHERE invoices_id = {$inv}");
@@ -174,7 +174,9 @@ function cc_refund()
 					if ($dbC->num_rows() > 0) {
 						$dbC->next_record(MYSQL_ASSOC);
 						$updateInv = $dbC->Record;
-						if ($refund_type == 'Full' || $amountRemaining >= $dbC->Record['invoices_amount']) {
+						if (++$invLoop == $invTotal) {
+							$amount = $amountRemaining;
+						} elseif ($refund_type == 'Full' || $amountRemaining >= $dbC->Record['invoices_amount']) {
 							$amount = $dbC->Record['invoices_amount'];
 						} else {
 							$amount = $amountRemaining;
