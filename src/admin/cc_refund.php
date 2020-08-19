@@ -161,8 +161,7 @@ function cc_refund()
 				$dbC = clone $GLOBALS['tf']->db;
 				$dbD = clone $GLOBALS['tf']->db;
 				$dbU = clone $GLOBALS['tf']->db;
-				myadmin_log('admin', 'info', json_encode($invoiceIds), __LINE__, __FILE__);
-				$invoice = new \MyAdmin\Orm\Invoice($db);
+				myadmin_log('payments', 'info', "Invoices selected for refund - ".json_encode($invoiceIds), __LINE__, __FILE__);
 				$now = mysql_now();
 				$amountRemaining = $amount;
 				$invTotal = count($invoiceIds);
@@ -185,7 +184,8 @@ function cc_refund()
 						$invUpdateAmount = bcsub($dbC->Record['invoices_amount'], $amount, 2);
 						$dbD->query("SELECT * FROM invoices WHERE invoices_id = {$dbC->Record['invoices_extra']}");
 						$dbD->next_record(MYSQL_ASSOC);
-						$invoice->setDescription("REFUND: {$updateInv['invoices_description']}")
+						$invoice = new \MyAdmin\Orm\Invoice($db);
+						$refund_created = $invoice->setDescription("REFUND: {$updateInv['invoices_description']}")
 							->setAmount($amount)
 							->setCustid($updateInv['invoices_custid'])
 							->setType(2)
@@ -197,6 +197,9 @@ function cc_refund()
 							->setPaid(0)
 							->setModule($updateInv['invoices_module'])
 							->save();
+						if ($refund_created) {
+							myadmin_log('payments', 'debug', "Refund Invoice created for the amount {$amount}.", __LINE__, __FILE__);
+						}
 						if ($GLOBALS['tf']->variables->request['unpaid'] == 'yes') {
 							$dbU->query("UPDATE invoices SET invoices_paid = 0 WHERE invoices_id = {$updateInv['invoices_extra']}");
 						}
