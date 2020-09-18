@@ -27,6 +27,7 @@ function cc_refund()
 		return;
 	}
 	$db->next_record(MYSQL_ASSOC);
+	$cc_log = $db->Record;
 	$desc = "Credit Card Payment {$GLOBALS['tf']->variables->request['transact_id']}";
 	if (isset($GLOBALS['tf']->variables->request['amount'])) {
 		$transactAmount = $GLOBALS['tf']->variables->request['amount'];
@@ -46,10 +47,17 @@ function cc_refund()
 	$checkbox = '';
 	if ($db->num_rows() > 0) {
 		while ($db->next_record(MYSQL_ASSOC)) {
+			//Get all refund Invoices for the transaction
 			$dbR->query("SELECT * FROM invoices WHERE invoices_extra = {$db->Record['invoices_id']}");
 			if ($dbR->num_rows() == 0) {
+				$date = date('Y-m-d 23:59:59', strtotime());
+				$do = strtotime(date('Y-m-d', strtotime($cc_log['cc_timestamp'])) == strtotime(date('Y-m-d') ? 'void' : 'refund';
 				$serviceAmount[$db->Record['invoices_id']] = $db->Record['invoices_amount'];
-				$checkbox .= '<input type="checkbox" name="refund_amount_opt[]" value="'.$db->Record['invoices_service'].'_'.$db->Record['invoices_id'].'_'.$db->Record['invoices_amount'].'" onclick="return update_partial_payment();" checked>&nbsp;<label for="" style="text-transform: capitalize;"> '.$db->Record['invoices_module'].' '.$db->Record['invoices_service'].' $' .$db->Record['invoices_amount'].'</label><br>';
+				if ($do == 'void') {
+					$checkbox .= '<input type="checkbox" name="refund_amount_opt[]" value="'.$db->Record['invoices_service'].'_'.$db->Record['invoices_id'].'_'.$db->Record['invoices_amount'].'" onclick="return update_partial_payment();" checked readonly>&nbsp;<label for="" style="text-transform: capitalize;"> '.$db->Record['invoices_module'].' '.$db->Record['invoices_service'].' $' .$db->Record['invoices_amount'].'</label><br>';
+				} else {
+					$checkbox .= '<input type="checkbox" name="refund_amount_opt[]" value="'.$db->Record['invoices_service'].'_'.$db->Record['invoices_id'].'_'.$db->Record['invoices_amount'].'" onclick="return update_partial_payment();" checked>&nbsp;<label for="" style="text-transform: capitalize;"> '.$db->Record['invoices_module'].' '.$db->Record['invoices_service'].' $' .$db->Record['invoices_amount'].'</label><br>';
+				}
 			} else {
 				$alreadyRefundedAmount = 0;
 				while($dbR->next_record(MYSQL_ASSOC)) {
@@ -74,7 +82,6 @@ function cc_refund()
 		$table->add_hidden('cust_id', $GLOBALS['tf']->variables->request['cust_id']);
 		$table->add_hidden('module', $GLOBALS['tf']->variables->request['module']);
 		$table->add_hidden('inv', $GLOBALS['tf']->variables->request['inv']);
-
 		$table->add_hidden('amount', $transactAmount);
 		$table->add_hidden('transact_id', $GLOBALS['tf']->variables->request['transact_id']);
 		$table->add_field('Services', 'l');
@@ -148,24 +155,21 @@ function cc_refund()
 			$refundTransactionID = $transact_ID;
 			$cc_num = mb_substr($card, -4);
 			$cc_obj = new AuthorizeNetCC;
-			$response = $cc_obj->refund($cc_num, $transact_ID, $amount, $cust_id);
+			if ($do == 'void') {
+				$response_new = $cc_obj->voidTransaction($transact_ID, $cc_num, $cust_id);
+				myadmin_log('admin', 'info', 'Going with CC void transaction', __LINE__, __FILE__);
+			} else {
+				$response = $cc_obj->refund($cc_num, $transact_ID, $amount, $cust_id);
+				myadmin_log('admin', 'info', 'Going with CC Refund', __LINE__, __FILE__);
+			}
 			$status = ['', 'Approved', 'Declined', 'Error', 'Held for review'];
 			$invoice_update = false;
 			if ($status[$response['0']] == 'Approved') {
 				$invoice_update = true;
-				$refundTransactionID = $response[6];
+				$refundTransactionID = $response[6] == 0 ? $transact_ID : $response[6];
 			}
 			add_output('Status : '.$status[$response['0']].' <br>Status Text: '.$response['3']);
 			myadmin_log('admin', 'info', json_encode($response), __LINE__, __FILE__);
-			if ($status[$response['0']] == 'Declined' || $status[$response['0']] == 'Error') {
-				add_output('<br><br>Initializing Void Transaction<br>');
-				$response_new = $cc_obj->voidTransaction($transact_ID, $cc_num, $cust_id);
-				add_output('Status : '.$status[$response_new['0']].' <br>Status Text: '.$response_new['3']);
-				if ($status[$response_new['0']] == 'Approved') {
-					$invoice_update = true;
-					$refundTransactionID = $response[6] == 0 ? $transact_ID : $response[6];
-				}
-			}
 			$st_txt = $status[$response['0']] == 'Declined' || $status[$response['0']] == 'Error' ? $status[$response_new['0']].'! '.$response_new['3'] : $status[$response['0']].'! '.$response['3'];
 			if ($invoice_update) {
 				$db = clone $GLOBALS['tf']->db;
