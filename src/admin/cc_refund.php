@@ -51,7 +51,7 @@ function cc_refund()
 			$dbR->query("SELECT * FROM invoices WHERE invoices_extra = {$db->Record['invoices_id']}");
 			if ($dbR->num_rows() == 0) {
 				$date = date('Y-m-d 23:59:59', strtotime());
-				$do = strtotime(date('Y-m-d', strtotime($cc_log['cc_timestamp'])) == strtotime(date('Y-m-d') ? 'void' : 'refund';
+				$do = strtotime(date('Y-m-d', strtotime($cc_log['cc_timestamp']))) == strtotime(date('Y-m-d')) ? 'void' : 'refund';
 				$serviceAmount[$db->Record['invoices_id']] = $db->Record['invoices_amount'];
 				if ($do == 'void') {
 					$checkbox .= '<input type="checkbox" name="refund_amount_opt[]" value="'.$db->Record['invoices_service'].'_'.$db->Record['invoices_id'].'_'.$db->Record['invoices_amount'].'" onclick="return update_partial_payment();" checked readonly>&nbsp;<label for="" style="text-transform: capitalize;"> '.$db->Record['invoices_module'].' '.$db->Record['invoices_service'].' $' .$db->Record['invoices_amount'].'</label><br>';
