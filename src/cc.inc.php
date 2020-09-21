@@ -197,7 +197,7 @@ function can_use_cc($data, $cc_holder = false, $check_disabled_cc = true, $cc_fi
 				$reason .= '  No Credit-Card Number set or the number is blank.';
 				$cc_usable = false;
 			}
-			if (!isset($data['cc_auth_'.$GLOBALS['tf']->decrypt($cc_holder[$cc_field])]) || $data['cc_auth_'.$GLOBALS['tf']->decrypt($cc_holder[$cc_field])] == '') {
+			if (isset($cc_holder[$cc_field]) && (!isset($data['cc_auth_'.$GLOBALS['tf']->decrypt($cc_holder[$cc_field])]) || trim($data['cc_auth_'.$GLOBALS['tf']->decrypt($cc_holder[$cc_field])]) == '')) {
 				$reason .= " ".$GLOBALS['tf']->decrypt($cc_holder[$cc_field])." is not verified.";
 				$cc_usable = false;
 			}
