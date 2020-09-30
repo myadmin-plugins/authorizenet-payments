@@ -156,11 +156,11 @@ function cc_refund()
 			$cc_num = mb_substr($card, -4);
 			$cc_obj = new AuthorizeNetCC;
 			if ($do == 'void') {
-				$response_new = $cc_obj->voidTransaction($transact_ID, $cc_num, $cust_id);
 				myadmin_log('admin', 'info', 'Going with CC void transaction', __LINE__, __FILE__);
+				$response = $cc_obj->voidTransaction($transact_ID, $cc_num, $cust_id);
 			} else {
-				$response = $cc_obj->refund($cc_num, $transact_ID, $amount, $cust_id);
 				myadmin_log('admin', 'info', 'Going with CC Refund', __LINE__, __FILE__);
+				$response = $cc_obj->refund($cc_num, $transact_ID, $amount, $cust_id);
 			}
 			$status = ['', 'Approved', 'Declined', 'Error', 'Held for review'];
 			$invoice_update = false;
@@ -170,7 +170,7 @@ function cc_refund()
 			}
 			add_output('Status : '.$status[$response['0']].' <br>Status Text: '.$response['3']);
 			myadmin_log('admin', 'info', json_encode($response), __LINE__, __FILE__);
-			$st_txt = $status[$response['0']] == 'Declined' || $status[$response['0']] == 'Error' ? $status[$response_new['0']].'! '.$response_new['3'] : $status[$response['0']].'! '.$response['3'];
+			$st_txt = $status[$response['0']].'! '.$response['3'];
 			if ($invoice_update) {
 				$db = clone $GLOBALS['tf']->db;
 				$dbC = clone $GLOBALS['tf']->db;
