@@ -50,7 +50,6 @@ function cc_refund()
 			//Get all refund Invoices for the transaction
 			$dbR->query("SELECT * FROM invoices WHERE invoices_extra = {$db->Record['invoices_id']}");
 			if ($dbR->num_rows() == 0) {
-				$date = date('Y-m-d 23:59:59', strtotime());
 				$do = strtotime(date('Y-m-d', strtotime($cc_log['cc_timestamp']))) == strtotime(date('Y-m-d')) ? 'void' : 'refund';
 				$serviceAmount[$db->Record['invoices_id']] = $db->Record['invoices_amount'];
 				if ($do == 'void') {
