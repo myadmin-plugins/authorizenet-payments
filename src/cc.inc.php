@@ -7,6 +7,8 @@
 * @category Billing
 */
 
+use Punic\Currency;
+use Brick\Money\Money;
 
 /**
 * @param $cc
@@ -387,7 +389,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 	if ($amount === false) {
 		foreach ($invoice as $tinvoice) {
 			$invoice_data = get_invoice($tinvoice, $module);
-			$amount = bcadd($amount, $invoice_data['invoices_amount'], 2);
+			$amount = bcadd($amount, convertCurrency($invoice_data['invoices_amount'], 'USD', $invoice_data['invoices_currency'])->getAmount()->toFloat(), 2);
 		}
 	}
 	$lid = $GLOBALS['tf']->accounts->cross_reference($custid);
@@ -546,6 +548,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 						$row['Invoice ID'] = $db->Record['invoices_id'];
 						$row['Invoice Description'] = $db->Record['invoices_description'];
 						$row['Invoice Date'] = $db->Record['invoices_date'];
+						$row['Invoice Currency'] = $db->Record['invoices_currency'];
 						$row['Invoice Amount'] = $db->Record['invoices_amount'];
 						$serviceInfo = get_service($db->Record['invoices_service'], $module);
 						if ($serviceInfo !== false) {
