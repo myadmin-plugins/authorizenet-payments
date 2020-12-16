@@ -71,30 +71,17 @@ function verify_cc($cc, $data)
 		(abs($request['cc_amount1'] - (100 * $data['cc_amt2_'.$cc_decrypted])) < 6 && abs($request['cc_amount2'] - (100 * $data['cc_amt1_'.$cc_decrypted])) < 6)) {
 		$return['status'] = 'ok';
 		$return['text'] = 'The Values matched!';
-		foreach ($GLOBALS['modules'] as $module => $settings) {
-			$tcustid = convert_custid($data['account_id'], $module);
-			if ($tcustid !== false) {
-				if (isset($data['disable_cc'])) {
-					$tf->accounts->remove_key($tcustid, 'disable_cc');
-				}
-				$tf->accounts->update(
-					$tcustid,
-					[
-					'payment_method' => 'cc',
-					'cc' => $cc['cc'],
-					'cc_exp' => $cc['cc_exp'],
-					'cc_auth_'.$cc_decrypted => 1
-											  ]
-				);
-			}
+		if (isset($data['disable_cc'])) {
+			$tf->accounts->remove_key($data['account_id'], 'disable_cc');
 		}
+		$tf->accounts->update($data['account_id'], [
+			'payment_method' => 'cc',
+			'cc' => $cc['cc'],
+			'cc_exp' => $cc['cc_exp'],
+			'cc_auth_'.$cc_decrypted => 1
+		]);
 	} else {
-		$tf->accounts->update(
-			$data['account_id'],
-			[
-			'cc_fails_'.$cc_decrypted => isset($data['cc_fails_'.$cc_decrypted]) ? 1 + $data['cc_fails_'.$cc_decrypted] : 1
-												 ]
-		);
+		$tf->accounts->update($data['account_id'], ['cc_fails_'.$cc_decrypted => isset($data['cc_fails_'.$cc_decrypted]) ? 1 + $data['cc_fails_'.$cc_decrypted] : 1]);
 		$return['text'] = 'Verification Failed. The values you have entered did not match the charged amounts. Please verify the values and try again. Only a limited amount of attempts is allowed before the account is locked. Please contact support if you need assistance.';
 		$return['status'] = 'failed';
 	}
