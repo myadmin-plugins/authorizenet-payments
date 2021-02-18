@@ -54,22 +54,22 @@ function cc_refund()
 				$serviceAmount[$db->Record['invoices_id']] = $db->Record['invoices_amount'];
 				if ($do == 'void') {
 					$checkbox .= '<input type="checkbox" name="refund_amount_opt[]" value="'.$db->Record['invoices_service'].'_'.$db->Record['invoices_id'].'_'.$db->Record['invoices_amount'].'" onclick="return false;" checked readonly>&nbsp;<label for="" style="text-transform: capitalize;">';
-					$checkbox .= '<div><div style="display: inline-block;width: 130px">'.$db->Record['invoices_module'].'</div>';
-					$checkbox .= '<div style="display: inline-block;width: 130px">'.$db->Record['invoices_service'].'</div></div>';
-					$checkbox .= '<div><div style="display: inline-block;width: 130px">Invoice#</div>';
-					$checkbox .= '<div style="display: inline-block;width: 130px>'.$db->Record['invoices_id'].'</div></div>';
-					$checkbox .= '<div><div style="display: inline-block;width: 130px">Amount</div>';
-					$checkbox .= '<div style="display: inline-block;width: 130px>$' .$db->Record['invoices_amount'].'</div></div>';
+					$checkbox .= '<div><div style="display: inline-block;width: 130px;">'.$db->Record['invoices_module'].'</div>';
+					$checkbox .= '<div style="display: inline-block;width: 130px;">'.$db->Record['invoices_service'].'</div></div>';
+					$checkbox .= '<div><div style="display: inline-block;width: 130px;">Invoice#</div>';
+					$checkbox .= '<div style="display: inline-block;width: 130px;">'.$db->Record['invoices_id'].'</div></div>';
+					$checkbox .= '<div><div style="display: inline-block;width: 130px;">Amount</div>';
+					$checkbox .= '<div style="display: inline-block;width: 130px;">$' .$db->Record['invoices_amount'].'</div></div>';
 					$checkbox .= '</label><br>';
 				} else {
 					$checkbox .= '<input type="checkbox" name="refund_amount_opt[]" value="'.$db->Record['invoices_service'].'_'.$db->Record['invoices_id'].'_'.$db->Record['invoices_amount'].'" onclick="return update_partial_payment();" checked>&nbsp;<label for="" style="text-transform: capitalize;"> ';
-					$checkbox .= '<div><div style="display: inline-block;width: 130px">'.$db->Record['invoices_module'].'</div>';
-					$checkbox .= '<div style="display: inline-block;width: 130px">'.$db->Record['invoices_service'].'</div></div>';
+					$checkbox .= '<div><div style="display: inline-block;width: 130px;">'.$db->Record['invoices_module'].'</div>';
+					$checkbox .= '<div style="display: inline-block;width: 130px;">'.$db->Record['invoices_service'].'</div></div>';
 
-					$checkbox .= '<div><div style="display: inline-block;width: 130px">Invoice#</div>';
-					$checkbox .= '<div style="display: inline-block;width: 130px>'.$db->Record['invoices_id'].'</div></div>';
-					$checkbox .= '<div><div style="display: inline-block;width: 130px">Amount</div>';
-					$checkbox .= '<div style="display: inline-block;width: 130px>$' .$db->Record['invoices_amount'].'</div></div>';
+					$checkbox .= '<div><div style="display: inline-block;width: 130px;">Invoice#</div>';
+					$checkbox .= '<div style="display: inline-block;width: 130px;">'.$db->Record['invoices_id'].'</div></div>';
+					$checkbox .= '<div><div style="display: inline-block;width: 130px;">Amount</div>';
+					$checkbox .= '<div style="display: inline-block;width: 130px;">$' .$db->Record['invoices_amount'].'</div></div>';
 					$checkbox .= '</label><br>';
 				}
 			} else {
