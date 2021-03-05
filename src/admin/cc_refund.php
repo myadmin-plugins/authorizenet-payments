@@ -238,7 +238,11 @@ function cc_refund()
 							myadmin_log('payments', 'debug', "Refund Invoice created for the amount {$amount}.", __LINE__, __FILE__);
 						}
 						if ($GLOBALS['tf']->variables->request['unpaid'] == 'yes') {
-							$dbU->query("UPDATE invoices SET invoices_paid = 0 WHERE invoices_id = {$updateInv['invoices_extra']}");
+							$invoiceObj = new \MyAdmin\Orm\Invoice();
+							$invoiceObj->load_real($updateInv['invoices_extra']);
+							if ($invoiceObj->loaded === true) {
+								$invoiceObj->setPaid(0)->save();
+							}
 						}
 						$db->query(make_insert_query('history_log', [
 							'history_id' => null,
