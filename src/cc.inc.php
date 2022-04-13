@@ -351,11 +351,12 @@ function get_bad_cc()
 * @param string $module the module the invoices use.
 * @param bool|string $returnURL defaults to false, dont include a return / try again url, true to use the current url, or a string specifying the url
 * @param bool $useHandlePayment defaults to true, whether or not to call the handle payment processing after a successfull charge
+* @param bool $queue optional enable queueing of the activation processing code
 * @return bool whether or not the charge was successfull.
 * @throws \Exception
 * @throws \SmartyException
 */
-function charge_card($custid, $amount = false, $invoice = false, $module = 'default', $returnURL = false, $useHandlePayment = true)
+function charge_card($custid, $amount = false, $invoice = false, $module = 'default', $returnURL = false, $useHandlePayment = true, $queue = false)
 {
 	$custid = (int) $custid;
 	if ($invoice) {
@@ -509,7 +510,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 				(new \MyAdmin\Mail())->adminMail($subject, $email, false, 'client/payment_approved.tpl');
 			}
 			if ($useHandlePayment === true) {
-				handle_payment($custid, $orig_amount, $invoice, 11, $module, (isset($response['trans_id']) ? $response['trans_id'] : ''));
+				handle_payment($custid, $orig_amount, $invoice, 11, $module, (isset($response['trans_id']) ? $response['trans_id'] : ''), 'USD', $queue);
 			}
 			break;
 		default:
