@@ -504,13 +504,16 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			$retval = true;
 			if ($prepay_amount > 0) {
 				use_prepay_related_amount($invoice, $module, $prepay_amount);
+				if ($useHandlePayment === true) {
+					handle_payment($custid, $prepay_amount, $invoice, 12, $module, '', 'USD', $queue);
+				}
 				myadmin_log('billing', 'notice', '	CC Charge Successfully Used Partial Prepay Amount '.$prepay_amount, __LINE__, __FILE__);
 				$subject = 'CC Charge Auto Used Partial Prepay';
 				$email = "Module {$module}<br>Original Amount: {$orig_amount}<br>Prepay Amount {$prepay_amount}<br>Charged Amount {$amount}<br>Invoices ".implode(',', $invoice).'<br>';
 				(new \MyAdmin\Mail())->adminMail($subject, $email, false, 'client/payment_approved.tpl');
 			}
-			if ($useHandlePayment === true) {
-				handle_payment($custid, $orig_amount, $invoice, 11, $module, (isset($response['trans_id']) ? $response['trans_id'] : ''), 'USD', $queue);
+			if ($amount > 0 && $useHandlePayment === true) {
+				handle_payment($custid, $amount, $invoice, 11, $module, (isset($response['trans_id']) ? $response['trans_id'] : ''), 'USD', $queue);
 			}
 			break;
 		default:
