@@ -120,6 +120,10 @@ function add_cc($data, $prefix = '', $force = false)
 	$data = $tf->accounts->read($data['account_id']);
 	$return['idx'] = $idx;
 	if (can_use_cc($data, $tf->variables->request, false, $prefix.'cc')) {
+		if (isset($data['disable_cc'])) {
+			$tf->accounts->remove_key($data['account_id'], 'disable_cc');
+		}
+		$data = $tf->accounts->read($data['account_id']);
 		$return['status'] = 'ok';
 		$return['text'] = $tf->link('index.php', 'choice=none.manage_payment_types');
 	} else {
