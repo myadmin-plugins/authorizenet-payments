@@ -351,7 +351,7 @@ function get_bad_cc()
 * @param string $module the module the invoices use.
 * @param bool|string $returnURL defaults to false, dont include a return / try again url, true to use the current url, or a string specifying the url
 * @param bool $useHandlePayment defaults to true, whether or not to call the handle payment processing after a successfull charge
-* @param bool $queue optional enable queueing of the activation processing code
+* @param bool|string $queue optional whether or not to queue the payment processing / activation code, defaults to false, or can be a string redirect url (assumes queue true)
 * @return bool whether or not the charge was successfull.
 * @throws \Exception
 * @throws \SmartyException
