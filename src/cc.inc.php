@@ -413,13 +413,25 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 		return $retval;
 	}
 	$orig_amount = $amount;
-	$prepay_amount = get_prepay_related_amount($invoice, $module);
-	if ($prepay_amount > 0) {
-		if ($amount - $prepay_amount < 0) {
-			$prepay_amount = $amount;
+	$skip_prepay = 0; $prepay_invoices = [];
+	foreach ($invoice as $tinvoice) {
+		$invoice_data = get_invoice($tinvoice, $module);
+		if (preg_match('/Prepay ID (?P<pid>\d+)\sInvoice/', $invoice_data['invoices_description'], $matches_arr)) {
+			$skip_prepay = 1;
+			$prepay_invoices[$invoice_data['invoices_id']] = $invoice_data;
+			$prepay_invoices[$invoice_data['invoices_id']]['prepay_id'] = $matches_arr['pid'];
 		}
-		$amount = bcsub($amount, $prepay_amount, 2);
-		myadmin_log('billing', 'debug', "Now Amount {$amount}  Prepay {$prepay_amount}", __LINE__, __FILE__);
+	}
+	$prepay_amount = 0;
+	if(!$skip_prepay) {
+		$prepay_amount = get_prepay_related_amount($invoice, $module);
+		if ($prepay_amount > 0) {
+			if ($amount - $prepay_amount < 0) {
+				$prepay_amount = $amount;
+			}
+			$amount = bcsub($amount, $prepay_amount, 2);
+			myadmin_log('billing', 'debug', "Now Amount {$amount}  Prepay {$prepay_amount}", __LINE__, __FILE__);
+		}
 	}
 	$cc_parts = explode('/', (isset($data['cc_exp']) ? trim(str_replace(' ', '', (strpos($data['cc_exp'], '/') !== false ? $data['cc_exp'] : substr($data['cc_exp'], 0, 2).'/'.substr($data['cc_exp'], 2)))) : date('m/Y')));
 	$cc_exp = $cc_parts[0].'/'.(isset($cc_parts[1]) ? (mb_strlen($cc_parts[1]) == 2 ? '20'.$cc_parts[1] : $cc_parts[1]) : date('Y'));
@@ -514,6 +526,32 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 			}
 			if ($amount > 0 && $useHandlePayment === true) {
 				handle_payment($custid, $amount, $invoice, 11, $module, (isset($response['trans_id']) ? $response['trans_id'] : ''), 'USD', $queue);
+			}
+			//Prepay Invoices updates
+			if (!empty($prepay_invoices)) {
+				foreach ($prepay_invoices as $invoice_idd => $invoice_dataa) {
+					$db->query("SELECT * FROM prepays WHERE prepay_id = {$invoice_dataa['prepay_id']}");
+					$db->next_record(MYSQL_ASSOC);
+					$remaining = Money::of($db->Record['prepay_remaining'], $db->Record['prepay_currency'])
+						->plus(convertCurrency($invoice_dataa['invoices_amount'], $db->Record['prepay_currency'], 'USD'))
+						->getAmount()
+						->toFloat();
+					$GLOBALS['tf']->history->add('prepay_cc', $invoice_dataa['prepay_id'], $remaining, $db->Record['prepay_remaining'], $custid);
+					$db->query("UPDATE prepays SET prepay_remaining='{$remaining}', prepay_status=1 WHERE prepay_id='{$invoice_dataa['prepay_id']}'", __LINE__, __FILE__);
+					myadmin_log('payments', 'info', "Applied {$payment_remaining} {$invoice_dataa['invoices_currency']} To Prepay {$invoice_dataa['prepay_id']}", __LINE__, __FILE__);
+					$db->query(make_insert_query('comment_log', [
+						'history_id' => null,
+						'history_sid' => $GLOBALS['tf']->session->sessionid,
+						'history_timestamp' => mysql_now(),
+						'history_creator' => $GLOBALS['tf']->session->account_id,
+						'history_owner' => $custid,
+						'history_section' => 'prepay',
+						'history_type' => 'comment',
+						'history_new_value' => 'Added '.$payment_remaining.' '.$invoice_dataa['invoices_currency'].' from '.ucwords('CreditCard').' Txn '.$response['trans_id'],
+						'history_old_value' => $invoice_dataa['prepay_id']
+					]), __LINE__, __FILE__);
+				}
+				//Prepay Invoices updates ends
 			}
 			break;
 		default:
