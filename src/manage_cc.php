@@ -96,15 +96,13 @@ function manage_cc()
 						2 && abs($tf->variables->request['cc_amount2'] - (100 * $data['cc_amt2_'.$tf->decrypt($cc['cc'])])) < 2) || (abs($tf->variables->request['cc_amount1'] - (100 * $data['cc_amt2_' .
 						$tf->decrypt($cc['cc'])])) < 2 && abs($tf->variables->request['cc_amount2'] - (100 * $data['cc_amt1_'.$tf->decrypt($cc['cc'])])) < 2)) {
 						add_output('The Values matched!');
-						if (isset($data['disable_cc'])) {
-							$tf->accounts->remove_key($tf->session->account_id, 'disable_cc');
-						}
 						$tf->accounts->update(
 							$tf->session->account_id,
 							[
 							'payment_method' => 'cc',
-							'cc_auth_'.$tf->decrypt($cc['cc']) => 1
-													  ]
+							'cc_auth_'.$tf->decrypt($cc['cc']) => 1,
+							'disable_cc' => 0,
+						]
 						);
 						$tf->redirect($tf->link('index.php', 'choice=none.manage_cc&orig_url='.htmlspecial($orig_url)));
 					} else {

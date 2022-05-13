@@ -203,10 +203,6 @@ function can_use_cc($data, $cc_holder = false, $check_disabled_cc = true, $cc_fi
 				$reason .= " ".$GLOBALS['tf']->decrypt($cc_holder[$cc_field])." is not verified.";
 				$cc_usable = false;
 			}*/
-			if (isset($data['maxmind_score']) && $data['maxmind_score'] >= MAXMIND_SCORE_DISABLE_CC) {
-				$reason .= "  MaxMind Fraud Score is {$data['maxmind_score']}/10.";
-				$cc_usable = false;
-			}
 			if (!isset($data['maxmind_riskscore'])) {
 				$reason .= '  MaxMind Fraud Risk Score is blank';
 				$cc_usable = false;

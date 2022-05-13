@@ -71,14 +71,12 @@ function verify_cc($cc, $data)
 		(abs($request['cc_amount1'] - (100 * $data['cc_amt2_'.$cc_decrypted])) < 6 && abs($request['cc_amount2'] - (100 * $data['cc_amt1_'.$cc_decrypted])) < 6)) {
 		$return['status'] = 'ok';
 		$return['text'] = 'The Values matched!';
-		if (isset($data['disable_cc'])) {
-			$tf->accounts->remove_key($data['account_id'], 'disable_cc');
-		}
 		$tf->accounts->update($data['account_id'], [
 			'payment_method' => 'cc',
 			'cc' => $cc['cc'],
 			'cc_exp' => $cc['cc_exp'],
-			'cc_auth_'.$cc_decrypted => 1
+			'cc_auth_'.$cc_decrypted => 1,
+			'disable_cc' => 0,
 		]);
 	} else {
 		$tf->accounts->update($data['account_id'], ['cc_fails_'.$cc_decrypted => isset($data['cc_fails_'.$cc_decrypted]) ? 1 + $data['cc_fails_'.$cc_decrypted] : 1]);

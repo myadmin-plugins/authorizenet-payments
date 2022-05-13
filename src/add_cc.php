@@ -27,6 +27,7 @@ function add_cc_new_data($cc, $ccs, $data, $new_data, $prefix, $force = false)
 			$remove_key = true;
 		}
 		//if (!isset($data['cc']) || $data['cc'] == '' || $tf->decrypt($data['cc']) == '' || sizeof($ccs) == 1) {
+		$new_data['disable_cc'] = 0;
 		$new_data['payment_method'] = 'cc';
 		$new_data['cc'] = $cc['cc'];
 		$new_data['cc_exp'] = $cc['cc_exp'];
@@ -121,7 +122,7 @@ function add_cc($data, $prefix = '', $force = false)
 	$return['idx'] = $idx;
 	if (can_use_cc($data, $tf->variables->request, false, $prefix.'cc')) {
 		if (isset($data['disable_cc'])) {
-			$tf->accounts->remove_key($data['account_id'], 'disable_cc');
+			$tf->accounts->update($data['account_id'], ['disable_cc' => 0]);
 		}
 		$data = $tf->accounts->read($data['account_id']);
 		$return['status'] = 'ok';
