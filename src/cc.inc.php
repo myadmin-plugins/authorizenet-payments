@@ -412,7 +412,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
 	$skip_prepay = 0; $prepay_invoices = [];
 	foreach ($invoice as $tinvoice) {
 		$invoice_data = get_invoice($tinvoice, $module);
-		if (preg_match('/Prepay ID (?P<pid>\d+)\sInvoice/', $invoice_data['invoices_description'], $matches_arr)) {
+		if ($invoice_data !== false && preg_match('/Prepay ID (?P<pid>\d+)\sInvoice/', $invoice_data['invoices_description'], $matches_arr)) {
 			$skip_prepay = 1;
 			$prepay_invoices[$invoice_data['invoices_id']] = $invoice_data;
 			$prepay_invoices[$invoice_data['invoices_id']]['prepay_id'] = $matches_arr['pid'];
