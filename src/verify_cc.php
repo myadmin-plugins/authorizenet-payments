@@ -63,8 +63,11 @@ function verify_cc($cc, $data)
 	}
 	$cc_decrypted = $tf->decrypt($cc['cc']);
 	$request = $tf->variables->request;
-	myadmin_log('billing', 'info', "Verify CC Passed {$request['cc_amount1']} and {$request['cc_amount2']} vs. Our  {$data['cc_amt1_'.$cc_decrypted]} and {$data['cc_amt2_'.$cc_decrypted]}", __LINE__, __FILE__);
-	if (
+    myadmin_log('billing', 'info', "Verify CC Passed {$request['cc_amount1']} and {$request['cc_amount2']} vs. Our  {$data['cc_amt1_'.$cc_decrypted]} and {$data['cc_amt2_'.$cc_decrypted]}", __LINE__, __FILE__);
+    if (!isset($request['cc_amount1']) || !isset($request['cc_amount2']) || trim($request['cc_amount2']) == '' || trim($request['cc_amount1']) == '') {
+        $return['text'] = 'Missing or Blank Amount Passed.   One or more of the amounts was blank or not passed.   Please verify the values and try again. Please contact support if you need assistance.';
+        $return['status'] = 'failed';
+    } elseif (
 		(abs($request['cc_amount1'] - $data['cc_amt1_'.$cc_decrypted]) < 0.06 && abs($request['cc_amount2'] - $data['cc_amt2_'.$cc_decrypted]) < 0.06) ||
 		(abs($request['cc_amount1'] - $data['cc_amt2_'.$cc_decrypted]) < 0.06 && abs($request['cc_amount2'] - $data['cc_amt1_'.$cc_decrypted]) < 0.06) ||
 		(abs($request['cc_amount1'] - (100 * $data['cc_amt1_'.$cc_decrypted])) < 6 && abs($request['cc_amount2'] - (100 * $data['cc_amt2_'.$cc_decrypted])) < 6) ||
