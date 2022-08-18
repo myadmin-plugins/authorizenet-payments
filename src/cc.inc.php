@@ -535,7 +535,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
                         ->toFloat();
                     $GLOBALS['tf']->history->add('prepay_cc', $invoice_dataa['prepay_id'], $remaining, $db->Record['prepay_remaining'], $custid);
                     $db->query("UPDATE prepays SET prepay_remaining='{$remaining}', prepay_status=1 WHERE prepay_id='{$invoice_dataa['prepay_id']}'", __LINE__, __FILE__);
-                    myadmin_log('payments', 'info', "Applied {$payment_remaining} {$invoice_dataa['invoices_currency']} To Prepay {$invoice_dataa['prepay_id']}", __LINE__, __FILE__);
+                    myadmin_log('payments', 'info', "Applied {$remaining} {$invoice_dataa['invoices_currency']} To Prepay {$invoice_dataa['prepay_id']}", __LINE__, __FILE__);
                     $db->query(make_insert_query('comment_log', [
                         'history_id' => null,
                         'history_sid' => $GLOBALS['tf']->session->sessionid,
@@ -544,7 +544,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
                         'history_owner' => $custid,
                         'history_section' => 'prepay',
                         'history_type' => 'comment',
-                        'history_new_value' => 'Added '.$payment_remaining.' '.$invoice_dataa['invoices_currency'].' from '.ucwords('CreditCard').' Txn '.$response['trans_id'],
+                        'history_new_value' => 'Added '.$remaining.' '.$invoice_dataa['invoices_currency'].' from '.ucwords('CreditCard').' Txn '.$response['trans_id'],
                         'history_old_value' => $invoice_dataa['prepay_id']
                     ]), __LINE__, __FILE__);
                 }
