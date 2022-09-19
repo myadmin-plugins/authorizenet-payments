@@ -68,10 +68,10 @@ function verify_cc($cc, $data)
         $return['text'] = 'Missing or Blank Amount Passed.   One or more of the amounts was blank or not passed.   Please verify the values and try again. Please contact support if you need assistance.';
         $return['status'] = 'failed';
     } elseif (
-        (abs($request['cc_amount1'] - $data['cc_amt1_'.$cc_decrypted]) < 0.06 && abs($request['cc_amount2'] - $data['cc_amt2_'.$cc_decrypted]) < 0.06) ||
-        (abs($request['cc_amount1'] - $data['cc_amt2_'.$cc_decrypted]) < 0.06 && abs($request['cc_amount2'] - $data['cc_amt1_'.$cc_decrypted]) < 0.06) ||
-        (abs($request['cc_amount1'] - (100 * $data['cc_amt1_'.$cc_decrypted])) < 6 && abs($request['cc_amount2'] - (100 * $data['cc_amt2_'.$cc_decrypted])) < 6) ||
-        (abs($request['cc_amount1'] - (100 * $data['cc_amt2_'.$cc_decrypted])) < 6 && abs($request['cc_amount2'] - (100 * $data['cc_amt1_'.$cc_decrypted])) < 6)) {
+        (abs(floatval($request['cc_amount1']) - $data['cc_amt1_'.$cc_decrypted]) < 0.06 && abs(floatval($request['cc_amount2']) - $data['cc_amt2_'.$cc_decrypted]) < 0.06) ||
+        (abs(floatval($request['cc_amount1']) - $data['cc_amt2_'.$cc_decrypted]) < 0.06 && abs(floatval($request['cc_amount2']) - $data['cc_amt1_'.$cc_decrypted]) < 0.06) ||
+        (abs(floatval($request['cc_amount1']) - (100 * $data['cc_amt1_'.$cc_decrypted])) < 6 && abs(floatval($request['cc_amount2']) - (100 * $data['cc_amt2_'.$cc_decrypted])) < 6) ||
+        (abs(floatval($request['cc_amount1']) - (100 * $data['cc_amt2_'.$cc_decrypted])) < 6 && abs(floatval($request['cc_amount2']) - (100 * $data['cc_amt1_'.$cc_decrypted])) < 6)) {
         $return['status'] = 'ok';
         $return['text'] = 'The Values matched!';
         $tf->accounts->update($data['account_id'], [
