@@ -101,9 +101,9 @@ class Plugin
          **/
         $settings = $event->getSubject();
         $settings->add_radio_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_enable', _('Enable Authorize.net'), _('Enable Authorize.net'), AUTHORIZENET_ENABLE, [true, false], ['Enabled', 'Disabled']);
-        $settings->add_text_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_login', _('Login Name'), _('Login Name'), (defined('AUTHORIZENET_LOGIN') ? AUTHORIZENET_LOGIN : ''));
-        $settings->add_text_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_password', _('Password'), _('Password'), (defined('AUTHORIZENET_PASSWORD') ? AUTHORIZENET_PASSWORD : ''));
-        $settings->add_text_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_key', _('API Key'), _('API Key'), (defined('AUTHORIZENET_KEY') ? AUTHORIZENET_KEY : ''));
+        $settings->add_password_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_login', _('Login Name'), _('Login Name'), (defined('AUTHORIZENET_LOGIN') ? AUTHORIZENET_LOGIN : ''));
+        $settings->add_password_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_password', _('Password'), _('Password'), (defined('AUTHORIZENET_PASSWORD') ? AUTHORIZENET_PASSWORD : ''));
+        $settings->add_password_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_key', _('API Key'), _('API Key'), (defined('AUTHORIZENET_KEY') ? AUTHORIZENET_KEY : ''));
         $settings->add_text_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_referrer', _('Referrer URL (optional)'), _('Referrer URL (optional)'), (defined('AUTHORIZENET_REFERER') ? AUTHORIZENET_REFERER : ''));
     }
 }
