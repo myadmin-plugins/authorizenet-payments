@@ -604,7 +604,10 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
             }
             if ($returnURL !== false) {
                 if ($returnURL === true) {
-                    $returnURL = $GLOBALS['tf']->link($_SERVER['REQUEST_URI']);
+                    if(strpos($_SERVER['REQUEST_URI'], 'view_balance'))
+                        $returnURL = $GLOBALS['tf']->link('cart');
+                    else
+                        $returnURL = $GLOBALS['tf']->link($_SERVER['REQUEST_URI']);
                 }
                 $smarty->assign('returnURL', $returnURL);
             }
