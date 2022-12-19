@@ -47,7 +47,7 @@ function valid_cc($cc)
 {
     $schemes = [
         'AMEX' => [
-            '/^3[47][0-9]{15}$/'
+            '/^3[47]\d{13,14}$/'
         ],
         'CHINA_UNIONPAY' => [
             '/^62[0-9]{14,17}$/'
