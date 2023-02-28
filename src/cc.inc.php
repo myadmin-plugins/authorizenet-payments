@@ -167,10 +167,10 @@ function select_cc_exp($default)
 * @param bool $set_global_reason defaults to false, set to true to set a global cc_reason field w/ the reason why it was denied.
 * @return bool true if they can use cc's, false otherwise.
 */
-function can_use_cc($data, $cc_holder = false, $check_disabled_cc = true, $cc_field = 'cc', $set_global_reason = false)
+function can_use_cc($data, $ccData = false, $check_disabled_cc = true, $cc_field = 'cc', $set_global_reason = false)
 {
-    if ($cc_holder == false) {
-        $cc_holder = $data;
+    if ($ccData == false) {
+        $ccData = $data;
     }
     // Alternate logic for the same thing, this just figures it out in reverse and in a single if statement.
     // The new code adds a loggable reason for denying the use.
@@ -194,8 +194,8 @@ function can_use_cc($data, $cc_holder = false, $check_disabled_cc = true, $cc_fi
     $cc_usable = true;
     $reason = '';
     if (!isset($data['cc_whitelist']) || $data['cc_whitelist'] != 1) {
-        if (!isset($cc_holder[$cc_field]) || !isset($data['cc_auth_'.$GLOBALS['tf']->decrypt($cc_holder[$cc_field])])) {
-            if (!isset($cc_holder[$cc_field]) || trim($GLOBALS['tf']->decrypt($cc_holder[$cc_field])) == '') {
+        if (!isset($ccData[$cc_field]) || !isset($data['cc_auth_'.$GLOBALS['tf']->decrypt($ccData[$cc_field])])) {
+            if (!isset($ccData[$cc_field]) || trim($GLOBALS['tf']->decrypt($ccData[$cc_field])) == '') {
                 $reason .= '  No Credit-Card Number set or the number is blank.';
                 $cc_usable = false;
             }
@@ -203,11 +203,11 @@ function can_use_cc($data, $cc_holder = false, $check_disabled_cc = true, $cc_fi
                 $reason .= " ".$GLOBALS['tf']->decrypt($cc_holder[$cc_field])." is not verified.";
                 $cc_usable = false;
             }*/
-            if (!isset($data['maxmind_riskscore'])) {
+            if (!isset($data['maxmind_riskscore']) && !isset($ccData['maxmind_riskscore'])) {
                 $reason .= '  MaxMind Fraud Risk Score is blank';
                 $cc_usable = false;
-            } elseif ($data['maxmind_riskscore'] >= MAXMIND_RISKSCORE_DISABLE_CC) {
-                $reason .= "  MaxMind Fraud Risk Score is {$data['maxmind_riskscore']}% chance of Fraud.";
+            } elseif ((isset($ccData['maxmind_riskscore']) && $ccData['maxmind_riskscore'] >= MAXMIND_RISKSCORE_DISABLE_CC )|| $data['maxmind_riskscore'] >= MAXMIND_RISKSCORE_DISABLE_CC) {
+                $reason .= "  MaxMind Fraud Risk Score is {$ccData['maxmind_riskscore']}% chance of Fraud.";
                 $cc_usable = false;
             }
             if ($check_disabled_cc == true && isset($data['disable_cc']) && $data['disable_cc'] == 1) {
@@ -294,7 +294,7 @@ function make_cc_decline($custid, $invoice_id)
 function email_cc_decline($custid, $invoice_id)
 {
     $email = make_cc_decline($custid, $invoice_id);
-    myadmin_log('billing', 'debug', '	Emailing CC Decline Message To '.$email['toname'], __LINE__, __FILE__);
+    myadmin_log('billing', 'debug', '    Emailing CC Decline Message To '.$email['toname'], __LINE__, __FILE__);
     (new \MyAdmin\Mail())->multiMail($email['subject'], '<PRE>'.$email['invoice'].'</PRE>', $email['toemail'], 'client/ccdecline.tpl');
 }
 
@@ -516,7 +516,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
                 if ($useHandlePayment === true) {
                     handle_payment($custid, $prepay_amount, $invoice, 12, $module, '', 'USD', $queue);
                 }
-                myadmin_log('billing', 'notice', '	CC Charge Successfully Used Partial Prepay Amount '.$prepay_amount, __LINE__, __FILE__);
+                myadmin_log('billing', 'notice', '    CC Charge Successfully Used Partial Prepay Amount '.$prepay_amount, __LINE__, __FILE__);
                 $subject = 'CC Charge Auto Used Partial Prepay';
                 $email = "Module {$module}<br>Original Amount: {$orig_amount}<br>Prepay Amount {$prepay_amount}<br>Charged Amount {$amount}<br>Invoices ".implode(',', $invoice).'<br>';
                 (new \MyAdmin\Mail())->adminMail($subject, $email, false, 'client/payment_approved.tpl');
