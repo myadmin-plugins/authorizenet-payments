@@ -108,6 +108,11 @@ function add_cc($data, $prefix = '', $force = false)
     $new_data['ccs_added'] = $ccs_added;
     $data['ccs_added'] = $ccs_added;
     add_cc_new_data($cc, $ccs, $data, $new_data, $prefix, $force);
+    if (!isset($data['maxmind_riskscore'])) {
+        myadmin_log('billing', 'info', 'Calling Update_maxmind()', __LINE__, __FILE__);
+        function_requirements('update_maxmind'); // This handles fraud protection
+        update_maxmind($data['account_id']);
+    }
     if (!isset($cc['maxmind_riskscore'])) {
         myadmin_log('billing', 'info', 'Calling Update_maxmind()', __LINE__, __FILE__);
         function_requirements('update_maxmind'); // This handles fraud protection
