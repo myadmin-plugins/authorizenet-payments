@@ -207,7 +207,7 @@ function can_use_cc($data, $ccData = false, $check_disabled_cc = true, $cc_field
                 $reason .= '  MaxMind Fraud Risk Score is blank';
                 $cc_usable = false;
             } elseif ((isset($ccData['maxmind_riskscore']) && $ccData['maxmind_riskscore'] >= MAXMIND_RISKSCORE_DISABLE_CC )|| $data['maxmind_riskscore'] >= MAXMIND_RISKSCORE_DISABLE_CC) {
-                $reason .= "  MaxMind Fraud Risk Score is {$ccData['maxmind_riskscore']}% chance of Fraud.";
+                $reason .= "  MaxMind Fraud Risk Score is ".(isset($ccData['maxmind_riskscore']) ? $ccData['maxmind_riskscore'] : $data['maxmind_riskscore'])."% chance of Fraud.";
                 $cc_usable = false;
             }
             if ($check_disabled_cc == true && isset($data['disable_cc']) && $data['disable_cc'] == 1) {
