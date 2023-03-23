@@ -369,14 +369,14 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
         add_output('<div class="container alert alert-danger"><strong>Error! CC Disabled! </strong>Payment type credit card is currently unavailable. Remove the credit card(s) you have on file and add them again. If you continue having issues please contact us.</div>');
         return $retval;
     }
-    if (!isset($data['cc'])) {
+    if (!isset($data['cc']) && !isset($GLOBALS['tf']->variables->request['ot_cc'])) {
         global $webpage;
         if (isset($webpage) && $webpage == true) {
             add_output('<div class="container alert alert-danger"><strong>Error! No CC On File! </strong>We have no credit-card on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.</div>');
         }
         return $retval;
     }
-    if (!isset($data['cc_exp'])) {
+    if (!isset($data['cc_exp']) && !isset($GLOBALS['tf']->variables->request['ot_cc'])) {
         global $webpage;
         if (isset($webpage) && $webpage == true) {
             add_output('<div class="container alert alert-danger"><strong>Error! No CC Expiration Date On File! </strong>We have no credit-card exp date on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.</div>');
@@ -398,7 +398,8 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
     $charge_desc = $lid;
     $response['code'] = 0;
     //$cc = $data['cc'];
-    $cc = $GLOBALS['tf']->decrypt($data['cc']);
+    $ccs = parse_ccs($data);
+    $cc = (isset($GLOBALS['tf']->variables->request['ot_cc'])) ? $GLOBALS['tf']->decrypt($$ccs[$GLOBALS['tf']->variables->request['ot_cc']]['cc']) : $GLOBALS['tf']->decrypt($data['cc']);
     $cc = trim($cc);
     $cc = str_replace([' ', '_', '-'], ['', '', ''], $cc);
     $badcc = get_bad_cc();
@@ -431,6 +432,9 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
         }
     }
     $cc_parts = explode('/', (isset($data['cc_exp']) ? trim(str_replace(' ', '', (strpos($data['cc_exp'], '/') !== false ? $data['cc_exp'] : substr($data['cc_exp'], 0, 2).'/'.substr($data['cc_exp'], 2)))) : date('m/Y')));
+    if (isset($GLOBALS['tf']->variables->request['ot_cc'])) {
+        $cc_parts = explode('/', (isset($ccs[$GLOBALS['tf']->variables->request['ot_cc']]['cc_exp']) ? trim(str_replace(' ', '', (strpos($ccs[$GLOBALS['tf']->variables->request['ot_cc']]['cc_exp'], '/') !== false ? $ccs[$GLOBALS['tf']->variables->request['ot_cc']]['cc_exp'] : substr($ccs[$GLOBALS['tf']->variables->request['ot_cc']]['cc_exp'], 0, 2).'/'.substr($ccs[$GLOBALS['tf']->variables->request['ot_cc']]['cc_exp'], 2)))) : date('m/Y')));
+    }
     $cc_exp = $cc_parts[0].'/'.(isset($cc_parts[1]) ? (mb_strlen($cc_parts[1]) == 2 ? '20'.$cc_parts[1] : $cc_parts[1]) : date('Y'));
     myadmin_log('billing', 'notice', "Charging {$lid} ({$data['status']}) ".($amount == $orig_amount ? $amount : $amount.' and the rest of the '.$orig_amount.' paid via prepay (had '.$prepay_amount.' prepays available)').'} Using Creditcard '.mask_cc($GLOBALS['tf']->decrypt($data['cc'])).' (disabled '.(isset($data['disable_cc']) && $data['disable_cc'] == 1 ? 'yes' : 'no').')', __LINE__, __FILE__);
     if ($amount == 0) {
