@@ -399,7 +399,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
     $response['code'] = 0;
     //$cc = $data['cc'];
     $ccs = parse_ccs($data);
-    $cc = (isset($GLOBALS['tf']->variables->request['ot_cc'])) ? $GLOBALS['tf']->decrypt($$ccs[$GLOBALS['tf']->variables->request['ot_cc']]['cc']) : $GLOBALS['tf']->decrypt($data['cc']);
+    $cc = (isset($GLOBALS['tf']->variables->request['ot_cc'])) ? $GLOBALS['tf']->decrypt($ccs[$GLOBALS['tf']->variables->request['ot_cc']]['cc']) : $GLOBALS['tf']->decrypt($data['cc']);
     $cc = trim($cc);
     $cc = str_replace([' ', '_', '-'], ['', '', ''], $cc);
     $badcc = get_bad_cc();
