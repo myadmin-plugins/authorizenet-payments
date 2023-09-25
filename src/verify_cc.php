@@ -27,13 +27,10 @@ function verify_cc_charge($cc, $data)
             $return['status'] = 'error';
             $return['text'] = 'There was a problem with this credit card, check the cards available amount and try again.';
         } else {
-            $tf->accounts->update(
-                $data['account_id'],
-                [
+            $tf->accounts->update($data['account_id'],[
                 'cc_amt1_'.$cc_decrypted => $amt1,
                 'cc_amt2_'.$cc_decrypted => $amt2
-                                                     ]
-            );
+            ]);
             $return['status'] = 'ok';
             $return['text'] = 'Successfully Charged Card';
         }

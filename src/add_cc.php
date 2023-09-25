@@ -22,7 +22,7 @@ function add_cc_new_data($cc, $ccs, $data, $new_data, $prefix, $force = false)
 {
     $tf = $GLOBALS['tf'];
     $remove_key = false;
-    if ($force === true || can_use_cc($data, $tf->variables->request, false, $prefix.'cc')) {
+    if ($force === true || can_use_cc($data, $new_data, false, $prefix.'cc')) {
         if (isset($data['disable_cc']) && $data['disable_cc'] == 1) {
             $remove_key = true;
         }
@@ -51,12 +51,15 @@ function add_cc_new_data($cc, $ccs, $data, $new_data, $prefix, $force = false)
  * @param array  $data
  * @param string $prefix
  * @param bool   $force
+ * @param array|false $request
  * @return array
  * @throws \Exception
  * @parram bool $force
  */
-function add_cc($data, $prefix = '', $force = false)
+function add_cc($data, $prefix = '', $force = false, $request = false)
 {
+    if ($request === false)
+        $request = $GLOBALS['tf']->variables->request;
     $tf = $GLOBALS['tf'];
     $minimum_days = 30;
     $max_early_ccs = 4;
@@ -80,24 +83,24 @@ function add_cc($data, $prefix = '', $force = false)
         return $return;
     }
     function_requirements('valid_cc');
-    if (!valid_cc(trim(str_replace([' ', '_', '-'], ['', '', ''], $tf->variables->request[$prefix.'cc'])))) {
+    if (!valid_cc(trim(str_replace([' ', '_', '-'], ['', '', ''], $request[$prefix.'cc'])))) {
         $return['status'] = 'error';
         $return['text'] = "Invalid card format.";
         return $return;
     }
     $new_data = [];
-    if (preg_match('/^[0-9][0-9][0-9][0-9]$/', $tf->variables->request[$prefix.'cc_exp'])) {
-        $tf->variables->request[$prefix.'cc_exp'] = mb_substr($tf->variables->request[$prefix.'cc_exp'], 0, 2).'/20'.mb_substr($tf->variables->request[$prefix.'cc_exp'], 2);
+    if (preg_match('/^[0-9][0-9][0-9][0-9]$/', $request[$prefix.'cc_exp'])) {
+        $request[$prefix.'cc_exp'] = mb_substr($request[$prefix.'cc_exp'], 0, 2).'/20'.mb_substr($request[$prefix.'cc_exp'], 2);
     }
     $cc = [
-        'cc' => $tf->encrypt(trim(str_replace([' ', '_', '-'], ['', '', ''], $tf->variables->request[$prefix.'cc']))),
-        'cc_exp' => trim(str_replace([' ', '_', '-'], ['', '', ''], $tf->variables->request[$prefix.'cc_exp']))
+        'cc' => $tf->encrypt(trim(str_replace([' ', '_', '-'], ['', '', ''], $request[$prefix.'cc']))),
+        'cc_exp' => trim(str_replace([' ', '_', '-'], ['', '', ''], $request[$prefix.'cc_exp']))
     ];
     foreach (['name', 'address', 'city', 'state', 'zip', 'country'] as $field) {
-        if (isset($tf->variables->request[$prefix.$field]) && $tf->variables->request[$prefix.$field] != '') {
-            $cc[$field] = $tf->variables->request[$prefix.$field];
+        if (isset($request[$prefix.$field]) && $request[$prefix.$field] != '') {
+            $cc[$field] = $request[$prefix.$field];
             if (!isset($data[$field]) && !isset($new_data[$field])) {
-                $new_data[$field] = $tf->variables->request[$prefix.$field];
+                $new_data[$field] = $request[$prefix.$field];
             }
         }
     }

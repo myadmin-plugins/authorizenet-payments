@@ -702,8 +702,8 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
             'x_Card_Num' => $cc,
             'x_Exp_Date' => $cc_exp
         ];
-        if (isset($GLOBALS['tf']->variables->request['cc_ccv2']) && in_array(mb_strlen($GLOBALS['tf']->variables->request['cc_ccv2']), [3, 4])) {
-            $args['x_Card_Code'] = $GLOBALS['tf']->variables->request['cc_ccv2'];
+        if (isset($_POST['cc_ccv2']) && in_array(mb_strlen($_POST['cc_ccv2']), [3, 4])) {
+            $args['x_Card_Code'] = $_POST['cc_ccv2'];
         }
         $options = [
             CURLOPT_REFERER => 'https://admin.trouble-free.net/',
