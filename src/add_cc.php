@@ -58,8 +58,9 @@ function add_cc_new_data($cc, $ccs, $data, $new_data, $prefix, $force = false)
  */
 function add_cc($data, $prefix = '', $force = false, $request = false)
 {
-    if ($request === false)
+    if ($request === false) {
         $request = $GLOBALS['tf']->variables->request;
+    }
     $tf = $GLOBALS['tf'];
     $minimum_days = 30;
     $max_early_ccs = 4;

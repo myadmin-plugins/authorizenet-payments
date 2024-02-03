@@ -206,7 +206,7 @@ function can_use_cc($data, $ccData = false, $check_disabled_cc = true, $cc_field
             if (!isset($data['maxmind_riskscore']) && !isset($ccData['maxmind_riskscore'])) {
                 $reason .= '  MaxMind Fraud Risk Score is blank';
                 $cc_usable = false;
-            } elseif ((isset($ccData['maxmind_riskscore']) && $ccData['maxmind_riskscore'] >= MAXMIND_RISKSCORE_DISABLE_CC )|| $data['maxmind_riskscore'] >= MAXMIND_RISKSCORE_DISABLE_CC) {
+            } elseif ((isset($ccData['maxmind_riskscore']) && $ccData['maxmind_riskscore'] >= MAXMIND_RISKSCORE_DISABLE_CC)|| $data['maxmind_riskscore'] >= MAXMIND_RISKSCORE_DISABLE_CC) {
                 $reason .= "  MaxMind Fraud Risk Score is ".($ccData['maxmind_riskscore'] ?? $data['maxmind_riskscore'])."% chance of Fraud.";
                 $cc_usable = false;
             }
@@ -608,10 +608,11 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
             }
             if ($returnURL !== false) {
                 if ($returnURL === true) {
-                    if(strpos($_SERVER['REQUEST_URI'], 'view_balance'))
+                    if (strpos($_SERVER['REQUEST_URI'], 'view_balance')) {
                         $returnURL = $GLOBALS['tf']->link('cart');
-                    else
+                    } else {
                         $returnURL = $GLOBALS['tf']->link($_SERVER['REQUEST_URI']);
+                    }
                 }
                 $smarty->assign('returnURL', $returnURL);
             }
