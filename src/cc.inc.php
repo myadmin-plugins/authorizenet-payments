@@ -207,7 +207,7 @@ function can_use_cc($data, $ccData = false, $check_disabled_cc = true, $cc_field
                 $reason .= '  MaxMind Fraud Risk Score is blank';
                 $cc_usable = false;
             } elseif ((isset($ccData['maxmind_riskscore']) && $ccData['maxmind_riskscore'] >= MAXMIND_RISKSCORE_DISABLE_CC )|| $data['maxmind_riskscore'] >= MAXMIND_RISKSCORE_DISABLE_CC) {
-                $reason .= "  MaxMind Fraud Risk Score is ".(isset($ccData['maxmind_riskscore']) ? $ccData['maxmind_riskscore'] : $data['maxmind_riskscore'])."% chance of Fraud.";
+                $reason .= "  MaxMind Fraud Risk Score is ".($ccData['maxmind_riskscore'] ?? $data['maxmind_riskscore'])."% chance of Fraud.";
                 $cc_usable = false;
             }
             if ($check_disabled_cc == true && isset($data['disable_cc']) && $data['disable_cc'] == 1) {
@@ -233,8 +233,8 @@ function can_use_cc($data, $ccData = false, $check_disabled_cc = true, $cc_field
 */
 function format_cc_exp()
 {
-    $exp_month = (isset($GLOBALS['tf']->variables->request['exp_month']) ? $GLOBALS['tf']->variables->request['exp_month'] : 1);
-    $exp_year = (isset($GLOBALS['tf']->variables->request['exp_year']) ? $GLOBALS['tf']->variables->request['exp_year'] : date('Y'));
+    $exp_month = ($GLOBALS['tf']->variables->request['exp_month'] ?? 1);
+    $exp_year = ($GLOBALS['tf']->variables->request['exp_year'] ?? date('Y'));
     if (mb_strlen($exp_month) == 1) {
         $exp_month = '0'.$exp_month;
     }
@@ -321,7 +321,7 @@ function parse_ccs($data)
             }
         }
         if ($found == false) {
-            $ccs[] = ['cc' => $cc, 'cc_exp' => isset($data['cc_exp']) ? $data['cc_exp'] : ''];
+            $ccs[] = ['cc' => $cc, 'cc_exp' => $data['cc_exp'] ?? ''];
         }
         //$ccs[] = array('cc' => $tf->encrypt($cc), 'cc_exp' => isset($data['cc_exp']) ? $data['cc_exp'] : '');
     }
@@ -456,17 +456,17 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
             'x_Description' => 'Hosting Charge ('.$charge_desc.')',
             'x_Amount' => $amount,
             'x_Cust_ID' => $custid,
-            'x_Email' => isset($data['account_lid']) ? $data['account_lid'] : '',
-            'x_First_Name' => isset($first_name) ? $first_name : '',
-            'x_Last_Name' => isset($last_name) ? $last_name : '',
+            'x_Email' => $data['account_lid'] ?? '',
+            'x_First_Name' => $first_name ?? '',
+            'x_Last_Name' => $last_name ?? '',
             'x_Company' => isset($data['company']) ? str_replace(',', ' ', $data['company']) : '',
             'x_Address' => isset($data['address']) ? str_replace(',', ' ', $data['address']) : '',
             'x_City' => isset($data['city']) ? str_replace(',', ' ', $data['city']) : '',
             'x_State' => isset($data['state']) ? str_replace(',', ' ', $data['state']) : '',
-            'x_Zip' => isset($data['zip']) ? $data['zip'] : '',
-            'x_Country' => isset($data['country']) ? $data['country'] : '',
+            'x_Zip' => $data['zip'] ?? '',
+            'x_Country' => $data['country'] ?? '',
             'x_Phone' => isset($data['phone']) ? str_replace(',', ' ', $data['phone']) : '',
-            'x_Card_Num' => isset($cc) ? $cc : '',
+            'x_Card_Num' => $cc ?? '',
             'x_Exp_Date' => $cc_exp
         ];
         if (isset($GLOBALS['tf']->variables->request['cc_ccv2']) && in_array(mb_strlen($GLOBALS['tf']->variables->request['cc_ccv2']), [3, 4])) {
@@ -526,7 +526,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
                 (new \MyAdmin\Mail())->adminMail($subject, $email, false, 'client/payment_approved.tpl');
             }
             if ($amount > 0 && $useHandlePayment === true) {
-                handle_payment($custid, $amount, $invoice, 11, $module, (isset($response['trans_id']) ? $response['trans_id'] : ''), 'USD', $queue);
+                handle_payment($custid, $amount, $invoice, 11, $module, ($response['trans_id'] ?? ''), 'USD', $queue);
             }
             //Prepay Invoices updates
             if (!empty($prepay_invoices)) {
@@ -696,8 +696,8 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
             'x_Address' => isset($data['address']) ? str_replace(',', ' ', $data['address']) : '',
             'x_City' => isset($data['city']) ? str_replace(',', ' ', $data['city']) : '',
             'x_State' => isset($data['state']) ? str_replace(',', ' ', $data['state']) : '',
-            'x_Zip' => isset($data['zip']) ? $data['zip'] : '',
-            'x_Country' => isset($data['country']) ? $data['country'] : '',
+            'x_Zip' => $data['zip'] ?? '',
+            'x_Country' => $data['country'] ?? '',
             'x_Phone' => isset($data['phone']) ? str_replace(',', ' ', $data['phone']) : '',
             'x_Card_Num' => $cc,
             'x_Exp_Date' => $cc_exp

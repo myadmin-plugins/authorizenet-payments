@@ -21,7 +21,7 @@ function disable_cc()
         return false;
     }
     if (verify_csrf_referrer(__LINE__, __FILE__)) {
-        $module = get_module_name((isset($GLOBALS['tf']->variables->request['module']) ? $GLOBALS['tf']->variables->request['module'] : 'default'));
+        $module = get_module_name(($GLOBALS['tf']->variables->request['module'] ?? 'default'));
         $customer = $GLOBALS['tf']->variables->request['customer'];
         $data = $GLOBALS['tf']->accounts->read($customer);
         $lid = $data['account_lid'];

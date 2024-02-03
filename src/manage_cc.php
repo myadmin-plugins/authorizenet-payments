@@ -302,7 +302,7 @@ All credit cards must be verified before they can be used.  To verify them click
                 $table->set_colspan(2);
                 $table->add_field($table->make_radio('payment_method', 'paypal', (isset($data['payment_method']) && $data['payment_method'] == 'paypal' ? true : false), '', 'Pay With PayPal') . $table->make_radio('payment_method', 'cc', (isset($data['payment_method']) && $data['payment_method'] == 'cc' ? true : false), '', '<span title="Add a Credit-Card First">Pay With Credit-Card</span>'), 'l');
                 $table->add_field('Automatically Charge CC');
-                $table->add_field(make_select('cc_auto', ['0', '1'], ['No', 'Yes'], (isset($data['cc_auto']) ? $data['cc_auto'] : '1')));
+                $table->add_field(make_select('cc_auto', ['0', '1'], ['No', 'Yes'], ($data['cc_auto'] ?? '1')));
                 $table->add_field($table->make_submit('Update', false, false, 'style="color: white; padding: 0.1em 0.5em; background: none repeat-x scroll 50% 50% #004ccc; border-radius: 10px;" class="ui-button ui-widget ui-state-hover ui-corner-all"'));
             } else {
                 $table->set_colspan(4);

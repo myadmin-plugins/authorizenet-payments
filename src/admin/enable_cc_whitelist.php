@@ -21,7 +21,7 @@ function enable_cc_whitelist()
         return false;
     }
     $customer = $GLOBALS['tf']->variables->request['customer'];
-    $module = get_module_name((isset($GLOBALS['tf']->variables->request['module']) ? $GLOBALS['tf']->variables->request['module'] : 'default'));
+    $module = get_module_name(($GLOBALS['tf']->variables->request['module'] ?? 'default'));
     $data = $GLOBALS['tf']->accounts->read($customer);
     if ($GLOBALS['tf']->ima == 'admin' && verify_csrf_referrer(__LINE__, __FILE__)) {
         $new_data['cc_whitelist'] = 1;

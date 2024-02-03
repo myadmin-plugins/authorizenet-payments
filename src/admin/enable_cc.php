@@ -21,7 +21,7 @@ function enable_cc()
         return false;
     }
     if (verify_csrf_referrer(__LINE__, __FILE__)) {
-        $module = get_module_name((isset($GLOBALS['tf']->variables->request['module']) ? $GLOBALS['tf']->variables->request['module'] : 'default'));
+        $module = get_module_name(($GLOBALS['tf']->variables->request['module'] ?? 'default'));
         myadmin_log('admin', 'info', "Module $module", __LINE__, __FILE__);
         $customer = $GLOBALS['tf']->variables->request['customer'];
         myadmin_log('admin', 'info', "Customer $customer", __LINE__, __FILE__);
