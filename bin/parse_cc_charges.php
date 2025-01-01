@@ -6,7 +6,7 @@
 * @author Joe Huss <detain@interserver.net>
 * @package MyAdmin
 * @category Scripts
-* @copyright 2020
+* @copyright 2025
 */
 
     require_once __DIR__.'/../../include/functions.inc.php';
