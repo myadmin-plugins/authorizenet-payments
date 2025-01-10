@@ -11,7 +11,7 @@ function view_cc_transaction()
 {
     page_title('Credit Card Transaction Information');
     function_requirements('has_acl');
-    if ($GLOBALS['tf']->ima != 'admin' || !has_acl('view_customer')) {
+    if (($GLOBALS['tf']->ima == 'client' && CLIENT_VIEW_PAYMENT == false) || ($GLOBALS['tf']->ima == 'admin' && !has_acl('view_customer'))) {
         dialog('Not admin', 'Not Admin or you lack the permissions to view this page.');
         return false;
     }
@@ -34,6 +34,12 @@ function view_cc_transaction()
         $transaction = $db->real_escape($GLOBALS['tf']->variables->request['transaction']);
         //$transaction_id = mb_substr($transaction, 0, 11);
         $query = "select * from cc_log where cc_result_trans_id='{$transaction}'";
+    } else {
+        dialog('Missing Parameter', 'Missing Required Parameter');
+        return false;
+    }
+    if ($GLOBALS['tf']->ima == 'client') {
+        $query .= " and cc_custid={$GLOBALS['tf']->session->account_id}";
     }
     $db->query($query);
     if ($db->num_rows() == 0) {
@@ -55,7 +61,7 @@ function view_cc_transaction()
                 }
                 if ($key == 'Custid') {
                     $transaction[$key] = $value;
-                //$transaction[$key] = $table->make_link('choice=none.edit_customer&amp;lid='.$value, $value, false, 'target="_blank" title="Edit Customer"');
+                //$transaction[$key] = $GLOBALS['tf']->ima == 'client' ? $value : $table->make_link('choice=none.edit_customer&amp;lid='.$value, $value, false, 'target="_blank" title="Edit Customer"');
                 } elseif ($key == 'Invoice Num') {
                     $db_check_invoice->query("SELECT * FROM invoices WHERE invoices_custid={$db->Record['cc_custid']} and invoices_description='Credit Card Payment {$temp_trans_id}'", __LINE__, __FILE__);
                     if ($db_check_invoice->num_rows() > 0) {
@@ -73,6 +79,7 @@ function view_cc_transaction()
         }
     }
     $cats = get_cc_cats_and_fields();
+    $smarty->assign('ima', $GLOBALS['tf']->ima);
     $smarty->assign('transactions', $transactions);
     $smarty->assign('transaction', $transaction);
     $smarty->assign('paypal_cats', $cats);
