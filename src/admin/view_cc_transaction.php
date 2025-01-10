@@ -26,7 +26,11 @@ function view_cc_transaction()
     $db = clone $GLOBALS['tf']->db;
     $db_check_invoice = get_module_db($module);
 
-    if (isset($GLOBALS['tf']->variables->request['transaction'])) {
+    if (isset($GLOBALS['tf']->variables->request['id'])) {
+        $transaction = intval($GLOBALS['tf']->variables->request['id']);
+        //$transaction_id = mb_substr($transaction, 0, 11);
+        $query = "select * from cc_log where cc_id='{$transaction}'";
+    } elseif (isset($GLOBALS['tf']->variables->request['transaction'])) {
         $transaction = $db->real_escape($GLOBALS['tf']->variables->request['transaction']);
         //$transaction_id = mb_substr($transaction, 0, 11);
         $query = "select * from cc_log where cc_result_trans_id='{$transaction}'";
