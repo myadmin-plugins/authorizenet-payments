@@ -436,7 +436,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
         $cc_parts = explode('/', (isset($ccs[$GLOBALS['tf']->variables->request['ot_cc']]['cc_exp']) ? trim(str_replace(' ', '', (strpos($ccs[$GLOBALS['tf']->variables->request['ot_cc']]['cc_exp'], '/') !== false ? $ccs[$GLOBALS['tf']->variables->request['ot_cc']]['cc_exp'] : substr($ccs[$GLOBALS['tf']->variables->request['ot_cc']]['cc_exp'], 0, 2).'/'.substr($ccs[$GLOBALS['tf']->variables->request['ot_cc']]['cc_exp'], 2)))) : date('m/Y')));
     }
     $cc_exp = $cc_parts[0].'/'.(isset($cc_parts[1]) ? (mb_strlen($cc_parts[1]) == 2 ? '20'.$cc_parts[1] : $cc_parts[1]) : date('Y'));
-    myadmin_log('billing', 'notice', "Charging {$lid} ({$data['status']}) ".($amount == $orig_amount ? $amount : $amount.' and the rest of the '.$orig_amount.' paid via prepay (had '.$prepay_amount.' prepays available)').'} Using Creditcard '.mask_cc($GLOBALS['tf']->decrypt($data['cc'])).' (disabled '.(isset($data['disable_cc']) && $data['disable_cc'] == 1 ? 'yes' : 'no').')', __LINE__, __FILE__);
+    myadmin_log('billing', 'notice', "Charging {$lid} ({$data['status']}) ".($amount == $orig_amount ? $amount : $amount.' and the rest of the '.$orig_amount.' paid via prepay (had '.$prepay_amount.' prepays available)').'} Using Creditcard '.mask_cc($cc).' (disabled '.(isset($data['disable_cc']) && $data['disable_cc'] == 1 ? 'yes' : 'no').')', __LINE__, __FILE__);
     if ($amount == 0) {
         // approve if they have no balance
         $response['code'] = 1;
@@ -556,7 +556,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
             }
             break;
         default:
-            myadmin_log('billing', 'notice', 'FAILURE (custid:'.$custid.',exp:'.$data['cc_exp'].',cc:'.mask_cc($cc, true).',amount:'.$amount.', code:'.$response['code'].') raw: '.$cc_response, __LINE__, __FILE__);
+            myadmin_log('billing', 'notice', 'FAILURE (custid:'.$custid.',exp:'.$cc_exp.',cc:'.mask_cc($cc, true).',amount:'.$amount.', code:'.$response['code'].') raw: '.$cc_response, __LINE__, __FILE__);
             add_output('<div class="container alert alert-danger"><div style="width: 40%;text-align: left;margin-left: 10%;"><strong>Error! Your credit card has declined the transaction. </strong><br><br><p>The most common reasons for declines are:</p><ul><li>Incorrect credit card number or expiration date</li><li>Insufficient funds in your credit card</li><li>The bank declined based on purchase history</li><li>The bank\'s fraud rules blocked the transaction</li></ul><br><p>Please contact your bank for reason and try again.</p></div></div>');
             if ($cc_log['cc_result_reason_text'] == 'Declined  (Card reported lost or stolen - Contact card issuer for resolution.)') {
                 (new \MyAdmin\Mail())->adminMail('Stolen Credit Card', print_r($cc_log, true), 'billing@interserver.net', 'admin/cc_bad_response.tpl');
