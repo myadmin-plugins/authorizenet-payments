@@ -534,7 +534,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
                 foreach ($prepay_invoices as $invoice_idd => $invoice_dataa) {
                     $db->query("SELECT * FROM prepays WHERE prepay_id = {$invoice_dataa['prepay_id']}");
                     $db->next_record(MYSQL_ASSOC);
-                    $remaining = Money::of($db->Record['prepay_remaining'], $db->Record['prepay_currency'])
+                    $remaining = Money::of($db->Record['prepay_remaining'], $db->Record['prepay_currency'], null, RoundingMode::UP)
                         ->plus(convertCurrency($invoice_dataa['invoices_amount'], $db->Record['prepay_currency'], 'USD'))
                         ->getAmount()
                         ->toFloat();
