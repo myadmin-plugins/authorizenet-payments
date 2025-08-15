@@ -41,6 +41,7 @@ function cc_refund()
         }
     }
     $GLOBALS['tf']->variables->request['inv'] = implode(',', $invoice_arr);
+    $do = strtotime(date('Y-m-d', strtotime($cc_log['cc_timestamp']))) == strtotime(date('Y-m-d')) ? 'void' : 'refund';
     $db = clone $GLOBALS['tf']->db;
     $dbR = clone $GLOBALS['tf']->db;
     $db->query("SELECT * FROM invoices WHERE invoices_id IN ({$GLOBALS['tf']->variables->request['inv']})");
@@ -50,7 +51,6 @@ function cc_refund()
             //Get all refund Invoices for the transaction
             $dbR->query("SELECT * FROM invoices WHERE invoices_extra = {$db->Record['invoices_id']} and invoices_type=2");
             if ($dbR->num_rows() == 0) {
-                $do = strtotime(date('Y-m-d', strtotime($cc_log['cc_timestamp']))) == strtotime(date('Y-m-d')) ? 'void' : 'refund';
                 $serviceAmount[$db->Record['invoices_id']] = $db->Record['invoices_amount'];
                 if ($do == 'void') {
                     $checkbox .= '<input type="checkbox" name="refund_amount_opt[]" value="'.$db->Record['invoices_service'].'_'.$db->Record['invoices_id'].'_'.$db->Record['invoices_amount'].'" onclick="return false;" checked readonly>&nbsp;<label for="" style="text-transform: capitalize; margin-bottom: 15px; font-weight: normal;">';
@@ -150,6 +150,10 @@ function cc_refund()
         }
         if ($GLOBALS['tf']->variables->request['refund_amount'] <= 0) {
             add_output('Error! You entered Refund amount less than or equal to $0. Refund amount must be greater than $0.');
+            $continue = false;
+        }
+        if ($do == 'void' && $GLOBALS['tf']->variables->request['amount'] != $GLOBALS['tf']->variables->request['refund_amount']) {
+            add_output('Can only void the entire transaction on the day of the charge');
             $continue = false;
         }
         if ($continue === true) {
