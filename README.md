@@ -1,28 +1,69 @@
-# Authorizenet handling plugin for MyAdmin
+# MyAdmin Authorize.Net Payments Plugin
 
-Authorizenet handling plugin for MyAdmin
+[![Tests](https://github.com/detain/myadmin-authorizenet-payments/actions/workflows/tests.yml/badge.svg)](https://github.com/detain/myadmin-authorizenet-payments/actions/workflows/tests.yml)
+[![Latest Stable Version](https://poser.pugx.org/detain/myadmin-authorizenet-payments/version)](https://packagist.org/packages/detain/myadmin-authorizenet-payments)
+[![Total Downloads](https://poser.pugx.org/detain/myadmin-authorizenet-payments/downloads)](https://packagist.org/packages/detain/myadmin-authorizenet-payments)
+[![License](https://poser.pugx.org/detain/myadmin-authorizenet-payments/license)](https://packagist.org/packages/detain/myadmin-authorizenet-payments)
 
-## Build Status and Code Analysis
+An Authorize.Net payment gateway integration plugin for the [MyAdmin](https://github.com/detain/myadmin) hosting management platform. This package provides complete credit card processing capabilities including charging, authorization, refund, void, and card verification workflows through the Authorize.Net AIM (Advanced Integration Method) API.
 
-Site          | Status
---------------|---------------------------
-![Travis-CI](http://i.is.cc/storage/GYd75qN.png "Travis-CI")     | [![Build Status](https://travis-ci.org/myadmin-plugins/authorizenet-payments.svg?branch=master)](https://travis-ci.org/myadmin-plugins/authorizenet-payments)
-![CodeClimate](http://i.is.cc/storage/GYlageh.png "CodeClimate")  | [![Code Climate](https://codeclimate.com/github/myadmin-plugins/authorizenet-payments/badges/gpa.svg)](https://codeclimate.com/github/myadmin-plugins/authorizenet-payments) [![Test Coverage](https://codeclimate.com/github/myadmin-plugins/authorizenet-payments/badges/coverage.svg)](https://codeclimate.com/github/myadmin-plugins/authorizenet-payments/coverage) [![Issue Count](https://codeclimate.com/github/myadmin-plugins/authorizenet-payments/badges/issue_count.svg)](https://codeclimate.com/github/myadmin-plugins/authorizenet-payments)
-![Scrutinizer](http://i.is.cc/storage/GYeUnux.png "Scrutinizer")   | [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/myadmin-plugins/authorizenet-payments/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/myadmin-plugins/authorizenet-payments/?branch=master) [![Code Coverage](https://scrutinizer-ci.com/g/myadmin-plugins/authorizenet-payments/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/myadmin-plugins/authorizenet-payments/?branch=master) [![Build Status](https://scrutinizer-ci.com/g/myadmin-plugins/authorizenet-payments/badges/build.png?b=master)](https://scrutinizer-ci.com/g/myadmin-plugins/authorizenet-payments/build-status/master)
-![Codacy](http://i.is.cc/storage/GYi66Cx.png "Codacy")        | [![Codacy Badge](https://api.codacy.com/project/badge/Grade/226251fc068f4fd5b4b4ef9a40011d06)](https://www.codacy.com/app/detain/myadmin-authorizenet-payments) [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/25fa74eb74c947bf969602fcfe87e349)](https://www.codacy.com/app/detain/myadmin-authorizenet-payments?utm_source=github.com&utm_medium=referral&utm_content=detain/myadmin-authorizenet-payments&utm_campaign=Badge_Coverage)
-![Coveralls](http://i.is.cc/storage/GYjNSim.png "Coveralls")    | [![Coverage Status](https://coveralls.io/repos/github/detain/db_abstraction/badge.svg?branch=master)](https://coveralls.io/github/myadmin-plugins/authorizenet-payments?branch=master)
-![Packagist](http://i.is.cc/storage/GYacBEX.png "Packagist")     | [![Latest Stable Version](https://poser.pugx.org/detain/myadmin-authorizenet-payments/version)](https://packagist.org/packages/detain/myadmin-authorizenet-payments) [![Total Downloads](https://poser.pugx.org/detain/myadmin-authorizenet-payments/downloads)](https://packagist.org/packages/detain/myadmin-authorizenet-payments) [![Latest Unstable Version](https://poser.pugx.org/detain/myadmin-authorizenet-payments/v/unstable)](//packagist.org/packages/detain/myadmin-authorizenet-payments) [![Monthly Downloads](https://poser.pugx.org/detain/myadmin-authorizenet-payments/d/monthly)](https://packagist.org/packages/detain/myadmin-authorizenet-payments) [![Daily Downloads](https://poser.pugx.org/detain/myadmin-authorizenet-payments/d/daily)](https://packagist.org/packages/detain/myadmin-authorizenet-payments) [![License](https://poser.pugx.org/detain/myadmin-authorizenet-payments/license)](https://packagist.org/packages/detain/myadmin-authorizenet-payments)
+## Features
 
+- **Credit card processing** via Authorize.Net AIM gateway (AUTH_CAPTURE and AUTH_ONLY)
+- **Refunds and voids** for completed transactions through the `AuthorizeNetCC` class
+- **Card validation** supporting Visa, MasterCard, AMEX, Discover, JCB, Diners Club, China UnionPay, Maestro, Laser, and InstaPayment schemes
+- **Two-charge card verification** for new credit cards added to customer accounts
+- **Card management UI** for customers to add, remove, verify, and set primary billing cards
+- **Admin tools** for enabling/disabling CC billing, whitelist management, transaction viewing, and refund processing
+- **Authorize.Net response parsing** with full CSV field mapping and three-strategy parser (full regex, partial regex, CSV fallback)
+- **Security features** including CSRF protection on all state-changing operations, ACL-based admin access control, and automatic credential stripping from log entries
+
+## Requirements
+
+- PHP >= 8.0
+- ext-soap
+- ext-curl
+- ext-mbstring
+- Symfony EventDispatcher ^5.0
+- MyAdmin plugin infrastructure
 
 ## Installation
 
-Install with composer like
+Install via Composer:
 
 ```sh
 composer require detain/myadmin-authorizenet-payments
 ```
 
+The plugin registers itself with the MyAdmin event dispatcher through `Plugin::getHooks()`, which binds:
+- `system.settings` -- registers Authorize.Net configuration fields (login, password, API key, referrer)
+- `function.requirements` -- registers all function and page requirements for lazy loading
+
+## Configuration
+
+The plugin uses the following settings (configurable through MyAdmin admin panel under Billing > Authorize.Net):
+
+| Setting | Description |
+|---------|-------------|
+| `authorizenet_enable` | Enable or disable Authorize.Net processing |
+| `authorizenet_login` | API login name |
+| `authorizenet_password` | API password |
+| `authorizenet_key` | API transaction key |
+| `authorizenet_referrer` | Optional referrer URL |
+
+## Running Tests
+
+```sh
+composer install
+vendor/bin/phpunit
+```
+
+To generate a coverage report:
+
+```sh
+vendor/bin/phpunit --coverage-html coverage/
+```
+
 ## License
 
-The Authorizenet handling plugin for MyAdmin class is licensed under the LGPL-v2.1 license.
-
+This package is licensed under the [LGPL-2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html) license.
