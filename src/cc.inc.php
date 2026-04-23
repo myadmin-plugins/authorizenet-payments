@@ -565,7 +565,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
             }
             $smarty->assign('invoices', $rows);
             $email = $smarty->fetch('email/client/payment_failed.tpl');
-            
+            (new \MyAdmin\Mail())->multiMail($subject, $email, get_invoice_email($data), 'client/payment_failed.tpl');
 
             //"ot_cc" is added because it came from pay_balance where they try specific card so no retry for that.
             if (
