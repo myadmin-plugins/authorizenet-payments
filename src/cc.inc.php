@@ -521,6 +521,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
             $smarty->assign('service_name', $settings['TBLNAME']);
             $smarty->assign('company', $settings['TITLE']);
             $smarty->assign('name', $data['name']);
+            $smarty->assign('cc_num', mask_cc($cc, true));
             if (!defined(DOMAIN) || in_array(DOMAIN, ['interserver.net', 'misha.interserver.net', 'mymisha.interserver.net']) || trim(DOMAIN) == '') {
                 $smarty->assign('domain', 'my.interserver.net');
             } else {
@@ -564,7 +565,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
             }
             $smarty->assign('invoices', $rows);
             $email = $smarty->fetch('email/client/payment_failed.tpl');
-            (new \MyAdmin\Mail())->multiMail($subject, $email, get_invoice_email($data), 'client/payment_failed.tpl');
+            
 
             //"ot_cc" is added because it came from pay_balance where they try specific card so no retry for that.
             if (
@@ -583,13 +584,14 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
                 if (!in_array($cc, $dec_ccs)) {
                     $GLOBALS['tf']->history->add('users', 'carddecline', $cc_encrypted, $cc_exp, $custid);
                 }
-                retry_charge_card($custid, $amount, $invoice, $module,  $returnURL, $useHandlePayment, $queue);
+                $retval = retry_charge_card($custid, $amount, $invoice, $module,  $returnURL, $useHandlePayment, $queue);
+             } else {
+                $new_data = [
+                    'payment_method' => 'paypal',
+                    'cc_auto' => '0'
+                ];
+                App::accounts()->update($custid, $new_data);
              }
-            $new_data = [
-                'payment_method' => 'paypal',
-                'cc_auto' => '0'
-            ];
-            App::accounts()->update($custid, $new_data);
             //$GLOBALS['tf']->history->add('users', 'carddecline', $data['cc'], $data['cc_exp'], $custid);
             break;
     }
@@ -741,22 +743,32 @@ function get_next_cc($custid)
     foreach ($ccs as $cc_id => $cc_det) {
         $cc_num = $GLOBALS['tf']->decrypt($cc_det['cc']);
         if (!in_array($cc_num, $dec_ccs) && can_use_cc($data, $cc_det, false)) {
-            myadmin_log('billing', 'info', "Backup cc - found $custid ".mask_cc($cc_num), __LINE__, __FILE__);
+            myadmin_log('billing', 'info', "Backup CC - found for customer $custid ".mask_cc($cc_num), __LINE__, __FILE__);
             return $cc_id;
         }
     }
-    myadmin_log('billing', 'info', "Backup cc - not found for $custid", __LINE__, __FILE__);
+    myadmin_log('billing', 'info', "Backup CC - not found for customer $custid", __LINE__, __FILE__);
+    //Here Primary & Backup both CCs failed so updating payment method paypal.
+    $new_data = [
+        'payment_method' => 'paypal',
+        'cc_auto' => '0'
+    ];
+    App::accounts()->update($custid, $new_data);
     return false;
 }
 
 function retry_charge_card($custid, $amount = false, $invoice = false, $module = 'default', $returnURL = false, $useHandlePayment = true, $queue = false)
 {
-    myadmin_log('billing', 'info', "Retrying backupcc: $custid $amount", __LINE__, __FILE__);
+    myadmin_log('billing', 'info', "Retrying BackupCC - Custid: $custid, Amount: $amount", __LINE__, __FILE__);
     $next_cc = get_next_cc($custid);
     if ($next_cc !== false) {
-        App::variables()->request['ot_cc'] = $cc_id;
+        App::variables()->request['ot_cc'] = $next_cc;
         App::variables()->request['retry_cc'] = 1;
-        charge_card($custid, $amount, $invoice, $module, $returnURL, $useHandlePayment, $queue);
+        $success = charge_card($custid, $amount, $invoice, $module, $returnURL, $useHandlePayment, $queue);
+        if ($success) {
+            myadmin_log('billing', 'info', "Retrying BackupCC - Success for $custid, Amount: $amount, CC ID - $next_cc", __LINE__, __FILE__);
+            return true;
+        }
     }
     return false;
 }
