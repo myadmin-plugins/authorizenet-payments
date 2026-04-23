@@ -582,7 +582,8 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
                 'payment_method' => 'paypal',
                 'cc_auto' => '0'
             ];
-            App::accounts()->update($custid, $new_data);
+            //App::accounts()->update($custid, $new_data);
+            $GLOBALS['tf']->accounts->update($custid, $new_data);
             //$GLOBALS['tf']->history->add('users', 'carddecline', $data['cc'], $data['cc_exp'], $custid);
             break;
     }
@@ -721,7 +722,8 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 function get_next_cc($custid)
 {
     function_requirements('parse_ccs');
-    $data = App::accounts()->read($custid);
+    //$data = App::accounts()->read($custid);
+    $data = $GLOBALS['tf']->accounts->read($custid);
     $db = get_module_db('default');
     $db->query("SELECT * FROM user_log WHERE history_owner = {$custid} AND history_type = 'carddecline'", __LINE__, __FILE__);
     if ($db->num_rows() > 0) {
