@@ -741,7 +741,7 @@ function get_next_cc($custid)
 function retry_charge_card($custid, $amount = false, $invoice = false, $module = 'default', $returnURL = false, $useHandlePayment = true, $queue = false)
 {
     $next_cc = get_next_cc($custid);
-    if ($next_cc !=== false) {
+    if ($next_cc !== false) {
         $GLOBALS['tf']->variables->request['ot_cc'] = $cc_id;
         $GLOBALS['tf']->variables->request['retry_cc'] = 1;
         charge_card($custid, $amount, $invoice, $module, $returnURL, $useHandlePayment, $queue);
