@@ -10,7 +10,7 @@
 use Punic\Currency;
 use Brick\Money\Money;
 use Brick\Math\RoundingMode;
-use MyAdmin/App;
+use MyAdmin\App;
 
 /**
 * @param $cc
@@ -570,13 +570,19 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
             if (
                 count($ccs) > 1 && //more than 1 cc present then proceed
                 RETRY_CC == 1 && //When CC Retry is enabled from config
-                (
-                    !isset($GLOBALS['tf']->variables->request['ot_cc']) || //This confirms that it is not from cart/paybalance page
-                    isset($GLOBALS['tf']->variables->request['retry_cc']) // This confirms its from retry
-                )
+                (!isset(App::variables()->request['ot_cc']) || isset(App::variables()->request['retry_cc']))
             ) {
                 $cc_encrypted = $GLOBALS['tf']->encrypt(trim(str_replace([' ', '_', '-'], ['', '', ''], $cc)));
-                $GLOBALS['tf']->history->add('users', 'carddecline', $cc_encrypted, $cc_exp, $custid); 
+                $dec_ccs = [];
+                $db->query("SELECT * FROM user_log WHERE history_owner = {$custid} AND history_type = 'carddecline'", __LINE__, __FILE__);
+                if ($db->num_rows() > 0) {
+                    while ($db->next_record(MYSQL_ASSOC)) {
+                        $dec_ccs[] = $GLOBALS['tf']->decrypt($db->Record['history_new_value']);
+                    }
+                }
+                if (!in_array($cc, $dec_ccs)) {
+                    $GLOBALS['tf']->history->add('users', 'carddecline', $cc_encrypted, $cc_exp, $custid);
+                }
                 retry_charge_card($custid, $amount, $invoice, $module,  $returnURL, $useHandlePayment, $queue);
              }
             $new_data = [
@@ -723,6 +729,7 @@ function get_next_cc($custid)
 {
     function_requirements('parse_ccs');
     $data = App::accounts()->read($custid);
+    $dec_ccs = [];
     $db = get_module_db('default');
     $db->query("SELECT * FROM user_log WHERE history_owner = {$custid} AND history_type = 'carddecline'", __LINE__, __FILE__);
     if ($db->num_rows() > 0) {
@@ -734,18 +741,21 @@ function get_next_cc($custid)
     foreach ($ccs as $cc_id => $cc_det) {
         $cc_num = $GLOBALS['tf']->decrypt($cc_det['cc']);
         if (!in_array($cc_num, $dec_ccs) && can_use_cc($data, $cc_det, false)) {
+            myadmin_log('billing', 'info', "Backup cc - found $custid ".mask_cc($cc_num), __LINE__, __FILE__);
             return $cc_id;
         }
     }
+    myadmin_log('billing', 'info', "Backup cc - not found for $custid", __LINE__, __FILE__);
     return false;
 }
 
 function retry_charge_card($custid, $amount = false, $invoice = false, $module = 'default', $returnURL = false, $useHandlePayment = true, $queue = false)
 {
+    myadmin_log('billing', 'info', "Retrying backupcc: $custid $amount", __LINE__, __FILE__);
     $next_cc = get_next_cc($custid);
     if ($next_cc !== false) {
-        $GLOBALS['tf']->variables->request['ot_cc'] = $cc_id;
-        $GLOBALS['tf']->variables->request['retry_cc'] = 1;
+        App::variables()->request['ot_cc'] = $cc_id;
+        App::variables()->request['retry_cc'] = 1;
         charge_card($custid, $amount, $invoice, $module, $returnURL, $useHandlePayment, $queue);
     }
     return false;
