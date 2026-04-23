@@ -10,6 +10,7 @@
 use Punic\Currency;
 use Brick\Money\Money;
 use Brick\Math\RoundingMode;
+use MyAdmin/App;
 
 /**
 * @param $cc
@@ -582,8 +583,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
                 'payment_method' => 'paypal',
                 'cc_auto' => '0'
             ];
-            //App::accounts()->update($custid, $new_data);
-            $GLOBALS['tf']->accounts->update($custid, $new_data);
+            App::accounts()->update($custid, $new_data);
             //$GLOBALS['tf']->history->add('users', 'carddecline', $data['cc'], $data['cc_exp'], $custid);
             break;
     }
@@ -722,8 +722,7 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 function get_next_cc($custid)
 {
     function_requirements('parse_ccs');
-    //$data = App::accounts()->read($custid);
-    $data = $GLOBALS['tf']->accounts->read($custid);
+    $data = App::accounts()->read($custid);
     $db = get_module_db('default');
     $db->query("SELECT * FROM user_log WHERE history_owner = {$custid} AND history_type = 'carddecline'", __LINE__, __FILE__);
     if ($db->num_rows() > 0) {
@@ -731,6 +730,7 @@ function get_next_cc($custid)
             $dec_ccs[] = $GLOBALS['tf']->decrypt($db->Record['history_new_value']);
         }
     }
+    $ccs = parse_ccs($data);
     foreach ($ccs as $cc_id => $cc_det) {
         $cc_num = $GLOBALS['tf']->decrypt($cc_det['cc']);
         if (!in_array($cc_num, $dec_ccs) && can_use_cc($data, $cc_det, false)) {
