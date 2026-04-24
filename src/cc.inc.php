@@ -507,11 +507,12 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
                 while ($db->next_record(MYSQL_ASSOC)) {
                     if ($cc == $GLOBALS['tf']->decrypt($db->Record['history_new_value'])) {
                         $history_id = $db->Record['history_id'];
+                        break;
                     }
                 }
-                if ($history_id && intval($history) > 0) {
+                if ($history_id && intval($history_id) > 0) {
                     $$history_id = intval($history_id);
-                    $db->query("DELETE FROM user_log WHERE history_id = $$history_id", __LINE__, __FILE__);
+                    $db->query("DELETE FROM user_log WHERE history_id = $history_id", __LINE__, __FILE__);
                 }
             }
             break;
