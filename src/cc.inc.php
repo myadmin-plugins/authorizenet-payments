@@ -504,6 +504,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
             //Clear out this CC Decline history
             $db->query("SELECT * FROM user_log WHERE history_owner = {$custid} AND history_type = 'carddecline'", __LINE__, __FILE__);
             if ($db->num_rows() > 0) {
+                $history_id = null;
                 while ($db->next_record(MYSQL_ASSOC)) {
                     if ($cc == $GLOBALS['tf']->decrypt($db->Record['history_new_value'])) {
                         $history_id = $db->Record['history_id'];
