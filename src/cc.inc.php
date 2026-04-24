@@ -10,6 +10,7 @@
 use Punic\Currency;
 use Brick\Money\Money;
 use Brick\Math\RoundingMode;
+use MyAdmin\App;
 
 /**
 * @param $cc
@@ -243,61 +244,6 @@ function format_cc_exp()
     return $value;
 }
 
-/**
-* generates a cc decline email body
-*
-* @param int $custid     the customer id #
-* @param int $invoice_id the invoice id #
-* @return array array w/ the information needed to send an email or display the cc decline
-* @throws \Exception
-* @throws \SmartyException
-*/
-function make_cc_decline($custid, $invoice_id)
-{
-    $admin_dir = INSTALL_ROOT;
-    $data = $GLOBALS['tf']->accounts->read($custid);
-    $domain = $GLOBALS['tf']->accounts->cross_reference($custid);
-    $groupinfo = get_groupinfo($domain);
-    if ($groupinfo['email'] != '') {
-        $emailfrom = $groupinfo['email'];
-    } else {
-        $emailfrom = EMAIL_FROM;
-    }
-    $smarty = new TFSmarty();
-    $smarty->assign('invoice_id', $invoice_id);
-    $smarty->assign('customer_domain', $domain);
-    $smarty->assign('customer_id', $custid);
-    $smarty->assign('customer_name', $data['name']);
-    $smarty->assign('company_name', $groupinfo['account_lid']);
-    $invoice_data = get_invoice($invoice_id);
-    $smarty->assign('customer_balance', $invoice_data['invoices_amount']);
-    if (DOMAIN == 'interserver.net' || trim(DOMAIN) == '') {
-        $smarty->assign('url', 'my.interserver.net');
-    } else {
-        $smarty->assign('url', DOMAIN.URLDIR);
-    }
-    $ret_invoice['invoice'] = $smarty->fetch('email/client/ccdecline.tpl');
-    $ret_invoice['toname'] = $data['name'];
-    $ret_invoice['toemail'] = get_invoices_email($data);
-    $ret_invoice['subject'] = 'Problem With Account '.$domain;
-    $ret_invoice['fromname'] = $groupinfo['account_lid'].' Billing Department';
-    $ret_invoice['fromemail'] = $emailfrom;
-    return $ret_invoice;
-}
-
-/**
-* sends a cc decline email
-*
-* @param int $custid
-* @param mixed $invoice_id
-* @return void
-*/
-function email_cc_decline($custid, $invoice_id)
-{
-    $email = make_cc_decline($custid, $invoice_id);
-    myadmin_log('billing', 'debug', '    Emailing CC Decline Message To '.$email['toname'], __LINE__, __FILE__);
-    (new \MyAdmin\Mail())->multiMail($email['subject'], '<PRE>'.$email['invoice'].'</PRE>', $email['toemail'], 'client/ccdecline.tpl');
-}
 
 /**
 * given the account data array, it parses out and returns an array of ccs
@@ -569,13 +515,13 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
                 return $retval;
             }
             //$data['status'] = 'pending-fixcc';
-            $GLOBALS['tf']->accounts->update($custid, ['payment_method' => 'paypal']);
             $subject = $settings['TITLE'].' Credit Card Payment Declined';
             $smarty = new TFSmarty();
             $smarty->assign('amount', $amount);
             $smarty->assign('service_name', $settings['TBLNAME']);
             $smarty->assign('company', $settings['TITLE']);
             $smarty->assign('name', $data['name']);
+            $smarty->assign('cc_num', mask_cc($cc, true));
             if (!defined(DOMAIN) || in_array(DOMAIN, ['interserver.net', 'misha.interserver.net', 'mymisha.interserver.net']) || trim(DOMAIN) == '') {
                 $smarty->assign('domain', 'my.interserver.net');
             } else {
@@ -620,7 +566,32 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
             $smarty->assign('invoices', $rows);
             $email = $smarty->fetch('email/client/payment_failed.tpl');
             (new \MyAdmin\Mail())->multiMail($subject, $email, get_invoice_email($data), 'client/payment_failed.tpl');
-            //email_cc_decline($custid, $invoice);
+
+            //"ot_cc" is added because it came from pay_balance where they try specific card so no retry for that.
+            if (
+                count($ccs) > 1 && //more than 1 cc present then proceed
+                RETRY_CC == 1 && //When CC Retry is enabled from config
+                (!isset(App::variables()->request['ot_cc']) || isset(App::variables()->request['retry_cc']))
+            ) {
+                $cc_encrypted = $GLOBALS['tf']->encrypt(trim(str_replace([' ', '_', '-'], ['', '', ''], $cc)));
+                $dec_ccs = [];
+                $db->query("SELECT * FROM user_log WHERE history_owner = {$custid} AND history_type = 'carddecline'", __LINE__, __FILE__);
+                if ($db->num_rows() > 0) {
+                    while ($db->next_record(MYSQL_ASSOC)) {
+                        $dec_ccs[] = $GLOBALS['tf']->decrypt($db->Record['history_new_value']);
+                    }
+                }
+                if (!in_array($cc, $dec_ccs)) {
+                    $GLOBALS['tf']->history->add('users', 'carddecline', $cc_encrypted, $cc_exp, $custid);
+                }
+                $retval = retry_charge_card($custid, $amount, $invoice, $module,  $returnURL, $useHandlePayment, $queue);
+             } else {
+                $new_data = [
+                    'payment_method' => 'paypal',
+                    'cc_auto' => '0'
+                ];
+                App::accounts()->update($custid, $new_data);
+             }
             //$GLOBALS['tf']->history->add('users', 'carddecline', $data['cc'], $data['cc_exp'], $custid);
             break;
     }
@@ -750,6 +721,56 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
             break;
     }
     return $retval;
+}
+
+/**
+ * Gets next available verified CC number to charge
+ *
+ */
+function get_next_cc($custid)
+{
+    function_requirements('parse_ccs');
+    $data = App::accounts()->read($custid);
+    $dec_ccs = [];
+    $db = get_module_db('default');
+    $db->query("SELECT * FROM user_log WHERE history_owner = {$custid} AND history_type = 'carddecline'", __LINE__, __FILE__);
+    if ($db->num_rows() > 0) {
+        while ($db->next_record(MYSQL_ASSOC)) {
+            $dec_ccs[] = $GLOBALS['tf']->decrypt($db->Record['history_new_value']);
+        }
+    }
+    $ccs = parse_ccs($data);
+    foreach ($ccs as $cc_id => $cc_det) {
+        $cc_num = $GLOBALS['tf']->decrypt($cc_det['cc']);
+        if (!in_array($cc_num, $dec_ccs) && can_use_cc($data, $cc_det, false)) {
+            myadmin_log('billing', 'info', "Backup CC - found for customer $custid ".mask_cc($cc_num), __LINE__, __FILE__);
+            return $cc_id;
+        }
+    }
+    myadmin_log('billing', 'info', "Backup CC - not found for customer $custid", __LINE__, __FILE__);
+    //Here Primary & Backup both CCs failed so updating payment method paypal.
+    $new_data = [
+        'payment_method' => 'paypal',
+        'cc_auto' => '0'
+    ];
+    App::accounts()->update($custid, $new_data);
+    return false;
+}
+
+function retry_charge_card($custid, $amount = false, $invoice = false, $module = 'default', $returnURL = false, $useHandlePayment = true, $queue = false)
+{
+    myadmin_log('billing', 'info', "Retrying BackupCC - Custid: $custid, Amount: $amount", __LINE__, __FILE__);
+    $next_cc = get_next_cc($custid);
+    if ($next_cc !== false) {
+        App::variables()->request['ot_cc'] = $next_cc;
+        App::variables()->request['retry_cc'] = 1;
+        $success = charge_card($custid, $amount, $invoice, $module, $returnURL, $useHandlePayment, $queue);
+        if ($success) {
+            myadmin_log('billing', 'info', "Retrying BackupCC - Success for $custid, Amount: $amount, CC ID - $next_cc", __LINE__, __FILE__);
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
