@@ -511,7 +511,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
                     }
                 }
                 if ($history_id && intval($history_id) > 0) {
-                    $$history_id = intval($history_id);
+                    $history_id = intval($history_id);
                     $db->query("DELETE FROM user_log WHERE history_id = $history_id", __LINE__, __FILE__);
                 }
             }
