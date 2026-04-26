@@ -26,7 +26,7 @@ function add_cc_new_data($cc, $ccs, $data, $new_data, $prefix, $force = false)
         if (isset($data['disable_cc']) && $data['disable_cc'] == 1) {
             $remove_key = true;
         }
-        //if (!isset($data['cc']) || $data['cc'] == '' || $tf->decrypt($data['cc']) == '' || sizeof($ccs) == 1) {
+        //if (!isset($data['cc']) || $data['cc'] == '' || \MyAdmin\App::decrypt($data['cc']) == '' || sizeof($ccs) == 1) {
         $new_data['disable_cc'] = 0;
         $new_data['payment_method'] = 'cc';
         $new_data['cc'] = $cc['cc'];
@@ -42,7 +42,7 @@ function add_cc_new_data($cc, $ccs, $data, $new_data, $prefix, $force = false)
     } else {
         $new_data['ccs'] = myadmin_stringify($ccs, 'json');
     }
-    $tf->accounts->update($data['account_id'], $new_data);
+    \MyAdmin\App::accounts()->update($data['account_id'], $new_data);
 }
 
 /**
@@ -59,7 +59,7 @@ function add_cc_new_data($cc, $ccs, $data, $new_data, $prefix, $force = false)
 function add_cc($data, $prefix = '', $force = false, $request = false)
 {
     if ($request === false) {
-        $request = $GLOBALS['tf']->variables->request;
+        $request = \MyAdmin\App::variables()->request;
     }
     $tf = $GLOBALS['tf'];
     $minimum_days = 30;
@@ -78,7 +78,7 @@ function add_cc($data, $prefix = '', $force = false, $request = false)
     } else {
         $ccs_added = count($ccs);
     }
-    if ($force !== true && $tf->ima != 'admin' && $signupdays < $minimum_days && (!isset($data['cc_whitelist']) || $data['cc_whitelist'] != 1) && $ccs_added >= $max_early_ccs) {
+    if ($force !== true && \MyAdmin\App::ima() != 'admin' && $signupdays < $minimum_days && (!isset($data['cc_whitelist']) || $data['cc_whitelist'] != 1) && $ccs_added >= $max_early_ccs) {
         $return['status'] = 'error';
         $return['text'] = "New Accounts (those under {$minimum_days} old) are limited to {$max_early_ccs} Credit-Cards until they have reached the {$minimum_days} days.";
         return $return;
@@ -95,7 +95,7 @@ function add_cc($data, $prefix = '', $force = false, $request = false)
         $request[$prefix.'cc_exp'] = mb_substr($request[$prefix.'cc_exp'], 0, 2).'/20'.mb_substr($request[$prefix.'cc_exp'], 2);
     }
     $cc = [
-        'cc' => $tf->encrypt(trim(str_replace([' ', '_', '-'], ['', '', ''], $request[$prefix.'cc']))),
+        'cc' => \MyAdmin\App::encrypt(trim(str_replace([' ', '_', '-'], ['', '', ''], $request[$prefix.'cc']))),
         'cc_exp' => trim(str_replace([' ', '_', '-'], ['', '', ''], $request[$prefix.'cc_exp']))
     ];
     foreach (['name', 'address', 'city', 'state', 'zip', 'country'] as $field) {
@@ -128,20 +128,20 @@ function add_cc($data, $prefix = '', $force = false, $request = false)
         function_requirements('update_fraudrecord');
         update_fraudrecord($data['account_id']);
     }
-    $data = $tf->accounts->read($data['account_id']);
+    $data = \MyAdmin\App::accounts()->read($data['account_id']);
     $ccs = parse_ccs($data);
     $cc = $ccs[$idx];
     $return['idx'] = $idx;
     if (can_use_cc($data, $cc, false, $prefix.'cc')) {
         if (isset($data['disable_cc'])) {
-            $tf->accounts->update($data['account_id'], ['disable_cc' => 0]);
+            \MyAdmin\App::accounts()->update($data['account_id'], ['disable_cc' => 0]);
         }
-        $data = $tf->accounts->read($data['account_id']);
+        $data = \MyAdmin\App::accounts()->read($data['account_id']);
         $return['status'] = 'ok';
-        $return['text'] = $tf->link('index.php', 'choice=none.manage_payment_types');
+        $return['text'] = \MyAdmin\App::link('index.php', 'choice=none.manage_payment_types');
     } else {
         $return['status'] = 'verify';
-        $return['text'] = $tf->link('index.php', 'choice=none.manage_payment_types&action=verify&idx='.$idx);
+        $return['text'] = \MyAdmin\App::link('index.php', 'choice=none.manage_payment_types&action=verify&idx='.$idx);
     }
     $return['data'] = $data;
     return $return;

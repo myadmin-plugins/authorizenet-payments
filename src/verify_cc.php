@@ -17,7 +17,7 @@ function verify_cc_charge($cc, $data)
         $return['text'] = 'No CC set/present';
         return $return;
     }
-    $cc_decrypted = $tf->decrypt($cc['cc']);
+    $cc_decrypted = \MyAdmin\App::decrypt($cc['cc']);
     if (!isset($data['cc_amt1_'.$cc_decrypted])) {
         $amt1 = mt_rand(1, 99) / 100;
         $amt2 = mt_rand(1, 99) / 100;
@@ -27,7 +27,7 @@ function verify_cc_charge($cc, $data)
             $return['status'] = 'error';
             $return['text'] = 'There was a problem with this credit card, check the cards available amount and try again.';
         } else {
-            $tf->accounts->update($data['account_id'],[
+            \MyAdmin\App::accounts()->update($data['account_id'],[
                 'cc_amt1_'.$cc_decrypted => $amt1,
                 'cc_amt2_'.$cc_decrypted => $amt2
             ]);
@@ -58,8 +58,8 @@ function verify_cc($cc, $data)
         $return['text'] = 'No CC set/present';
         return $return;
     }
-    $cc_decrypted = $tf->decrypt($cc['cc']);
-    $request = $tf->variables->request;
+    $cc_decrypted = \MyAdmin\App::decrypt($cc['cc']);
+    $request = \MyAdmin\App::variables()->request;
     myadmin_log('billing', 'info', "Verify CC Passed {$request['cc_amount1']} and {$request['cc_amount2']} vs. Our  {$data['cc_amt1_'.$cc_decrypted]} and {$data['cc_amt2_'.$cc_decrypted]}", __LINE__, __FILE__);
     if (!isset($request['cc_amount1']) || !isset($request['cc_amount2']) || trim($request['cc_amount2']) == '' || trim($request['cc_amount1']) == '') {
         $return['text'] = 'Missing or Blank Amount Passed.   One or more of the amounts was blank or not passed.   Please verify the values and try again. Please contact support if you need assistance.';
@@ -71,7 +71,7 @@ function verify_cc($cc, $data)
         (abs(floatval($request['cc_amount1']) - (100 * $data['cc_amt2_'.$cc_decrypted])) < 6 && abs(floatval($request['cc_amount2']) - (100 * $data['cc_amt1_'.$cc_decrypted])) < 6)) {
         $return['status'] = 'ok';
         $return['text'] = 'The Values matched!';
-        $tf->accounts->update($data['account_id'], [
+        \MyAdmin\App::accounts()->update($data['account_id'], [
             'payment_method' => 'cc',
             'cc' => $cc['cc'],
             'cc_exp' => $cc['cc_exp'],
@@ -79,7 +79,7 @@ function verify_cc($cc, $data)
             'disable_cc' => 0,
         ]);
     } else {
-        $tf->accounts->update($data['account_id'], ['cc_fails_'.$cc_decrypted => isset($data['cc_fails_'.$cc_decrypted]) ? 1 + $data['cc_fails_'.$cc_decrypted] : 1]);
+        \MyAdmin\App::accounts()->update($data['account_id'], ['cc_fails_'.$cc_decrypted => isset($data['cc_fails_'.$cc_decrypted]) ? 1 + $data['cc_fails_'.$cc_decrypted] : 1]);
         $return['text'] = 'Verification Failed. The values you have entered did not match the charged amounts. Please verify the values and try again. Only a limited amount of attempts is allowed before the account is locked. Please contact support if you need assistance.';
         $return['status'] = 'failed';
     }

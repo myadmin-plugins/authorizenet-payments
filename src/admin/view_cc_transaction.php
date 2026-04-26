@@ -11,7 +11,7 @@ function view_cc_transaction()
 {
     page_title('Credit Card Transaction Information');
     function_requirements('has_acl');
-    if (($GLOBALS['tf']->ima == 'client' && CLIENT_VIEW_PAYMENT == false) || ($GLOBALS['tf']->ima == 'admin' && !has_acl('view_customer'))) {
+    if ((\MyAdmin\App::ima() == 'client' && CLIENT_VIEW_PAYMENT == false) || (\MyAdmin\App::ima() == 'admin' && !has_acl('view_customer'))) {
         dialog('Not admin', 'Not Admin or you lack the permissions to view this page.');
         return false;
     }
@@ -19,27 +19,27 @@ function view_cc_transaction()
     add_js('font-awesome');
     add_js('isotope');
     $GLOBALS['body_extra'] = ' data-spy="scroll" data-target="#scrollspy" style="position: relative;"';
-    $GLOBALS['tf']->add_html_head_css_file(URL_ROOT.'/css/view_paypal_transaction.css');
-    $GLOBALS['tf']->add_html_head_js_file(URL_ROOT.'/js/view_paypal_transaction.js');
+    \MyAdmin\App::output()->addHeadCssFile(URL_ROOT.'/css/view_paypal_transaction.css');
+    \MyAdmin\App::output()->addHeadJsFile(URL_ROOT.'/js/view_paypal_transaction.js');
     //$transaction_types = get_paypal_transaction_types();
-    $module = get_module_name(($GLOBALS['tf']->variables->request['module'] ?? 'default'));
-    $db = clone $GLOBALS['tf']->db;
+    $module = get_module_name((\MyAdmin\App::variables()->request['module'] ?? 'default'));
+    $db = clone \MyAdmin\App::db();
     $db_check_invoice = get_module_db($module);
 
-    if (isset($GLOBALS['tf']->variables->request['id'])) {
-        $transaction = intval($GLOBALS['tf']->variables->request['id']);
+    if (isset(\MyAdmin\App::variables()->request['id'])) {
+        $transaction = intval(\MyAdmin\App::variables()->request['id']);
         //$transaction_id = mb_substr($transaction, 0, 11);
         $query = "select * from cc_log where cc_id='{$transaction}'";
-    } elseif (isset($GLOBALS['tf']->variables->request['transaction'])) {
-        $transaction = $db->real_escape($GLOBALS['tf']->variables->request['transaction']);
+    } elseif (isset(\MyAdmin\App::variables()->request['transaction'])) {
+        $transaction = $db->real_escape(\MyAdmin\App::variables()->request['transaction']);
         //$transaction_id = mb_substr($transaction, 0, 11);
         $query = "select * from cc_log where cc_result_trans_id='{$transaction}'";
     } else {
         dialog('Missing Parameter', 'Missing Required Parameter');
         return false;
     }
-    if ($GLOBALS['tf']->ima == 'client') {
-        $query .= " and cc_custid={$GLOBALS['tf']->session->account_id}";
+    if (\MyAdmin\App::ima() == 'client') {
+        $query .= " and cc_custid=" . \MyAdmin\App::session()->account_id;
     }
     $db->query($query);
     if ($db->num_rows() == 0) {
@@ -61,7 +61,7 @@ function view_cc_transaction()
                 }
                 if ($key == 'Custid') {
                     $transaction[$key] = $value;
-                //$transaction[$key] = $GLOBALS['tf']->ima == 'client' ? $value : $table->make_link('choice=none.edit_customer&amp;lid='.$value, $value, false, 'target="_blank" title="Edit Customer"');
+                //$transaction[$key] = \MyAdmin\App::ima() == 'client' ? $value : $table->make_link('choice=none.edit_customer&amp;lid='.$value, $value, false, 'target="_blank" title="Edit Customer"');
                 } elseif ($key == 'Invoice Num') {
                     $db_check_invoice->query("SELECT * FROM invoices WHERE invoices_custid={$db->Record['cc_custid']} and invoices_description='Credit Card Payment {$temp_trans_id}'", __LINE__, __FILE__);
                     if ($db_check_invoice->num_rows() > 0) {
@@ -79,13 +79,13 @@ function view_cc_transaction()
         }
     }
     $cats = get_cc_cats_and_fields();
-    $smarty->assign('ima', $GLOBALS['tf']->ima);
+    $smarty->assign('ima', \MyAdmin\App::ima());
     $smarty->assign('transactions', $transactions);
     $smarty->assign('transaction', $transaction);
     $smarty->assign('paypal_cats', $cats);
     $smarty->assign('module', $module);
-    if (isset($GLOBALS['tf']->variables->request['st_txt'])) {
-        $smarty->assign('st_txt', $GLOBALS['tf']->variables->request['st_txt']);
+    if (isset(\MyAdmin\App::variables()->request['st_txt'])) {
+        $smarty->assign('st_txt', \MyAdmin\App::variables()->request['st_txt']);
     }
     $smarty->assign('module', $module);
     add_output($smarty->fetch('billing/payments/view_cc_transaction.tpl'));

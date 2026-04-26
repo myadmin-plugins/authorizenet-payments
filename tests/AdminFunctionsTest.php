@@ -34,7 +34,7 @@ class AdminFunctionsTest extends TestCase
     public function testDisableCcChecksAdminRole(): void
     {
         $content = file_get_contents(self::$adminDir . '/disable_cc.php');
-        $this->assertStringContainsString("\$GLOBALS['tf']->ima != 'admin'", $content);
+        $this->assertStringContainsString("\\MyAdmin\App::ima() != 'admin'", $content);
     }
 
     /**
@@ -92,7 +92,7 @@ class AdminFunctionsTest extends TestCase
     public function testEnableCcChecksAdminRole(): void
     {
         $content = file_get_contents(self::$adminDir . '/enable_cc.php');
-        $this->assertStringContainsString("\$GLOBALS['tf']->ima != 'admin'", $content);
+        $this->assertStringContainsString("\\MyAdmin\App::ima() != 'admin'", $content);
     }
 
     /**
@@ -141,7 +141,7 @@ class AdminFunctionsTest extends TestCase
     public function testAuthorizeCcChecksPermissions(): void
     {
         $content = file_get_contents(self::$adminDir . '/authorize_cc.php');
-        $this->assertStringContainsString("\$GLOBALS['tf']->ima != 'admin'", $content);
+        $this->assertStringContainsString("\\MyAdmin\App::ima() != 'admin'", $content);
         $this->assertStringContainsString("has_acl('edit_customer')", $content);
     }
 
@@ -166,7 +166,7 @@ class AdminFunctionsTest extends TestCase
     public function testEnableCcWhitelistChecksPermissions(): void
     {
         $content = file_get_contents(self::$adminDir . '/enable_cc_whitelist.php');
-        $this->assertStringContainsString("\$GLOBALS['tf']->ima != 'admin'", $content);
+        $this->assertStringContainsString("\\MyAdmin\App::ima() != 'admin'", $content);
         $this->assertStringContainsString("has_acl('edit_customer')", $content);
     }
 
@@ -193,7 +193,7 @@ class AdminFunctionsTest extends TestCase
     public function testCcRefundChecksPermissions(): void
     {
         $content = file_get_contents(self::$adminDir . '/cc_refund.php');
-        $this->assertStringContainsString("\$GLOBALS['tf']->ima != 'admin'", $content);
+        $this->assertStringContainsString("\\MyAdmin\App::ima() != 'admin'", $content);
         $this->assertStringContainsString("has_acl('client_billing')", $content);
     }
 

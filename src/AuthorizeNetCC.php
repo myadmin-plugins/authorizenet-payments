@@ -83,7 +83,7 @@ class AuthorizeNetCC
             }
         }
         if ($tresponse['0'] == 1) {
-            $db = clone $GLOBALS['tf']->db;
+            $db = clone \MyAdmin\App::db();
             $db->query(make_insert_query('cc_log', $cc_log), __LINE__, __FILE__);
         }
 
@@ -148,7 +148,7 @@ class AuthorizeNetCC
             unset($cc_log['cc_request_trans_id']);
         }
         if ($tresponse['0'] == 1) {
-            $db = clone $GLOBALS['tf']->db;
+            $db = clone \MyAdmin\App::db();
             $db->query(make_insert_query('cc_log', $cc_log), __LINE__, __FILE__);
         }
 

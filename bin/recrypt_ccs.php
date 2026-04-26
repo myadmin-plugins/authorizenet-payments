@@ -21,9 +21,9 @@ while ($db->next_record(MYSQL_ASSOC)) {
         $changed = false;
         foreach ($ccs as $cc_idx => $data) {
             if (isset($data['cc'])) {
-                $cc = $GLOBALS['tf']->decrypt($data['cc']);
+                $cc = \MyAdmin\App::decrypt($data['cc']);
                 if ($cc !== false) {
-                    $ccs[$cc_idx]['cc'] = $GLOBALS['tf']->encrypt($cc);
+                    $ccs[$cc_idx]['cc'] = \MyAdmin\App::encrypt($cc);
                     $changed = true;
                 }
             }

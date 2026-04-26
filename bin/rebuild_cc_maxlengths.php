@@ -4,13 +4,13 @@
     ini_set('memory_limit', 4*$gb);
     include_once __DIR__.'/../../include/functions.inc.php';
     $taken = [];
-    $db = clone $GLOBALS['tf']->db;
+    $db = clone \MyAdmin\App::db();
     $db->query('select concat(cc_custid, cc_timestamp, cc_request_amount) as cc_token from cc_log', __LINE__, __FILE__);
     while ($db->next_record(MYSQL_ASSOC)) {
         $taken[] = $db->Record['cc_token'];
     }
     unset($db);
-    $db = $GLOBALS['tf']->db;
+    $db = \MyAdmin\App::db();
     $results = json_decode(file_get_contents(__DIR__.'/cc_charge_results.json'), true);
     echo 'Loaded ' . count($results) . " Results\n";
     $requests = json_decode(file_get_contents(__DIR__.'/cc_charge_requests.json'), true);
@@ -34,7 +34,7 @@
             if ($lid == $rlid && abs($rtime - $time) < 60) {
                 $combined = array_merge($request, $result);
                 $combined['cc_timestamp'] = $combined['date'];
-                $combined['cc_custid'] = intval($GLOBALS['tf']->accounts->cross_reference($combined['lid']));
+                $combined['cc_custid'] = intval(\MyAdmin\App::accounts()->cross_reference($combined['lid']));
                 unset($combined['date'], $combined['lid']);
                 foreach ($combined as $field => $value) {
                     $length = mb_strlen($value);

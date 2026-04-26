@@ -8,19 +8,19 @@ function cc_refund()
 {
     page_title('CC Refund');
     function_requirements('has_acl');
-    if ($GLOBALS['tf']->ima != 'admin' || !has_acl('client_billing')) {
+    if (\MyAdmin\App::ima() != 'admin' || !has_acl('client_billing')) {
         dialog('Not admin', 'Not Admin or you lack the permissions to view this page.');
         return false;
     }
     function_requirements('class.AuthorizeNetCC');
     $continue = false;
-    if (!isset($GLOBALS['tf']->variables->request['transact_id'])) {
+    if (!isset(\MyAdmin\App::variables()->request['transact_id'])) {
         add_output('Transaction ID is empty!');
         return;
     }
-    $GLOBALS['tf']->variables->request['transact_id'] = (int)$GLOBALS['tf']->variables->request['transact_id'];
-    $query = "select * from cc_log where cc_result_trans_id='{$GLOBALS['tf']->variables->request['transact_id']}'";
-    $db = clone $GLOBALS['tf']->db;
+    \MyAdmin\App::variables()->request['transact_id'] = (int)\MyAdmin\App::variables()->request['transact_id'];
+    $query = "select * from cc_log where cc_result_trans_id='" . \MyAdmin\App::variables()->request['transact_id'] . "'";
+    $db = clone \MyAdmin\App::db();
     $db->query($query, __LINE__, __FILE__);
     if ($db->num_rows() == 0) {
         add_output('no cc_log entry found');
@@ -28,23 +28,23 @@ function cc_refund()
     }
     $db->next_record(MYSQL_ASSOC);
     $cc_log = $db->Record;
-    $desc = "Credit Card Payment {$GLOBALS['tf']->variables->request['transact_id']}";
-    if (isset($GLOBALS['tf']->variables->request['amount'])) {
-        $transactAmount = $GLOBALS['tf']->variables->request['amount'];
+    $desc = "Credit Card Payment " . \MyAdmin\App::variables()->request['transact_id'];
+    if (isset(\MyAdmin\App::variables()->request['amount'])) {
+        $transactAmount = \MyAdmin\App::variables()->request['amount'];
     }
-    $db_check_invoice = clone $GLOBALS['tf']->db;
-    $db_check_invoice->query("SELECT * FROM invoices WHERE invoices_custid={$db->Record['cc_custid']} and invoices_description='Credit Card Payment {$GLOBALS['tf']->variables->request['transact_id']}'", __LINE__, __FILE__);
+    $db_check_invoice = clone \MyAdmin\App::db();
+    $db_check_invoice->query("SELECT * FROM invoices WHERE invoices_custid={$db->Record['cc_custid']} and invoices_description='Credit Card Payment " . \MyAdmin\App::variables()->request['transact_id'] . "'", __LINE__, __FILE__);
     if ($db_check_invoice->num_rows() > 0) {
         $invoice_arr = [];
         while ($db_check_invoice->next_record(MYSQL_ASSOC)) {
             $invoice_arr[] = $db_check_invoice->Record['invoices_id'];
         }
     }
-    $GLOBALS['tf']->variables->request['inv'] = implode(',', $invoice_arr);
+    \MyAdmin\App::variables()->request['inv'] = implode(',', $invoice_arr);
     $do = strtotime(date('Y-m-d', strtotime($cc_log['cc_timestamp']))) == strtotime(date('Y-m-d')) ? 'void' : 'refund';
-    $db = clone $GLOBALS['tf']->db;
-    $dbR = clone $GLOBALS['tf']->db;
-    $db->query("SELECT * FROM invoices WHERE invoices_id IN ({$GLOBALS['tf']->variables->request['inv']})");
+    $db = clone \MyAdmin\App::db();
+    $dbR = clone \MyAdmin\App::db();
+    $db->query("SELECT * FROM invoices WHERE invoices_id IN (" . \MyAdmin\App::variables()->request['inv'] . ")");
     $checkbox = '';
     if ($db->num_rows() > 0) {
         while ($db->next_record(MYSQL_ASSOC)) {
@@ -90,22 +90,22 @@ function cc_refund()
             }
         }
     }
-    if (!isset($GLOBALS['tf']->variables->request['confirmed']) || !verify_csrf('cc_refund')) {
-        $db = clone $GLOBALS['tf']->db;
-        $invoices_arr = explode(',', $GLOBALS['tf']->variables->request['inv']);
+    if (!isset(\MyAdmin\App::variables()->request['confirmed']) || !verify_csrf('cc_refund')) {
+        $db = clone \MyAdmin\App::db();
+        $invoices_arr = explode(',', \MyAdmin\App::variables()->request['inv']);
         $table = new TFTable();
         $table->set_options('cellpadding="10px" cellspacing="10px"');
         $table->set_form_options('id="ccrefundform"');
         $table->csrf('cc_refund');
         $table->set_title('Confirm Refund');
         $table->set_post_location('index.php');
-        $table->add_hidden('transact_id', $GLOBALS['tf']->variables->request['transact_id']);
-        $table->add_hidden('card', $GLOBALS['tf']->variables->request['card']);
-        $table->add_hidden('cust_id', $GLOBALS['tf']->variables->request['cust_id']);
-        $table->add_hidden('module', $GLOBALS['tf']->variables->request['module']);
-        $table->add_hidden('inv', $GLOBALS['tf']->variables->request['inv']);
+        $table->add_hidden('transact_id', \MyAdmin\App::variables()->request['transact_id']);
+        $table->add_hidden('card', \MyAdmin\App::variables()->request['card']);
+        $table->add_hidden('cust_id', \MyAdmin\App::variables()->request['cust_id']);
+        $table->add_hidden('module', \MyAdmin\App::variables()->request['module']);
+        $table->add_hidden('inv', \MyAdmin\App::variables()->request['inv']);
         $table->add_hidden('amount', $transactAmount);
-        $table->add_hidden('transact_id', $GLOBALS['tf']->variables->request['transact_id']);
+        $table->add_hidden('transact_id', \MyAdmin\App::variables()->request['transact_id']);
         $table->add_field('Services', 'l');
         $table->add_field($checkbox, 'l');
         $table->add_row();
@@ -141,42 +141,42 @@ function cc_refund()
 		}
 		</script>';
         add_output($script);
-    } elseif (isset($GLOBALS['tf']->variables->request['confirmed']) && $GLOBALS['tf']->variables->request['confirmed'] == 'yes') {
+    } elseif (isset(\MyAdmin\App::variables()->request['confirmed']) && \MyAdmin\App::variables()->request['confirmed'] == 'yes') {
         $continue = true;
-        $transact_ID = $GLOBALS['tf']->variables->request['transact_id'];
-        if ($GLOBALS['tf']->variables->request['amount'] < $GLOBALS['tf']->variables->request['refund_amount']) {
+        $transact_ID = \MyAdmin\App::variables()->request['transact_id'];
+        if (\MyAdmin\App::variables()->request['amount'] < \MyAdmin\App::variables()->request['refund_amount']) {
             add_output('<div class="alert alert-danger">Error! Refund amount greater than paid amount, must be lesser or equal.</div>');
             $continue = false;
         }
-        if ($GLOBALS['tf']->variables->request['refund_amount'] <= 0) {
+        if (\MyAdmin\App::variables()->request['refund_amount'] <= 0) {
             add_output('Error! You entered Refund amount less than or equal to $0. Refund amount must be greater than $0.');
             $continue = false;
         }
-        if ($do == 'void' && $GLOBALS['tf']->variables->request['amount'] != $GLOBALS['tf']->variables->request['refund_amount']) {
+        if ($do == 'void' && \MyAdmin\App::variables()->request['amount'] != \MyAdmin\App::variables()->request['refund_amount']) {
             add_output('Can only void the entire transaction on the day of the charge');
             $continue = false;
         }
         if ($continue === true) {
             myadmin_log('admin', 'info', 'Going with CC Refund', __LINE__, __FILE__);
-            foreach ($GLOBALS['tf']->variables->request['refund_amount_opt'] as $values) {
+            foreach (\MyAdmin\App::variables()->request['refund_amount_opt'] as $values) {
                 $explodedValues = explode('_', $values);
                 $invoiceIds[] = $explodedValues[1];
             }
-            if ($GLOBALS['tf']->variables->request['amount'] == $GLOBALS['tf']->variables->request['refund_amount']) {
+            if (\MyAdmin\App::variables()->request['amount'] == \MyAdmin\App::variables()->request['refund_amount']) {
                 $refund_type = 'Full';
             } else {
                 $refund_type = 'Partial';
             }
-            $amount = $GLOBALS['tf']->variables->request['refund_amount'];
+            $amount = \MyAdmin\App::variables()->request['refund_amount'];
             myadmin_log('admin', 'info', 'Refund ('.$refund_type.') amount : '.$amount, __LINE__, __FILE__);
-            if (isset($GLOBALS['tf']->variables->request['card'])) {
-                $card = $GLOBALS['tf']->variables->request['card'];
+            if (isset(\MyAdmin\App::variables()->request['card'])) {
+                $card = \MyAdmin\App::variables()->request['card'];
             }
-            if (isset($GLOBALS['tf']->variables->request['cust_id'])) {
-                $cust_id = $GLOBALS['tf']->variables->request['cust_id'];
+            if (isset(\MyAdmin\App::variables()->request['cust_id'])) {
+                $cust_id = \MyAdmin\App::variables()->request['cust_id'];
             }
-            if (isset($GLOBALS['tf']->variables->request['inv'])) {
-                $invoice_id = $GLOBALS['tf']->variables->request['inv'];
+            if (isset(\MyAdmin\App::variables()->request['inv'])) {
+                $invoice_id = \MyAdmin\App::variables()->request['inv'];
             }
             $refundTransactionID = $transact_ID;
             $cc_num = mb_substr($card, -4);
@@ -198,10 +198,10 @@ function cc_refund()
             myadmin_log('admin', 'info', json_encode($response), __LINE__, __FILE__);
             $st_txt = $status[$response['0']].'! '.$response['3'];
             if ($invoice_update) {
-                $db = clone $GLOBALS['tf']->db;
-                $dbC = clone $GLOBALS['tf']->db;
-                $dbD = clone $GLOBALS['tf']->db;
-                $dbU = clone $GLOBALS['tf']->db;
+                $db = clone \MyAdmin\App::db();
+                $dbC = clone \MyAdmin\App::db();
+                $dbD = clone \MyAdmin\App::db();
+                $dbU = clone \MyAdmin\App::db();
                 myadmin_log('payments', 'info', "Invoices selected for refund - ".json_encode($invoiceIds), __LINE__, __FILE__);
                 $now = mysql_now();
                 $amountRemaining = $amount;
@@ -241,7 +241,7 @@ function cc_refund()
                         if ($refund_created) {
                             myadmin_log('payments', 'debug', "Refund Invoice created for the amount {$amount}.", __LINE__, __FILE__);
                         }
-                        if ($GLOBALS['tf']->variables->request['unpaid'] == 'yes') {
+                        if (\MyAdmin\App::variables()->request['unpaid'] == 'yes') {
                             $invoiceObj = new \MyAdmin\Orm\Invoice();
                             $invoiceObj->load_real($updateInv['invoices_extra']);
                             if ($invoiceObj->loaded === true) {
@@ -250,9 +250,9 @@ function cc_refund()
                         }
                         $db->query(make_insert_query('history_log', [
                             'history_id' => null,
-                            'history_sid' => $GLOBALS['tf']->session->sessionid,
+                            'history_sid' => \MyAdmin\App::session()->sessionid,
                             'history_timestamp' => mysql_now(),
-                            'history_creator' => $GLOBALS['tf']->session->account_id,
+                            'history_creator' => \MyAdmin\App::session()->account_id,
                             'history_owner' => $cust_id,
                             'history_section' => 'cc_refund',
                             'history_type' => $transact_ID,
@@ -262,7 +262,7 @@ function cc_refund()
                     }
                 }
             }
-            $GLOBALS['tf']->redirect($GLOBALS['tf']->link('index.php', 'choice=none.view_cc_transaction&transaction='.$refundTransactionID.'&module='.$GLOBALS['tf']->variables->request['module'].'&st_txt='.$st_txt));
+            \MyAdmin\App::output()->redirect(\MyAdmin\App::link('index.php', 'choice=none.view_cc_transaction&transaction='.$refundTransactionID.'&module='.\MyAdmin\App::variables()->request['module'].'&st_txt='.$st_txt));
         }
     }
 }

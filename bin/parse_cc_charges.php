@@ -12,7 +12,7 @@
     require_once __DIR__.'/../../include/functions.inc.php';
     $webpage = false;
     define('VERBOSE_MODE', false);
-    $db = $GLOBALS['tf']->db;
+    $db = \MyAdmin\App::db();
     $db2 = get_module_db('vps');
     function_requirements('charge_card');
     function_requirements('auth_charge_card');

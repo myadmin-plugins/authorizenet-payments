@@ -18,13 +18,13 @@ $db->query("select * from user_log where history_type='changecc' and (history_ne
 while ($db->next_record(MYSQL_ASSOC)) {
     $updates = [];
     if (substr($db->Record['history_old_value'], 0, 3) == '/./') {
-        $cc = $GLOBALS['tf']->decrypt_old($db->Record['history_old_value']);
-        $cc = $GLOBALS['tf']->encrypt($cc);
+        $cc = \MyAdmin\App::decryptOld($db->Record['history_old_value']);
+        $cc = \MyAdmin\App::encrypt($cc);
         $updates[] = "history_old_value='".$db->real_escape($cc)."'";
     }
     if (substr($db->Record['history_new_value'], 0, 3) == '/./') {
-        $cc = $GLOBALS['tf']->decrypt_old($db->Record['history_new_value']);
-        $cc = $GLOBALS['tf']->encrypt($cc);
+        $cc = \MyAdmin\App::decryptOld($db->Record['history_new_value']);
+        $cc = \MyAdmin\App::encrypt($cc);
         $updates[] = "history_new_value='".$db->real_escape($cc)."'";
     }
     if (sizeof($updates) > 0) {

@@ -17,9 +17,9 @@ $account = new Accounts_Ext($db2);
 $db->query("select * from cc_log where cc_request_card_num like '/./%'");
 while ($db->next_record(MYSQL_ASSOC)) {
     $updates = [];
-    $cc = $GLOBALS['tf']->decrypt($db->Record['cc_request_card_num']);
+    $cc = \MyAdmin\App::decrypt($db->Record['cc_request_card_num']);
     if ($cc !== false) {
-        $query = "update cc_log set cc_request_card_num='".$db->real_escape($GLOBALS['tf']->encrypt($GLOBALS['tf']->decrypt($db->Record['cc_request_card_num'])))."' where cc_id={$db->Record['cc_id']}";
+        $query = "update cc_log set cc_request_card_num='".$db->real_escape(\MyAdmin\App::encrypt(\MyAdmin\App::decrypt($db->Record['cc_request_card_num'])))."' where cc_id={$db->Record['cc_id']}";
         echo "$query\n";
         $db2->query($query);
     }

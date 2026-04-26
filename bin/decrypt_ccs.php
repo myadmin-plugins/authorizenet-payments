@@ -16,7 +16,7 @@ $db2 = clone $db;
 $account = new Accounts_Ext($db2);
 $db->query("select * from accounts_ext where account_key='cc' and account_value like '%/./%'");
 while ($db->next_record(MYSQL_ASSOC)) {
-    $cc = $GLOBALS['tf']->decrypt_old($db->Record['account_value']);
+    $cc = \MyAdmin\App::decryptOld($db->Record['account_value']);
     if ($cc != $db->Record['account_value']) {
         $query = "update accounts_ext set account_value='".$db2->real_escape($cc)."' where account_key='cc' and account_id={$db->Record['account_id']}";
         echo "$query\n";
@@ -30,7 +30,7 @@ while ($db->next_record(MYSQL_ASSOC)) {
         $changed = false;
         foreach ($ccs as $cc_idx => $data) {
             if (isset($data['cc'])) {
-                $ccs[$cc_idx]['cc'] = $GLOBALS['tf']->decrypt_old($data['cc']);
+                $ccs[$cc_idx]['cc'] = \MyAdmin\App::decryptOld($data['cc']);
                 $changed = true;
             }
         }

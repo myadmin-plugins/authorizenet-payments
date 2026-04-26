@@ -105,7 +105,7 @@ class AddCcTest extends TestCase
     public function testAddCcEncryptsCardNumber(): void
     {
         $content = file_get_contents(self::$sourceFile);
-        $this->assertStringContainsString('$tf->encrypt(', $content);
+        $this->assertStringContainsString('\MyAdmin\App::encrypt(', $content);
     }
 
     /**
