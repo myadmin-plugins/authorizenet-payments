@@ -20,7 +20,6 @@
  */
 function add_cc_new_data($cc, $ccs, $data, $new_data, $prefix, $force = false)
 {
-    $tf = $GLOBALS['tf'];
     $remove_key = false;
     if ($force === true || can_use_cc($data, $new_data, false, $prefix.'cc')) {
         if (isset($data['disable_cc']) && $data['disable_cc'] == 1) {
@@ -61,7 +60,6 @@ function add_cc($data, $prefix = '', $force = false, $request = false)
     if ($request === false) {
         $request = \MyAdmin\App::variables()->request;
     }
-    $tf = $GLOBALS['tf'];
     $minimum_days = 30;
     $max_early_ccs = 4;
     $return = [

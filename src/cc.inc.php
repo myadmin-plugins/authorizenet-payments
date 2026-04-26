@@ -253,7 +253,6 @@ function format_cc_exp()
 */
 function parse_ccs($data)
 {
-    $tf = $GLOBALS['tf'];
     $ccs = (isset($data['ccs']) ? myadmin_unstringify($data['ccs']) : []);
     $repl = [' ', '_', '-'];
     $with = ['', '', ''];

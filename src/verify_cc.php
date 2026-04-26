@@ -7,7 +7,6 @@
  */
 function verify_cc_charge($cc, $data)
 {
-    $tf = $GLOBALS['tf'];
     $return = [
         'status' => '',
         'text' => ''
@@ -48,7 +47,6 @@ function verify_cc_charge($cc, $data)
  */
 function verify_cc($cc, $data)
 {
-    $tf = $GLOBALS['tf'];
     $return = [
         'status' => '',
         'text' => ''
