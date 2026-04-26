@@ -132,7 +132,7 @@ class PluginTest extends TestCase
      * Tests that the getMenu static method exists and accepts a GenericEvent.
      *
      * Uses reflection to verify the method signature without invoking it,
-     * since it depends on global state ($GLOBALS['tf']).
+     * since it depends on global state (MyAdmin\App::tf()).
      */
     public function testGetMenuMethodSignature(): void
     {

@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
  * Tests for admin functions via static analysis.
  *
  * The admin functions (disable_cc, enable_cc, authorize_cc, etc.) all
- * depend heavily on global state ($GLOBALS['tf'], database connections,
+ * depend heavily on global state (MyAdmin\App::tf(), database connections,
  * ACL checks). These tests verify their structure and security patterns
  * through source code analysis.
  */
