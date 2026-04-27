@@ -6,7 +6,6 @@ function manage_cc()
     add_js('font-awesome');
     add_js('card.jquery');
     add_js('card');
-    global $tf;
     page_title('Manage Credit Cards');
     $data = \MyAdmin\App::accounts()->data;
     if (!isset($data['ccs'])) {
