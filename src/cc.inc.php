@@ -500,6 +500,21 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
                 }
                 //Prepay Invoices updates ends
             }
+            //Clear out this CC Decline history
+            $db->query("SELECT * FROM user_log WHERE history_owner = {$custid} AND history_type = 'carddecline'", __LINE__, __FILE__);
+            if ($db->num_rows() > 0) {
+                $history_id = null;
+                while ($db->next_record(MYSQL_ASSOC)) {
+                    if ($cc == $GLOBALS['tf']->decrypt($db->Record['history_new_value'])) {
+                        $history_id = $db->Record['history_id'];
+                        break;
+                    }
+                }
+                if ($history_id && intval($history_id) > 0) {
+                    $history_id = intval($history_id);
+                    $db->query("DELETE FROM user_log WHERE history_id = $history_id", __LINE__, __FILE__);
+                }
+            }
             break;
         default:
             myadmin_log('billing', 'notice', 'FAILURE (custid:'.$custid.',exp:'.$cc_exp.',cc:'.mask_cc($cc, true).',amount:'.$amount.', code:'.$response['code'].') raw: '.$cc_response, __LINE__, __FILE__);
@@ -570,6 +585,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
             if (
                 count($ccs) > 1 && //more than 1 cc present then proceed
                 RETRY_CC == 1 && //When CC Retry is enabled from config
+                $returnURL === false && //is to work only when billingd calls
                 (!isset(App::variables()->request['ot_cc']) || isset(App::variables()->request['retry_cc']))
             ) {
                 $cc_encrypted = \MyAdmin\App::encrypt(trim(str_replace([' ', '_', '-'], ['', '', ''], $cc)));
