@@ -103,7 +103,7 @@ function get_locked_ccs()
 {
     $ccs = [];
     $accs = [];
-    $db = \MyAdmin\App::db();
+    $db = App::db();
     $db->query(
         "select account_value from accounts, accounts_ext where account_status='locked' and accounts.account_id=accounts_ext.account_id and account_key='cc' group by account_value",
         __LINE__,
@@ -181,13 +181,13 @@ function can_use_cc($data, $ccData = false, $check_disabled_cc = true, $cc_field
     if (
     (
     (isset($data['cc_whitelist']) && $data['cc_whitelist'] == 1)
-    || (isset($cc_holder[$cc_field]) && isset($data['cc_auth_'.\MyAdmin\App::decrypt($cc_holder[$cc_field])]))
+    || (isset($cc_holder[$cc_field]) && isset($data['cc_auth_'.App::decrypt($cc_holder[$cc_field])]))
     || (
     (!isset($data['maxmind_score']) || $data['maxmind_score'] <= MAXMIND_SCORE_DISABLE_CC)
     && (isset($data['maxmind_riskscore']) && $data['maxmind_riskscore'] <= MAXMIND_RISKSCORE_DISABLE_CC)
     )
     )
-    && (isset($cc_holder[$cc_field]) && \MyAdmin\App::decrypt($cc_holder[$cc_field]) != '')
+    && (isset($cc_holder[$cc_field]) && App::decrypt($cc_holder[$cc_field]) != '')
     && ($check_disabled_cc === false || !isset($data['disable_cc']) || $data['disable_cc'] != 1)
     ) {
     $cc_usable = true;
@@ -196,13 +196,13 @@ function can_use_cc($data, $ccData = false, $check_disabled_cc = true, $cc_field
     $cc_usable = true;
     $reason = '';
     if (!isset($data['cc_whitelist']) || $data['cc_whitelist'] != 1) {
-        if (!isset($ccData[$cc_field]) || !isset($data['cc_auth_'.\MyAdmin\App::decrypt($ccData[$cc_field])])) {
-            if (!isset($ccData[$cc_field]) || trim(\MyAdmin\App::decrypt($ccData[$cc_field])) == '') {
+        if (!isset($ccData[$cc_field]) || !isset($data['cc_auth_'.App::decrypt($ccData[$cc_field])])) {
+            if (!isset($ccData[$cc_field]) || trim(App::decrypt($ccData[$cc_field])) == '') {
                 $reason .= '  No Credit-Card Number set or the number is blank.';
                 $cc_usable = false;
             }
-            /*if (isset($cc_holder[$cc_field]) && (!isset($data['cc_auth_'.\MyAdmin\App::decrypt($cc_holder[$cc_field])]) || trim($data['cc_auth_'.\MyAdmin\App::decrypt($cc_holder[$cc_field])]) == '')) {
-                $reason .= " ".\MyAdmin\App::decrypt($cc_holder[$cc_field])." is not verified.";
+            /*if (isset($cc_holder[$cc_field]) && (!isset($data['cc_auth_'.App::decrypt($cc_holder[$cc_field])]) || trim($data['cc_auth_'.App::decrypt($cc_holder[$cc_field])]) == '')) {
+                $reason .= " ".App::decrypt($cc_holder[$cc_field])." is not verified.";
                 $cc_usable = false;
             }*/
             if (!isset($data['maxmind_riskscore']) && !isset($ccData['maxmind_riskscore'])) {
@@ -235,8 +235,8 @@ function can_use_cc($data, $ccData = false, $check_disabled_cc = true, $cc_field
 */
 function format_cc_exp()
 {
-    $exp_month = (\MyAdmin\App::variables()->request['exp_month'] ?? 1);
-    $exp_year = (\MyAdmin\App::variables()->request['exp_year'] ?? date('Y'));
+    $exp_month = (App::variables()->request['exp_month'] ?? 1);
+    $exp_year = (App::variables()->request['exp_year'] ?? date('Y'));
     if (mb_strlen($exp_month) == 1) {
         $exp_month = '0'.$exp_month;
     }
@@ -257,11 +257,11 @@ function parse_ccs($data)
     $repl = [' ', '_', '-'];
     $with = ['', '', ''];
     if (isset($data['cc']) && $data['cc'] != '') {
-        $cc = trim(str_replace($repl, $with, trim(\MyAdmin\App::decrypt($data['cc']))));
+        $cc = trim(str_replace($repl, $with, trim(App::decrypt($data['cc']))));
         $found = false;
         if (count($ccs) > 0) {
             foreach ($ccs as $temp_cc) {
-                if (trim(str_replace($repl, $with, \MyAdmin\App::decrypt($temp_cc['cc']))) == $cc) {
+                if (trim(str_replace($repl, $with, App::decrypt($temp_cc['cc']))) == $cc) {
                     $found = true;
                 }
             }
@@ -269,7 +269,7 @@ function parse_ccs($data)
         if ($found == false) {
             $ccs[] = ['cc' => $cc, 'cc_exp' => $data['cc_exp'] ?? ''];
         }
-        //$ccs[] = array('cc' => \MyAdmin\App::encrypt($cc), 'cc_exp' => isset($data['cc_exp']) ? $data['cc_exp'] : '');
+        //$ccs[] = array('cc' => App::encrypt($cc), 'cc_exp' => isset($data['cc_exp']) ? $data['cc_exp'] : '');
     }
     return $ccs;
 }
@@ -310,19 +310,19 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
     $settings = \get_module_settings($module);
     $db = get_module_db($module);
     $retval = false;
-    $data = \MyAdmin\App::accounts()->read($custid);
+    $data = App::accounts()->read($custid);
     if (isset($data['disable_cc']) && $data['disable_cc'] == 1) {
         add_output('<div class="container alert alert-danger"><strong>Error! CC Disabled! </strong>Payment type credit card is currently unavailable. Remove the credit card(s) you have on file and add them again. If you continue having issues please contact us.</div>');
         return $retval;
     }
-    if (!isset($data['cc']) && !isset(\MyAdmin\App::variables()->request['ot_cc'])) {
+    if (!isset($data['cc']) && !isset(App::variables()->request['ot_cc'])) {
         global $webpage;
         if (isset($webpage) && $webpage == true) {
             add_output('<div class="container alert alert-danger"><strong>Error! No CC On File! </strong>We have no credit-card on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.</div>');
         }
         return $retval;
     }
-    if (!isset($data['cc_exp']) && !isset(\MyAdmin\App::variables()->request['ot_cc'])) {
+    if (!isset($data['cc_exp']) && !isset(App::variables()->request['ot_cc'])) {
         global $webpage;
         if (isset($webpage) && $webpage == true) {
             add_output('<div class="container alert alert-danger"><strong>Error! No CC Expiration Date On File! </strong>We have no credit-card exp date on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.</div>');
@@ -335,7 +335,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
             $amount = bcadd($amount, convertCurrency($invoice_data['invoices_amount'], 'USD', $invoice_data['invoices_currency'])->getAmount()->toFloat(), 2);
         }
     }
-    $lid = \MyAdmin\App::accounts()->cross_reference($custid);
+    $lid = App::accounts()->cross_reference($custid);
     $amount = round((float) $amount, 2);
     // do some extra sanity checks
     $name = explode(' ', (!isset($data['name']) || trim($data['name']) == '' ? str_replace('@', ' ', $data['account_lid']) : $data['name']));
@@ -345,7 +345,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
     $response['code'] = 0;
     //$cc = $data['cc'];
     $ccs = parse_ccs($data);
-    $cc = isset(\MyAdmin\App::variables()->request['ot_cc']) && isset($ccs[\MyAdmin\App::variables()->request['ot_cc']]) ? \MyAdmin\App::decrypt($ccs[\MyAdmin\App::variables()->request['ot_cc']]['cc']) : \MyAdmin\App::decrypt($data['cc']);
+    $cc = isset(App::variables()->request['ot_cc']) && isset($ccs[App::variables()->request['ot_cc']]) ? App::decrypt($ccs[App::variables()->request['ot_cc']]['cc']) : App::decrypt($data['cc']);
     $cc = trim($cc);
     $cc = str_replace([' ', '_', '-'], ['', '', ''], $cc);
     $badcc = get_bad_cc();
@@ -378,8 +378,8 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
         }
     }
     $cc_parts = explode('/', (isset($data['cc_exp']) ? trim(str_replace(' ', '', (strpos($data['cc_exp'], '/') !== false ? $data['cc_exp'] : substr($data['cc_exp'], 0, 2).'/'.substr($data['cc_exp'], 2)))) : date('m/Y')));
-    if (isset(\MyAdmin\App::variables()->request['ot_cc'])) {
-        $cc_parts = explode('/', (isset($ccs[\MyAdmin\App::variables()->request['ot_cc']]['cc_exp']) ? trim(str_replace(' ', '', (strpos($ccs[\MyAdmin\App::variables()->request['ot_cc']]['cc_exp'], '/') !== false ? $ccs[\MyAdmin\App::variables()->request['ot_cc']]['cc_exp'] : substr($ccs[\MyAdmin\App::variables()->request['ot_cc']]['cc_exp'], 0, 2).'/'.substr($ccs[\MyAdmin\App::variables()->request['ot_cc']]['cc_exp'], 2)))) : date('m/Y')));
+    if (isset(App::variables()->request['ot_cc'])) {
+        $cc_parts = explode('/', (isset($ccs[App::variables()->request['ot_cc']]['cc_exp']) ? trim(str_replace(' ', '', (strpos($ccs[App::variables()->request['ot_cc']]['cc_exp'], '/') !== false ? $ccs[App::variables()->request['ot_cc']]['cc_exp'] : substr($ccs[App::variables()->request['ot_cc']]['cc_exp'], 0, 2).'/'.substr($ccs[App::variables()->request['ot_cc']]['cc_exp'], 2)))) : date('m/Y')));
     }
     $cc_exp = $cc_parts[0].'/'.(isset($cc_parts[1]) ? (mb_strlen($cc_parts[1]) == 2 ? '20'.$cc_parts[1] : $cc_parts[1]) : date('Y'));
     myadmin_log('billing', 'notice', "Charging {$lid} ({$data['status']}) ".($amount == $orig_amount ? $amount : $amount.' and the rest of the '.$orig_amount.' paid via prepay (had '.$prepay_amount.' prepays available)').'} Using Creditcard '.mask_cc($cc).' (disabled '.(isset($data['disable_cc']) && $data['disable_cc'] == 1 ? 'yes' : 'no').')', __LINE__, __FILE__);
@@ -415,8 +415,8 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
             'x_Card_Num' => $cc ?? '',
             'x_Exp_Date' => $cc_exp
         ];
-        if (isset(\MyAdmin\App::variables()->request['cc_ccv2']) && in_array(mb_strlen(\MyAdmin\App::variables()->request['cc_ccv2']), [3, 4])) {
-            $args['x_Card_Code'] = \MyAdmin\App::variables()->request['cc_ccv2'];
+        if (isset(App::variables()->request['cc_ccv2']) && in_array(mb_strlen(App::variables()->request['cc_ccv2']), [3, 4])) {
+            $args['x_Card_Code'] = App::variables()->request['cc_ccv2'];
         }
         if ($invoice) {
             $args['x_Invoice_Num'] = implode(',', $invoice);
@@ -483,14 +483,14 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
                         ->plus(convertCurrency($invoice_dataa['invoices_amount'], $db->Record['prepay_currency'], 'USD'), RoundingMode::UP)
                         ->getAmount()
                         ->toFloat();
-                    \MyAdmin\App::history()->add('prepay_cc', $invoice_dataa['prepay_id'], $remaining, $db->Record['prepay_remaining'], $custid);
+                    App::history()->add('prepay_cc', $invoice_dataa['prepay_id'], $remaining, $db->Record['prepay_remaining'], $custid);
                     $db->query("UPDATE prepays SET prepay_remaining='{$remaining}', prepay_status=1 WHERE prepay_id='{$invoice_dataa['prepay_id']}'", __LINE__, __FILE__);
                     myadmin_log('payments', 'info', "Applied {$remaining} {$invoice_dataa['invoices_currency']} To Prepay {$invoice_dataa['prepay_id']}", __LINE__, __FILE__);
                     $db->query(make_insert_query('comment_log', [
                         'history_id' => null,
-                        'history_sid' => \MyAdmin\App::session()->sessionid,
+                        'history_sid' => App::session()->sessionid,
                         'history_timestamp' => mysql_now(),
-                        'history_creator' => \MyAdmin\App::session()->account_id,
+                        'history_creator' => App::session()->account_id,
                         'history_owner' => $custid,
                         'history_section' => 'prepay',
                         'history_type' => 'comment',
@@ -570,9 +570,9 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
             if ($returnURL !== false) {
                 if ($returnURL === true) {
                     if (strpos($_SERVER['REQUEST_URI'], 'view_balance')) {
-                        $returnURL = \MyAdmin\App::link('cart');
+                        $returnURL = App::link('cart');
                     } else {
-                        $returnURL = \MyAdmin\App::link($_SERVER['REQUEST_URI']);
+                        $returnURL = App::link($_SERVER['REQUEST_URI']);
                     }
                 }
                 $smarty->assign('returnURL', $returnURL);
@@ -588,16 +588,16 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
                 $returnURL === false && //is to work only when billingd calls
                 (!isset(App::variables()->request['ot_cc']) || isset(App::variables()->request['retry_cc']))
             ) {
-                $cc_encrypted = \MyAdmin\App::encrypt(trim(str_replace([' ', '_', '-'], ['', '', ''], $cc)));
+                $cc_encrypted = App::encrypt(trim(str_replace([' ', '_', '-'], ['', '', ''], $cc)));
                 $dec_ccs = [];
                 $db->query("SELECT * FROM user_log WHERE history_owner = {$custid} AND history_type = 'carddecline'", __LINE__, __FILE__);
                 if ($db->num_rows() > 0) {
                     while ($db->next_record(MYSQL_ASSOC)) {
-                        $dec_ccs[] = \MyAdmin\App::decrypt($db->Record['history_new_value']);
+                        $dec_ccs[] = App::decrypt($db->Record['history_new_value']);
                     }
                 }
                 if (!in_array($cc, $dec_ccs)) {
-                    \MyAdmin\App::history()->add('users', 'carddecline', $cc_encrypted, $cc_exp, $custid);
+                    App::history()->add('users', 'carddecline', $cc_encrypted, $cc_exp, $custid);
                 }
                 $retval = retry_charge_card($custid, $amount, $invoice, $module,  $returnURL, $useHandlePayment, $queue);
              } else {
@@ -607,7 +607,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
                 ];
                 App::accounts()->update($custid, $new_data);
              }
-            //\MyAdmin\App::history()->add('users', 'carddecline', $data['cc'], $data['cc_exp'], $custid);
+            //App::history()->add('users', 'carddecline', $data['cc'], $data['cc_exp'], $custid);
             break;
     }
     return $retval;
@@ -632,7 +632,7 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
     $settings = \get_module_settings($module);
     $db = get_module_db($module);
     $retval = false;
-    $data = \MyAdmin\App::accounts()->read($custid);
+    $data = App::accounts()->read($custid);
     if ($override_data !== false) {
         foreach ($override_data as $key => $value) {
             $data[$key] = $value;
@@ -651,7 +651,7 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
 
     $first_name = $name[0];
     $last_name = $name[count($name) - 1];
-    $lid = \MyAdmin\App::accounts()->cross_reference($custid);
+    $lid = App::accounts()->cross_reference($custid);
     $response['code'] = 0;
     $badcc = get_bad_cc();
     if (in_array($cc, $badcc)) {
@@ -751,12 +751,12 @@ function get_next_cc($custid)
     $db->query("SELECT * FROM user_log WHERE history_owner = {$custid} AND history_type = 'carddecline'", __LINE__, __FILE__);
     if ($db->num_rows() > 0) {
         while ($db->next_record(MYSQL_ASSOC)) {
-            $dec_ccs[] = \MyAdmin\App::decrypt($db->Record['history_new_value']);
+            $dec_ccs[] = App::decrypt($db->Record['history_new_value']);
         }
     }
     $ccs = parse_ccs($data);
     foreach ($ccs as $cc_id => $cc_det) {
-        $cc_num = \MyAdmin\App::decrypt($cc_det['cc']);
+        $cc_num = App::decrypt($cc_det['cc']);
         if (!in_array($cc_num, $dec_ccs) && can_use_cc($data, $cc_det, false)) {
             myadmin_log('billing', 'info', "Backup CC - found for customer $custid ".mask_cc($cc_num), __LINE__, __FILE__);
             return $cc_id;
@@ -796,7 +796,7 @@ function retry_charge_card($custid, $amount = false, $invoice = false, $module =
 */
 function get_cc_bank_number($cc)
 {
-    $cc = \MyAdmin\App::decrypt($cc);
+    $cc = App::decrypt($cc);
     return mb_substr($cc, 0, 6);
 }
 
@@ -808,6 +808,6 @@ function get_cc_bank_number($cc)
 */
 function get_cc_last_four($cc)
 {
-    $cc = \MyAdmin\App::decrypt($cc);
+    $cc = App::decrypt($cc);
     return mb_substr($cc, -4);
 }
