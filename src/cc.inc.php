@@ -602,7 +602,6 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
                 $retval = retry_charge_card($custid, $amount, $invoice, $module,  $returnURL, $useHandlePayment, $queue);
              } else {
                 $new_data = [
-                    'payment_method' => 'paypal',
                     'cc_auto' => '0'
                 ];
                 App::accounts()->update($custid, $new_data);
@@ -765,7 +764,6 @@ function get_next_cc($custid)
     myadmin_log('billing', 'info', "Backup CC - not found for customer $custid", __LINE__, __FILE__);
     //Here Primary & Backup both CCs failed so updating payment method paypal.
     $new_data = [
-        'payment_method' => 'paypal',
         'cc_auto' => '0'
     ];
     App::accounts()->update($custid, $new_data);
