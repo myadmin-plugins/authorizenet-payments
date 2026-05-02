@@ -345,7 +345,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
     $response['code'] = 0;
     //$cc = $data['cc'];
     $ccs = parse_ccs($data);
-    $cc = isset(App::variables()->request['ot_cc']) && isset($ccs[App::variables()->request['ot_cc']]) ? App::decrypt($ccs[App::variables()->request['ot_cc']]['cc']) : App::decrypt($data['cc']);
+    $cc = isset(App::variables()->request['ot_cc']) && isset($ccs[App::variables()->request['ot_cc']]) && isset($ccs[App::variables()->request['ot_cc']]['cc']) ? App::decrypt($ccs[App::variables()->request['ot_cc']]['cc']) : (isset($data['cc']) ? App::decrypt($data['cc']) : null);
     if (is_null($cc)) {
         if (isset($webpage) && $webpage == true) {
             add_output('<div class="container alert alert-danger"><strong>Error! Bad CC Number! </strong>This Credit-Card Number has been determined unusable or bad.</div>');
