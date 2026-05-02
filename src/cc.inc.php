@@ -346,6 +346,12 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
     //$cc = $data['cc'];
     $ccs = parse_ccs($data);
     $cc = isset(App::variables()->request['ot_cc']) && isset($ccs[App::variables()->request['ot_cc']]) ? App::decrypt($ccs[App::variables()->request['ot_cc']]['cc']) : App::decrypt($data['cc']);
+    if (is_null($cc)) {
+        if (isset($webpage) && $webpage == true) {
+            add_output('<div class="container alert alert-danger"><strong>Error! Bad CC Number! </strong>This Credit-Card Number has been determined unusable or bad.</div>');
+        }
+        return $retvall;
+    }
     $cc = trim($cc);
     $cc = str_replace([' ', '_', '-'], ['', '', ''], $cc);
     $badcc = get_bad_cc();
