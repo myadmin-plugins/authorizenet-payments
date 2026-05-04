@@ -105,5 +105,6 @@ class Plugin
         $settings->add_password_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_password', _('Password'), _('Password'), (defined('AUTHORIZENET_PASSWORD') ? AUTHORIZENET_PASSWORD : ''));
         $settings->add_password_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_key', _('API Key'), _('API Key'), (defined('AUTHORIZENET_KEY') ? AUTHORIZENET_KEY : ''));
         $settings->add_text_setting(_('Billing'), _('Authorize.Net'), 'authorizenet_referrer', _('Referrer URL (optional)'), _('Referrer URL (optional)'), (defined('AUTHORIZENET_REFERER') ? AUTHORIZENET_REFERER : ''));
+        $settings->add_radio_setting(_('Billing'), _('Authorize.Net'), 'retry_cc', _('Retry CC'), _('Retry CC'), defined('RETRY_CC') ? RETRY_CC : true, [true, false], ['Enabled', 'Disabled']);
     }
 }
