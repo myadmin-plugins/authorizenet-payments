@@ -350,7 +350,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
         if (isset($webpage) && $webpage == true) {
             add_output('<div class="container alert alert-danger"><strong>Error! Bad CC Number! </strong>This Credit-Card Number has been determined unusable or bad.</div>');
         }
-        return $retvall;
+        return $retval;
     }
     $cc = trim($cc);
     $cc = str_replace([' ', '_', '-'], ['', '', ''], $cc);
