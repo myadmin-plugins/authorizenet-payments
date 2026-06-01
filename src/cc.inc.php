@@ -426,7 +426,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
     }
     $cc_parts = explode('/', (isset($data['cc_exp']) ? trim(str_replace(' ', '', (strpos($data['cc_exp'], '/') !== false ? $data['cc_exp'] : substr($data['cc_exp'], 0, 2).'/'.substr($data['cc_exp'], 2)))) : date('m/Y', strtotime('+1 month'))));
     if (isset(App::variables()->request['ot_cc'])) {
-        $cc_parts = explode('/', (isset($ccs[App::variables()->request['ot_cc']]['cc_exp']) ? trim(str_replace(' ', '', (strpos($ccs[App::variables()->request['ot_cc']]['cc_exp'], '/') !== false ? $ccs[App::variables()->request['ot_cc']]['cc_exp'] : substr($ccs[App::variables()->request['ot_cc']]['cc_exp'], 0, 2).'/'.substr($ccs[App::variables()->request['ot_cc']]['cc_exp'], 2)))) : date('m/Y', strtotime('+1 month'))));
+        $cc_parts = explode('/', (isset($ccs[App::variables()->request['ot_cc']]['cc_exp']) ? trim(str_replace(' ', '', (strpos($ccs[App::variables()->request['ot_cc']]['cc_exp'], '/') !== false ? $ccs[App::variables()->request['ot_cc']]['cc_exp'] : substr($ccs[App::variables()->request['ot_cc']]['cc_exp'], 0, 2).'/'.substr($ccs[App::variables()->request['ot_cc']]['cc_exp'], 2)))) : date('m/Y', strtotime('+2 month'))));
     }
     $cc_exp = $cc_parts[0].'/'.(isset($cc_parts[1]) ? (mb_strlen($cc_parts[1]) == 2 ? '20'.$cc_parts[1] : $cc_parts[1]) : date('Y'));
     myadmin_log('billing', 'notice', "Charging {$lid} ({$data['status']}) ".($amount == $orig_amount ? $amount : $amount.' and the rest of the '.$orig_amount.' paid via prepay (had '.$prepay_amount.' prepays available)').'} Using Creditcard '.mask_cc($cc).' (disabled '.(isset($data['disable_cc']) && $data['disable_cc'] == 1 ? 'yes' : 'no').')', __LINE__, __FILE__);
