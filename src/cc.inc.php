@@ -429,6 +429,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
         $cc_parts = explode('/', (isset($ccs[App::variables()->request['ot_cc']]['cc_exp']) ? trim(str_replace(' ', '', (strpos($ccs[App::variables()->request['ot_cc']]['cc_exp'], '/') !== false ? $ccs[App::variables()->request['ot_cc']]['cc_exp'] : substr($ccs[App::variables()->request['ot_cc']]['cc_exp'], 0, 2).'/'.substr($ccs[App::variables()->request['ot_cc']]['cc_exp'], 2)))) : date('m/Y', strtotime('+2 month'))));
     }
     $cc_exp = $cc_parts[0].'/'.(isset($cc_parts[1]) ? (mb_strlen($cc_parts[1]) == 2 ? '20'.$cc_parts[1] : $cc_parts[1]) : date('Y'));
+    unset(App::variables()->request['ot_cc']);
     myadmin_log('billing', 'notice', "Charging {$lid} ({$data['status']}) ".($amount == $orig_amount ? $amount : $amount.' and the rest of the '.$orig_amount.' paid via prepay (had '.$prepay_amount.' prepays available)').'} Using Creditcard '.mask_cc($cc).' (disabled '.(isset($data['disable_cc']) && $data['disable_cc'] == 1 ? 'yes' : 'no').')', __LINE__, __FILE__);
     if ($amount == 0) {
         // approve if they have no balance
@@ -629,11 +630,12 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
             (new \MyAdmin\Mail())->multiMail($subject, $email, get_invoice_email($data), 'client/payment_failed.tpl');
 
             //"ot_cc" is added because it came from pay_balance where they try specific card so no retry for that.
+            global $webpage;
             if (
                 count($ccs) > 1 && //more than 1 cc present then proceed
                 RETRY_CC == 1 && //When CC Retry is enabled from config
                 $returnURL === false && //is to work only when billingd calls
-                (!isset(App::variables()->request['ot_cc']) || isset(App::variables()->request['retry_cc']))
+                (!isset($webpage) || !$webpage || isset(App::variables()->request['retry_cc']))
             ) {
                 $cc_encrypted = App::encrypt(trim(str_replace([' ', '_', '-'], ['', '', ''], $cc)));
                 $dec_ccs = [];
