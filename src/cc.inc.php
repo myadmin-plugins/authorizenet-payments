@@ -218,6 +218,33 @@ function can_use_cc($data, $ccData = false, $check_disabled_cc = true, $cc_field
             }
         }
     }
+    // A missing or expired expiration date makes a card unusable regardless of whitelist/fraud status.
+    // Without this, get_next_cc() can hand back an expired or exp-less backup card whose charge then
+    // falls through to the fabricated fallback expiration date and is guaranteed to decline.
+    if (is_array($ccData)) {
+        $cc_exp_raw = isset($ccData['cc_exp']) ? trim((string) $ccData['cc_exp']) : '';
+        if ($cc_exp_raw === '') {
+            $reason .= '  No Credit-Card expiration date set.';
+            $cc_usable = false;
+        } else {
+            if (mb_strpos($cc_exp_raw, '/') === false) {
+                $cc_exp_raw = mb_substr($cc_exp_raw, 0, 2).'/'.mb_substr($cc_exp_raw, 2);
+            }
+            $exp_parts = explode('/', str_replace(' ', '', $cc_exp_raw));
+            $exp_month = isset($exp_parts[0]) && $exp_parts[0] !== '' ? (int) $exp_parts[0] : 0;
+            $exp_year = $exp_parts[1] ?? '';
+            if (mb_strlen($exp_year) == 2) {
+                $exp_year = '20'.$exp_year;
+            }
+            $exp_year = (int) $exp_year;
+            // only flag when the date parses cleanly and is in the past — never reject an unparseable format
+            if ($exp_month >= 1 && $exp_month <= 12 && $exp_year >= 2000
+                && ($exp_year < (int) date('Y') || ($exp_year == (int) date('Y') && $exp_month < (int) date('n')))) {
+                $reason .= '  Credit-Card has expired ('.$exp_month.'/'.$exp_year.').';
+                $cc_usable = false;
+            }
+        }
+    }
     if ($set_global_reason === true) {
         $GLOBALS['cc_reason'] = trim($reason);
     }
@@ -345,6 +372,20 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
     $response['code'] = 0;
     //$cc = $data['cc'];
     $ccs = parse_ccs($data);
+    // The "No CC Expiration Date On File" guard above only fires on the primary-card path (no ot_cc).
+    // Mirror it for the backup-card (ot_cc) retry path: if the selected backup card has no usable
+    // expiration date, abort instead of charging with the fabricated fallback exp (which always declines).
+    if (isset(App::variables()->request['ot_cc'])) {
+        $ot_cc_idx = App::variables()->request['ot_cc'];
+        if (!isset($ccs[$ot_cc_idx]) || !is_array($ccs[$ot_cc_idx]) || !isset($ccs[$ot_cc_idx]['cc_exp']) || trim((string) $ccs[$ot_cc_idx]['cc_exp']) == '') {
+            global $webpage;
+            if (isset($webpage) && $webpage == true) {
+                add_output('<div class="container alert alert-danger"><strong>Error! No CC Expiration Date On File! </strong>We have no credit-card exp date on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.</div>');
+            }
+            myadmin_log('billing', 'notice', "Aborting charge for customer {$custid}: selected backup card (ot_cc={$ot_cc_idx}) has no expiration date on file", __LINE__, __FILE__);
+            return $retval;
+        }
+    }
     $cc = isset(App::variables()->request['ot_cc']) && isset($ccs[App::variables()->request['ot_cc']]) && isset($ccs[App::variables()->request['ot_cc']]['cc']) ? App::decrypt($ccs[App::variables()->request['ot_cc']]['cc']) : (isset($data['cc']) ? App::decrypt($data['cc']) : null);
     if (is_null($cc)) {
         if (isset($webpage) && $webpage == true) {
@@ -784,6 +825,10 @@ function retry_charge_card($custid, $amount = false, $invoice = false, $module =
         App::variables()->request['ot_cc'] = $next_cc;
         App::variables()->request['retry_cc'] = 1;
         $success = charge_card($custid, $amount, $invoice, $module, $returnURL, $useHandlePayment, $queue);
+        // Clear the retry markers so they cannot leak into the next customer charged in the same
+        // process (e.g. the billingd loop), which would otherwise index into the wrong customer's
+        // ccs array and charge their primary card with the fabricated fallback expiration date.
+        unset(App::variables()->request['ot_cc'], App::variables()->request['retry_cc']);
         if ($success) {
             myadmin_log('billing', 'info', "Retrying BackupCC - Success for $custid, Amount: $amount, CC ID - $next_cc", __LINE__, __FILE__);
             return true;
