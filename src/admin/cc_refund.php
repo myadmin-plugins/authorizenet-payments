@@ -40,6 +40,10 @@ function cc_refund()
             $invoice_arr[] = $db_check_invoice->Record['invoices_id'];
         }
     }
+    if (!isset($invoice_arr)) {
+        add_output('Could not find any invoices matching the custid and transasction id criteria');
+        return;
+    }
     \MyAdmin\App::variables()->request['inv'] = implode(',', $invoice_arr);
     $do = strtotime(date('Y-m-d', strtotime($cc_log['cc_timestamp']))) == strtotime(date('Y-m-d')) ? 'void' : 'refund';
     $db = clone \MyAdmin\App::db();
