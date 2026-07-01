@@ -339,20 +339,20 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
     $retval = false;
     $data = App::accounts()->read($custid);
     if (isset($data['disable_cc']) && $data['disable_cc'] == 1) {
-        add_output('<div class="container alert alert-danger"><strong>Error! CC Disabled! </strong>Payment type credit card is currently unavailable. Remove the credit card(s) you have on file and add them again. If you continue having issues please contact us.</div>');
+        add_output('<div style="max-width:640px;margin:24px auto;padding:22px 26px;background:#fff;border:1px solid #fecaca;border-left:4px solid #ef4444;border-radius:14px;box-shadow:0 6px 18px rgba(15,23,42,.06);color:#0f172a;"><div style="display:flex;align-items:flex-start;gap:14px;"><span style="flex-shrink:0;width:38px;height:38px;border-radius:10px;background:rgba(239,68,68,.1);color:#dc2626;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;"><i class="fas fa-credit-card"></i></span><div style="flex:1;min-width:0;"><strong style="display:block;font-size:1.02rem;font-weight:700;color:#b91c1c;margin-bottom:4px;">Credit card payments disabled</strong><p style="margin:0;font-size:.88rem;color:#475569;line-height:1.55;">Card payment is currently unavailable on your account. Remove the saved card(s) and add them again. If the issue persists, please contact support.</p></div></div></div>');
         return $retval;
     }
     if (!isset($data['cc']) && !isset(App::variables()->request['ot_cc'])) {
         global $webpage;
         if (isset($webpage) && $webpage == true) {
-            add_output('<div class="container alert alert-danger"><strong>Error! No CC On File! </strong>We have no credit-card on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.</div>');
+            add_output('<div style="max-width:640px;margin:24px auto;padding:22px 26px;background:#fff;border:1px solid #fecaca;border-left:4px solid #ef4444;border-radius:14px;box-shadow:0 6px 18px rgba(15,23,42,.06);color:#0f172a;"><div style="display:flex;align-items:flex-start;gap:14px;"><span style="flex-shrink:0;width:38px;height:38px;border-radius:10px;background:rgba(239,68,68,.1);color:#dc2626;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;"><i class="far fa-credit-card"></i></span><div style="flex:1;min-width:0;"><strong style="display:block;font-size:1.02rem;font-weight:700;color:#b91c1c;margin-bottom:4px;">No card on file</strong><p style="margin:0;font-size:.88rem;color:#475569;line-height:1.55;">We don\'t have a credit card on file for this account. Open <strong>Billing &rsaquo; Manage Credit Cards</strong> to add one, or contact support for assistance.</p></div></div></div>');
         }
         return $retval;
     }
     if (!isset($data['cc_exp']) && !isset(App::variables()->request['ot_cc'])) {
         global $webpage;
         if (isset($webpage) && $webpage == true) {
-            add_output('<div class="container alert alert-danger"><strong>Error! No CC Expiration Date On File! </strong>We have no credit-card exp date on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.</div>');
+            add_output('<div style="max-width:640px;margin:24px auto;padding:22px 26px;background:#fff;border:1px solid #fecaca;border-left:4px solid #ef4444;border-radius:14px;box-shadow:0 6px 18px rgba(15,23,42,.06);color:#0f172a;"><div style="display:flex;align-items:flex-start;gap:14px;"><span style="flex-shrink:0;width:38px;height:38px;border-radius:10px;background:rgba(239,68,68,.1);color:#dc2626;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;"><i class="far fa-calendar-times"></i></span><div style="flex:1;min-width:0;"><strong style="display:block;font-size:1.02rem;font-weight:700;color:#b91c1c;margin-bottom:4px;">Missing expiry date</strong><p style="margin:0;font-size:.88rem;color:#475569;line-height:1.55;">Your saved card has no expiry date on file. Open <strong>Billing &rsaquo; Manage Credit Cards</strong> to update it, or contact support for assistance.</p></div></div></div>');
         }
         return $retval;
     }
@@ -380,7 +380,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
         if (!isset($ccs[$ot_cc_idx]) || !is_array($ccs[$ot_cc_idx]) || !isset($ccs[$ot_cc_idx]['cc_exp']) || trim((string) $ccs[$ot_cc_idx]['cc_exp']) == '') {
             global $webpage;
             if (isset($webpage) && $webpage == true) {
-                add_output('<div class="container alert alert-danger"><strong>Error! No CC Expiration Date On File! </strong>We have no credit-card exp date on file.  Please go to Billing -> Manage Credit Cards and set one or contact support for assistance.</div>');
+                add_output('<div style="max-width:640px;margin:24px auto;padding:22px 26px;background:#fff;border:1px solid #fecaca;border-left:4px solid #ef4444;border-radius:14px;box-shadow:0 6px 18px rgba(15,23,42,.06);color:#0f172a;"><div style="display:flex;align-items:flex-start;gap:14px;"><span style="flex-shrink:0;width:38px;height:38px;border-radius:10px;background:rgba(239,68,68,.1);color:#dc2626;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;"><i class="far fa-calendar-times"></i></span><div style="flex:1;min-width:0;"><strong style="display:block;font-size:1.02rem;font-weight:700;color:#b91c1c;margin-bottom:4px;">Missing expiry date</strong><p style="margin:0;font-size:.88rem;color:#475569;line-height:1.55;">Your saved card has no expiry date on file. Open <strong>Billing &rsaquo; Manage Credit Cards</strong> to update it, or contact support for assistance.</p></div></div></div>');
             }
             myadmin_log('billing', 'notice', "Aborting charge for customer {$custid}: selected backup card (ot_cc={$ot_cc_idx}) has no expiration date on file", __LINE__, __FILE__);
             return $retval;
@@ -389,7 +389,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
     $cc = isset(App::variables()->request['ot_cc']) && isset($ccs[App::variables()->request['ot_cc']]) && isset($ccs[App::variables()->request['ot_cc']]['cc']) ? App::decrypt($ccs[App::variables()->request['ot_cc']]['cc']) : (isset($data['cc']) ? App::decrypt($data['cc']) : null);
     if (is_null($cc)) {
         if (isset($webpage) && $webpage == true) {
-            add_output('<div class="container alert alert-danger"><strong>Error! Bad CC Number! </strong>This Credit-Card Number has been determined unusable or bad.</div>');
+            add_output('<div style="max-width:640px;margin:24px auto;padding:22px 26px;background:#fff;border:1px solid #fecaca;border-left:4px solid #ef4444;border-radius:14px;box-shadow:0 6px 18px rgba(15,23,42,.06);color:#0f172a;"><div style="display:flex;align-items:flex-start;gap:14px;"><span style="flex-shrink:0;width:38px;height:38px;border-radius:10px;background:rgba(239,68,68,.1);color:#dc2626;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;"><i class="fas fa-times-circle"></i></span><div style="flex:1;min-width:0;"><strong style="display:block;font-size:1.02rem;font-weight:700;color:#b91c1c;margin-bottom:4px;">Card flagged as unusable</strong><p style="margin:0;font-size:.88rem;color:#475569;line-height:1.55;">This card number has been marked as unusable. Please remove it and add a different card, or contact support if you believe this is a mistake.</p></div></div></div>');
         }
         return $retval;
     }
@@ -398,7 +398,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
     $badcc = get_bad_cc();
     if (in_array($cc, $badcc)) {
         if (isset($webpage) && $webpage == true) {
-            add_output('<div class="container alert alert-danger"><strong>Error! Bad CC Number! </strong>This Credit-Card Number has been determined unusable or bad.</div>');
+            add_output('<div style="max-width:640px;margin:24px auto;padding:22px 26px;background:#fff;border:1px solid #fecaca;border-left:4px solid #ef4444;border-radius:14px;box-shadow:0 6px 18px rgba(15,23,42,.06);color:#0f172a;"><div style="display:flex;align-items:flex-start;gap:14px;"><span style="flex-shrink:0;width:38px;height:38px;border-radius:10px;background:rgba(239,68,68,.1);color:#dc2626;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;"><i class="fas fa-times-circle"></i></span><div style="flex:1;min-width:0;"><strong style="display:block;font-size:1.02rem;font-weight:700;color:#b91c1c;margin-bottom:4px;">Card flagged as unusable</strong><p style="margin:0;font-size:.88rem;color:#475569;line-height:1.55;">This card number has been marked as unusable. Please remove it and add a different card, or contact support if you believe this is a mistake.</p></div></div></div>');
         }
         return $retval;
     }
@@ -436,7 +436,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
         $response['code'] = 1;
     } elseif (trim($cc) == '') {
         //myadmin_log('billing', 'notice', 'Blank Credit Card', __LINE__, __FILE__);
-        add_output('<div class="container alert alert-danger"><strong>Error! Blank Credit Card! </strong>No Credit Card number found.</div>');
+        add_output('<div style="max-width:640px;margin:24px auto;padding:22px 26px;background:#fff;border:1px solid #fecaca;border-left:4px solid #ef4444;border-radius:14px;box-shadow:0 6px 18px rgba(15,23,42,.06);color:#0f172a;"><div style="display:flex;align-items:flex-start;gap:14px;"><span style="flex-shrink:0;width:38px;height:38px;border-radius:10px;background:rgba(239,68,68,.1);color:#dc2626;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;"><i class="fas fa-credit-card"></i></span><div style="flex:1;min-width:0;"><strong style="display:block;font-size:1.02rem;font-weight:700;color:#b91c1c;margin-bottom:4px;">No card number provided</strong><p style="margin:0;font-size:.88rem;color:#475569;line-height:1.55;">The card number was empty when we tried to process payment. Please re-enter your card details and try again.</p></div></div></div>');
         $response['code'] = 0;
         return $retval;
     } else {
@@ -566,7 +566,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
             break;
         default:
             myadmin_log('billing', 'notice', 'FAILURE (custid:'.$custid.',exp:'.$cc_exp.',cc:'.mask_cc($cc, true).',amount:'.$amount.', code:'.$response['code'].') raw: '.$cc_response, __LINE__, __FILE__);
-            add_output('<div class="container alert alert-danger"><div style="width: 40%;text-align: left;margin-left: 10%;"><strong>Error! Your credit card has declined the transaction. </strong><br><br><p>The most common reasons for declines are:</p><ul><li>Incorrect credit card number or expiration date</li><li>Insufficient funds in your credit card</li><li>The bank declined based on purchase history</li><li>The bank\'s fraud rules blocked the transaction</li></ul><br><p>Please contact your bank for reason and try again.</p></div></div>');
+            add_output('<div style="max-width:640px;margin:24px auto;padding:22px 26px;background:#fff;border:1px solid #fecaca;border-left:4px solid #ef4444;border-radius:14px;box-shadow:0 6px 18px rgba(15,23,42,.06);color:#0f172a;"><div style="display:flex;align-items:flex-start;gap:14px;"><span style="flex-shrink:0;width:38px;height:38px;border-radius:10px;background:rgba(239,68,68,.1);color:#dc2626;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;"><i class="fas fa-exclamation-triangle"></i></span><div style="flex:1;min-width:0;"><strong style="display:block;font-size:1.02rem;font-weight:700;color:#b91c1c;margin-bottom:4px;letter-spacing:-.005em;">Your card was declined</strong><p style="margin:0 0 10px;font-size:.88rem;color:#475569;line-height:1.55;">The transaction couldn\'t be completed. Common causes:</p><ul style="margin:0 0 12px;padding-left:20px;font-size:.86rem;color:#475569;line-height:1.7;"><li>Incorrect card number or expiry date</li><li>Insufficient funds on the card</li><li>Your bank declined based on purchase history</li><li>Your bank\'s fraud rules blocked the transaction</li></ul><p style="margin:0;font-size:.84rem;color:#64748b;line-height:1.55;">Please contact your bank or try a different card.</p></div></div></div>');
             if ($cc_log['cc_result_reason_text'] == 'Declined  (Card reported lost or stolen - Contact card issuer for resolution.)') {
                 (new \MyAdmin\Mail())->adminMail('Stolen Credit Card', print_r($cc_log, true), 'billing@interserver.net', 'admin/cc_bad_response.tpl');
             }
