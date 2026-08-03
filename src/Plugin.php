@@ -64,8 +64,11 @@ class Plugin
         $loader->add_requirement('select_cc_exp', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
         $loader->add_requirement('can_use_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
         $loader->add_requirement('format_cc_exp', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
-        $loader->add_requirement('make_cc_decline', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
-        $loader->add_page_requirement('email_cc_decline', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
+        // make_cc_decline() and email_cc_decline() were removed from cc.inc.php when the
+        // decline notification moved to the payment_failed.tpl mail sent inline by
+        // charge_card(). Their registrations outlived them: the function entry pointed
+        // function_requirements() at a file that no longer defines it, and the page entry
+        // routed /email_cc_decline and /admin/email_cc_decline at nothing.
         $loader->add_requirement('parse_ccs', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
         $loader->add_requirement('get_bad_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
         $loader->add_requirement('get_cc_bank_number', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');

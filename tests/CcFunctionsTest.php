@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Detain\MyAdminAuthorizenet\Tests;
 
+use Detain\MyAdminAuthorizenet\Plugin;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * Tests for functions defined in cc.inc.php.
@@ -20,13 +22,17 @@ class CcFunctionsTest extends TestCase
     public static function setUpBeforeClass(): void
     {
         self::$sourceFile = dirname(__DIR__) . '/src/cc.inc.php';
+        // Stubs.php supplies the global helpers and \MyAdmin\App statics cc.inc.php calls.
+        require_once __DIR__ . '/Stubs.php';
         if (!function_exists('mask_cc')) {
-            // Define stubs for functions used inside cc.inc.php but not tested here
-            if (!function_exists('myadmin_unstringify')) {
-                function myadmin_unstringify($data) { return json_decode($data, true) ?? []; }
-            }
             require_once self::$sourceFile;
         }
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        FrameworkState::reset();
     }
 
     // ==================== mask_cc tests ====================
@@ -237,37 +243,179 @@ class CcFunctionsTest extends TestCase
     }
 
     /**
-     * Tests that all expected functions are declared in cc.inc.php.
+     * Tests that every function this package advertises cc.inc.php as the provider of
+     * is really callable once cc.inc.php is loaded.
      *
-     * Verifies the file contains declarations for all documented functions
-     * used throughout the MyAdmin billing system.
+     * This replaces testAllExpectedFunctionsDeclared(), which grepped the source for
+     * "function <name>(" against a list hardcoded in the test. That list was a second,
+     * unenforced copy of the truth: it went stale the moment a function was removed, and
+     * updating it to match the source would have been the only way to make it pass —
+     * which is exactly the change that hides the problem.
+     *
+     * The expected names are now derived from Plugin::getRequirements(), which is what
+     * actually matters at runtime: function_requirements('x') looks x up in that map,
+     * includes the registered file and expects x to exist afterwards. A name registered
+     * against cc.inc.php that the file does not define is a broken lazy-load — and for
+     * anything registered with add_page_requirement() it is also a routable URL with no
+     * function behind it.
      */
-    public function testAllExpectedFunctionsDeclared(): void
+    public function testEveryFunctionRegisteredAgainstCcIncPhpIsCallable(): void
     {
-        $content = file_get_contents(self::$sourceFile);
-        $expectedFunctions = [
-            'mask_cc',
-            'valid_cc',
-            'get_locked_ccs',
-            'select_cc_exp',
-            'can_use_cc',
-            'format_cc_exp',
-            'make_cc_decline',
-            'email_cc_decline',
-            'parse_ccs',
-            'get_bad_cc',
-            'charge_card',
-            'auth_charge_card',
-            'get_cc_bank_number',
-            'get_cc_last_four',
-        ];
-        foreach ($expectedFunctions as $func) {
-            $this->assertStringContainsString(
-                "function {$func}(",
-                $content,
-                "Expected function '{$func}' not found in cc.inc.php"
+        $loader = new class {
+            /** @var list<array{kind: string, name: string, path: string}> */
+            public array $requirements = [];
+
+            public function add_requirement(string $name, string $path, $methods = false): void
+            {
+                $this->requirements[] = ['kind' => 'function', 'name' => $name, 'path' => $path];
+            }
+
+            public function add_page_requirement(string $name, string $path, $methods = false): void
+            {
+                $this->requirements[] = ['kind' => 'page', 'name' => $name, 'path' => $path];
+            }
+        };
+
+        Plugin::getRequirements(new GenericEvent($loader));
+
+        $fromCcIncPhp = array_values(array_filter(
+            $loader->requirements,
+            static fn (array $requirement): bool => substr($requirement['path'], -strlen('/cc.inc.php')) === '/cc.inc.php'
+        ));
+
+        $this->assertNotEmpty(
+            $fromCcIncPhp,
+            'the plugin should register cc.inc.php as the source of the credit card helpers'
+        );
+
+        foreach ($fromCcIncPhp as $requirement) {
+            $this->assertTrue(
+                function_exists($requirement['name']),
+                sprintf(
+                    "Plugin::getRequirements() registers %s '%s' as provided by cc.inc.php, but the file does not define it. "
+                        . 'function_requirements(\'%s\') would load the file and still leave the call undefined%s.',
+                    $requirement['kind'],
+                    $requirement['name'],
+                    $requirement['name'],
+                    $requirement['kind'] === 'page'
+                        ? ", and /{$requirement['name']} plus /admin/{$requirement['name']} would be routed at nothing"
+                        : ''
+                )
             );
+            $this->assertIsCallable($requirement['name']);
         }
+    }
+
+    /**
+     * Tests that format_cc_exp() builds a zero-padded MM/YYYY expiry from the request.
+     *
+     * Authorize.Net rejects a single-digit month, so the padding is the whole point of
+     * the function.
+     */
+    public function testFormatCcExpZeroPadsSingleDigitMonth(): void
+    {
+        FrameworkState::$request = ['exp_month' => '7', 'exp_year' => '2030'];
+
+        $this->assertSame('07/2030', format_cc_exp());
+    }
+
+    /**
+     * Tests that a two-digit month is passed through unpadded.
+     */
+    public function testFormatCcExpLeavesTwoDigitMonthAlone(): void
+    {
+        FrameworkState::$request = ['exp_month' => '11', 'exp_year' => '2031'];
+
+        $this->assertSame('11/2031', format_cc_exp());
+    }
+
+    /**
+     * Tests that a missing expiry falls back to January of the current year.
+     */
+    public function testFormatCcExpFallsBackWhenRequestIsEmpty(): void
+    {
+        FrameworkState::$request = [];
+
+        $this->assertSame('01/' . date('Y'), format_cc_exp());
+    }
+
+    /**
+     * Tests that get_cc_bank_number() returns the six digit BIN of the decrypted card.
+     */
+    public function testGetCcBankNumberReturnsBinOfDecryptedCard(): void
+    {
+        $this->assertSame('411111', get_cc_bank_number(\MyAdmin\App::encrypt('4111111111111111')));
+    }
+
+    /**
+     * Tests that get_cc_last_four() returns the last four digits of the decrypted card.
+     */
+    public function testGetCcLastFourReturnsLastFourOfDecryptedCard(): void
+    {
+        $this->assertSame('1881', get_cc_last_four(\MyAdmin\App::encrypt('4111111111111881')));
+    }
+
+    /**
+     * Tests that parse_ccs() adds the account's primary card to the card list.
+     */
+    public function testParseCcsAddsPrimaryCardToTheList(): void
+    {
+        $ccs = parse_ccs([
+            'ccs' => json_encode([
+                ['cc' => \MyAdmin\App::encrypt('5555555555554444'), 'cc_exp' => '05/2029'],
+            ]),
+            'cc' => \MyAdmin\App::encrypt('4111111111111111'),
+            'cc_exp' => '01/2030',
+        ]);
+
+        $this->assertCount(2, $ccs, 'the primary card should be appended to the stored card list');
+        $this->assertSame('01/2030', $ccs[1]['cc_exp'], "the primary card's expiry should be carried over");
+    }
+
+    /**
+     * Tests that parse_ccs() does not list the primary card twice when it is already
+     * one of the stored cards. Duplicates would make the retry logic try the same
+     * declined card again.
+     */
+    public function testParseCcsDoesNotDuplicateAPrimaryCardAlreadyStored(): void
+    {
+        $ccs = parse_ccs([
+            'ccs' => json_encode([
+                ['cc' => \MyAdmin\App::encrypt('4111111111111111'), 'cc_exp' => '01/2030'],
+                ['cc' => \MyAdmin\App::encrypt('5555555555554444'), 'cc_exp' => '05/2029'],
+            ]),
+            'cc' => \MyAdmin\App::encrypt('4111111111111111'),
+            'cc_exp' => '01/2030',
+        ]);
+
+        $this->assertCount(2, $ccs, 'a primary card that is already stored must not be added again');
+    }
+
+    /**
+     * Tests that formatting differences in a stored card do not defeat the duplicate
+     * check: spaces, dashes and underscores are normalised away before comparing.
+     */
+    public function testParseCcsNormalisesSeparatorsWhenDetectingDuplicates(): void
+    {
+        $ccs = parse_ccs([
+            'ccs' => json_encode([
+                ['cc' => \MyAdmin\App::encrypt('4111-1111 1111_1111'), 'cc_exp' => '01/2030'],
+            ]),
+            'cc' => \MyAdmin\App::encrypt('4111111111111111'),
+            'cc_exp' => '01/2030',
+        ]);
+
+        $this->assertCount(1, $ccs, 'the same card written with separators is still the same card');
+    }
+
+    /**
+     * Tests that an account with no cards at all yields an empty list rather than an
+     * entry for a blank card number.
+     */
+    public function testParseCcsReturnsEmptyListForAccountWithNoCards(): void
+    {
+        $this->assertSame([], parse_ccs([]));
+        $this->assertSame([], parse_ccs(['cc' => '']));
     }
 
     /**
