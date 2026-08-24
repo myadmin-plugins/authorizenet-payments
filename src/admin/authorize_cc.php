@@ -25,6 +25,7 @@ function authorize_cc()
     $data = \MyAdmin\App::accounts()->read($customer);
     if (\MyAdmin\App::ima() == 'admin' && verify_csrf_referrer(__LINE__, __FILE__)) {
         $new_data['disable_cc'] = 0;
+        $new_data['disable_cc_reason'] = '';
         $new_data['cc_whitelist'] = 1;
         \MyAdmin\App::accounts()->update($customer, $new_data);
         foreach ($GLOBALS['modules'] as $module => $settings) {

@@ -217,6 +217,17 @@ function can_use_cc($data, $ccData = false, $check_disabled_cc = true, $cc_field
                 $cc_usable = false;
             }
         }
+        // A sticky disable_cc_reason ignores $check_disabled_cc, and sits outside the
+        // cc_auth_<number> guard above. Callers pass $check_disabled_cc = false so that
+        // adding a clean card can re-enable CC use, and passing the micro-charge
+        // verification sets cc_auth_<number> — but MaxMind's carder-email and score-lock
+        // triggers aren't reflected in maxmind_riskscore, so either route would otherwise
+        // silently clear the disable. Only an admin whitelisting the customer lifts it,
+        // which keeps this in agreement with MyAdmin\Billing\CcDisabled::isDisabled().
+        if (\MyAdmin\Billing\CcDisabled::isSticky($data)) {
+            $reason .= '  Credit-Cards are disabled due to a fraud check.';
+            $cc_usable = false;
+        }
     }
     // A missing or expired expiration date makes a card unusable regardless of whitelist/fraud status.
     // Without this, get_next_cc() can hand back an expired or exp-less backup card whose charge then
@@ -338,8 +349,9 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
     $db = get_module_db($module);
     $retval = false;
     $data = App::accounts()->read($custid);
-    if (isset($data['disable_cc']) && $data['disable_cc'] == 1) {
-        add_output('<div style="max-width:640px;margin:24px auto;padding:22px 26px;background:#fff;border:1px solid #fecaca;border-left:4px solid #ef4444;border-radius:14px;box-shadow:0 6px 18px rgba(15,23,42,.06);color:#0f172a;"><div style="display:flex;align-items:flex-start;gap:14px;"><span style="flex-shrink:0;width:38px;height:38px;border-radius:10px;background:rgba(239,68,68,.1);color:#dc2626;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;"><i class="fas fa-credit-card"></i></span><div style="flex:1;min-width:0;"><strong style="display:block;font-size:1.02rem;font-weight:700;color:#b91c1c;margin-bottom:4px;">Credit card payments disabled</strong><p style="margin:0;font-size:.88rem;color:#475569;line-height:1.55;">Card payment is currently unavailable on your account. Remove the saved card(s) and add them again. If the issue persists, please contact support.</p></div></div></div>');
+    if (\MyAdmin\Billing\CcDisabled::isDisabled($data)) {
+        $ccDisabledParts = \MyAdmin\Billing\CcDisabled::parts($data);
+        add_output('<div style="max-width:640px;margin:24px auto;padding:22px 26px;background:#fff;border:1px solid #fecaca;border-left:4px solid #ef4444;border-radius:14px;box-shadow:0 6px 18px rgba(15,23,42,.06);color:#0f172a;"><div style="display:flex;align-items:flex-start;gap:14px;"><span style="flex-shrink:0;width:38px;height:38px;border-radius:10px;background:rgba(239,68,68,.1);color:#dc2626;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;"><i class="fas fa-credit-card"></i></span><div style="flex:1;min-width:0;"><strong style="display:block;font-size:1.02rem;font-weight:700;color:#b91c1c;margin-bottom:4px;">'.$ccDisabledParts['title'].'</strong><p style="margin:0;font-size:.88rem;color:#475569;line-height:1.55;">'.$ccDisabledParts['text'].' <a href="'.$ccDisabledParts['link_url'].'">'.$ccDisabledParts['link_text'].'</a> '.$ccDisabledParts['suffix'].'</p></div></div></div>');
         return $retval;
     }
     if (!isset($data['cc']) && !isset(App::variables()->request['ot_cc'])) {

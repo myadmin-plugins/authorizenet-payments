@@ -26,6 +26,10 @@ function disable_cc()
         $data = \MyAdmin\App::accounts()->read($customer);
         $lid = $data['account_lid'];
         $new_data['disable_cc'] = 1;
+        // Recorded for the customer page and the client-side notice. Not in CcDisabled's
+        // STICKY list, so this keeps the pre-existing behaviour where a customer adding a
+        // good card turns credit cards back on.
+        $new_data['disable_cc_reason'] = \MyAdmin\Billing\CcDisabled::REASON_ADMIN;
         $new_data['payment_method'] = 'paypal';
         foreach ($GLOBALS['modules'] as $module => $settings) {
             $customer = \MyAdmin\App::accounts()->cross_reference($lid);
