@@ -217,17 +217,6 @@ function can_use_cc($data, $ccData = false, $check_disabled_cc = true, $cc_field
                 $cc_usable = false;
             }
         }
-        // A sticky disable_cc_reason ignores $check_disabled_cc, and sits outside the
-        // cc_auth_<number> guard above. Callers pass $check_disabled_cc = false so that
-        // adding a clean card can re-enable CC use, and passing the micro-charge
-        // verification sets cc_auth_<number> — but MaxMind's carder-email and score-lock
-        // triggers aren't reflected in maxmind_riskscore, so either route would otherwise
-        // silently clear the disable. Only an admin whitelisting the customer lifts it,
-        // which keeps this in agreement with MyAdmin\Billing\CcDisabled::isDisabled().
-        if (\MyAdmin\Billing\CcDisabled::isSticky($data)) {
-            $reason .= '  Credit-Cards are disabled due to a fraud check.';
-            $cc_usable = false;
-        }
     }
     // A missing or expired expiration date makes a card unusable regardless of whitelist/fraud status.
     // Without this, get_next_cc() can hand back an expired or exp-less backup card whose charge then

@@ -29,8 +29,6 @@ function enable_cc()
         myadmin_log('admin', 'info', 'Customer Data ' . json_encode($data), __LINE__, __FILE__);
         $lid = $data['account_lid'];
         $new_data['disable_cc'] = 0;
-        // A 'fraud' disable_cc_reason is sticky against the client-side re-enable paths,
-        // so an admin turning CC use back on has to clear it explicitly.
         $new_data['disable_cc_reason'] = '';
         myadmin_log('admin', 'info', "LID $lid", __LINE__, __FILE__);
         foreach ($GLOBALS['modules'] as $module => $settings) {
