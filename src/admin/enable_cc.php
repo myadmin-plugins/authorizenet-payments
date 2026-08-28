@@ -29,7 +29,6 @@ function enable_cc()
         myadmin_log('admin', 'info', 'Customer Data ' . json_encode($data), __LINE__, __FILE__);
         $lid = $data['account_lid'];
         $new_data['disable_cc'] = 0;
-        $new_data['disable_cc_reason'] = '';
         myadmin_log('admin', 'info', "LID $lid", __LINE__, __FILE__);
         foreach ($GLOBALS['modules'] as $module => $settings) {
             $customer = \MyAdmin\App::accounts()->cross_reference($lid);
