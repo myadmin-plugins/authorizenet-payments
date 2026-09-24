@@ -123,9 +123,13 @@ class VerifyCcTest extends TestCase
     public function testVerifyCcSupportsReversedAmounts(): void
     {
         $content = file_get_contents(self::$sourceFile);
-        // Check both amount1 vs amt1/amt2 and amount1 vs amt2/amt1
-        $this->assertStringContainsString("cc_amt1_", $content);
-        $this->assertStringContainsString("cc_amt2_", $content);
+        // The amounts now come from CcMeta rather than $data['cc_amt1_<PAN>'], but the
+        // behaviour these assertions protect is unchanged: both orderings are compared,
+        // because a customer may enter the two amounts either way round.
+        $this->assertStringContainsString("'amt1'", $content);
+        $this->assertStringContainsString("'amt2'", $content);
+        $this->assertStringContainsString('$ourAmt1', $content);
+        $this->assertStringContainsString('$ourAmt2', $content);
     }
 
     /**
@@ -136,7 +140,16 @@ class VerifyCcTest extends TestCase
     public function testVerifyCcTracksFailedAttempts(): void
     {
         $content = file_get_contents(self::$sourceFile);
-        $this->assertStringContainsString("cc_fails_", $content);
+        // Counted through CcMeta::increment() rather than a flat cc_fails_<PAN> row.
+        // The increment is the point: the old `1 + $data['cc_fails_'.$pan]` computed the
+        // new value from a request-start snapshot, so parallel wrong-amount submissions
+        // all read the same value and the card never reached the lock.
+        $this->assertStringContainsString("CcMeta::increment", $content);
+        $this->assertStringContainsString("'fails'", $content);
+        // And the flat-key write is gone: the PAN is no longer concatenated into an
+        // accounts_ext key here. (Asserting on the old `1 + $data[...]` form instead
+        // would be self-defeating -- the comment explaining it contains that literal.)
+        $this->assertStringNotContainsString('cc_fails_', $content);
     }
 
     /**

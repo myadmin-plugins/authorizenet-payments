@@ -33,7 +33,7 @@ function manage_cc()
             }
             $cc = $ccs[$idx];
             $get_amount = false;
-            if (isset($data['cc_fails_'.\MyAdmin\App::decrypt($cc['cc'])]) && $data['cc_fails_'.\MyAdmin\App::decrypt($cc['cc'])] > 3) {
+            if (\MyAdmin\Billing\CcMeta::isLocked($data, $cc)) {
                 add_output('Reached the max number of tries to authenticate this card');
             } else {
                 $table = new TFTable();
@@ -46,7 +46,7 @@ function manage_cc()
 
                 //myadmin_log('billing', 'info', json_encode($data), __LINE__, __FILE__);
                 myadmin_log('billing', 'info', 'Checking CC '.\MyAdmin\App::decrypt($cc['cc']), __LINE__, __FILE__);
-                if ((!isset(\MyAdmin\App::variables()->request['terms']) && !isset($data['cc_amt1_'.\MyAdmin\App::decrypt($cc['cc'])])) || !verify_csrf('manage_cc_verify')) {
+                if ((!isset(\MyAdmin\App::variables()->request['terms']) && !\MyAdmin\Billing\CcMeta::has($data, $cc, 'amt1')) || !verify_csrf('manage_cc_verify')) {
                     add_output('<b>Credit Card Verification</b><br>');
                     $table->csrf('manage_cc_verify');
                     $table->add_field(
@@ -68,19 +68,17 @@ function manage_cc()
                     $table->add_row();
                     add_output($table->get_table().'<br>');
                 } elseif (!isset(\MyAdmin\App::variables()->request['cc_amount1'])) {
-                    if (!isset($data['cc_amt1_'.\MyAdmin\App::decrypt($cc['cc'])])) {
+                    if (!\MyAdmin\Billing\CcMeta::has($data, $cc, 'amt1')) {
                         $amt1 = mt_rand(1, 99) / 100;
                         $amt2 = mt_rand(1, 99) / 100;
                         myadmin_log('billing', 'info', "Amt1 $amt1  Amt2 $amt2", __LINE__, __FILE__);
                         if (!auth_charge_card(\MyAdmin\App::session()->account_id, \MyAdmin\App::decrypt($cc['cc']), $cc['cc_exp'], $amt1, 'default', 'Validation Random Charge', $cc) || !auth_charge_card(\MyAdmin\App::session()->account_id, \MyAdmin\App::decrypt($cc['cc']), $cc['cc_exp'], $amt2, 'default', 'Validation Random Charge', $cc)) {
                             add_output('There was a problem with this credit card, check the cards available amount and try again.');
                         } else {
-                            \MyAdmin\App::accounts()->update(
+                            \MyAdmin\Billing\CcMeta::set(
                                 \MyAdmin\App::session()->account_id,
-                                [
-                                'cc_amt1_'.\MyAdmin\App::decrypt($cc['cc']) => $amt1,
-                                'cc_amt2_'.\MyAdmin\App::decrypt($cc['cc']) => $amt2
-                                                                          ]
+                                $cc,
+                                ['amt1' => $amt1, 'amt2' => $amt2]
                             );
                             $get_amount = true;
                         }
@@ -89,25 +87,34 @@ function manage_cc()
                     }
                 } else {
                     myadmin_log('billing', 'info', 'Passed '.\MyAdmin\App::variables()->request['cc_amount1'].' '.\MyAdmin\App::variables()->request['cc_amount2'], __LINE__, __FILE__);
-                    myadmin_log('billing', 'info', 'Ours '.$data['cc_amt1_'.\MyAdmin\App::decrypt($cc['cc'])].' '.$data['cc_amt2_'.\MyAdmin\App::decrypt($cc['cc'])], __LINE__, __FILE__);
-                    if ((abs(\MyAdmin\App::variables()->request['cc_amount1'] - $data['cc_amt1_'.\MyAdmin\App::decrypt($cc['cc'])]) < 0.02 && abs(\MyAdmin\App::variables()->request['cc_amount2'] - $data['cc_amt2_' .
-                        \MyAdmin\App::decrypt($cc['cc'])]) < 0.02) || (abs(\MyAdmin\App::variables()->request['cc_amount1'] - $data['cc_amt2_'.\MyAdmin\App::decrypt($cc['cc'])]) < 0.02 && abs(\MyAdmin\App::variables()->request['cc_amount2'] - $data['cc_amt1_'.\MyAdmin\App::decrypt($cc['cc'])]) < 0.02) || (abs(\MyAdmin\App::variables()->request['cc_amount1'] - (100 * $data['cc_amt1_'.\MyAdmin\App::decrypt($cc['cc'])])) <
-                        2 && abs(\MyAdmin\App::variables()->request['cc_amount2'] - (100 * $data['cc_amt2_'.\MyAdmin\App::decrypt($cc['cc'])])) < 2) || (abs(\MyAdmin\App::variables()->request['cc_amount1'] - (100 * $data['cc_amt2_' .
-                        \MyAdmin\App::decrypt($cc['cc'])])) < 2 && abs(\MyAdmin\App::variables()->request['cc_amount2'] - (100 * $data['cc_amt1_'.\MyAdmin\App::decrypt($cc['cc'])])) < 2)) {
+                    $ourAmt1 = \MyAdmin\Billing\CcMeta::get($data, $cc, 'amt1');
+                    $ourAmt2 = \MyAdmin\Billing\CcMeta::get($data, $cc, 'amt2');
+                    // NOTE: logs both micro-charge amounts. plan_ccs.md 7.2 owns masking.
+                    myadmin_log('billing', 'info', 'Ours '.$ourAmt1.' '.$ourAmt2, __LINE__, __FILE__);
+                    // 🔴 Tolerance here is 0.02; verify_cc.php uses 0.06 for the same
+                    // comparison. That discrepancy is pre-existing and deliberate to leave
+                    // alone -- plan_ccs.md 7.4 owns unifying it. Only the reads changed.
+                    if ((abs(\MyAdmin\App::variables()->request['cc_amount1'] - $ourAmt1) < 0.02 && abs(\MyAdmin\App::variables()->request['cc_amount2'] - $ourAmt2) < 0.02)
+                        || (abs(\MyAdmin\App::variables()->request['cc_amount1'] - $ourAmt2) < 0.02 && abs(\MyAdmin\App::variables()->request['cc_amount2'] - $ourAmt1) < 0.02)
+                        || (abs(\MyAdmin\App::variables()->request['cc_amount1'] - (100 * $ourAmt1)) < 2 && abs(\MyAdmin\App::variables()->request['cc_amount2'] - (100 * $ourAmt2)) < 2)
+                        || (abs(\MyAdmin\App::variables()->request['cc_amount1'] - (100 * $ourAmt2)) < 2 && abs(\MyAdmin\App::variables()->request['cc_amount2'] - (100 * $ourAmt1)) < 2)) {
                         add_output('The Values matched!');
                         \MyAdmin\App::accounts()->update(
                             \MyAdmin\App::session()->account_id,
                             [
                             'payment_method' => 'cc',
-                            'cc_auth_'.\MyAdmin\App::decrypt($cc['cc']) => 1,
                             'disable_cc' => 0,
                         ]
                         );
+                        \MyAdmin\Billing\CcMeta::set(\MyAdmin\App::session()->account_id, $cc, ['auth' => 1]);
                         \MyAdmin\App::output()->redirect(\MyAdmin\App::link('index.php', 'choice=none.manage_cc&orig_url='.htmlspecial($orig_url)));
                     } else {
                         dialog('Verification Failed', 'Verification Failed. The values you have entered did not match the charged amounts. Please verify the values and try again. Only a limited amount of attempts is allowed before the account is locked. Please contact support if you need assistance.');
                         $get_amount = true;
-                        \MyAdmin\App::accounts()->update(\MyAdmin\App::session()->account_id, ['cc_fails_'.\MyAdmin\App::decrypt($cc['cc']) => isset($data['cc_fails_'.\MyAdmin\App::decrypt($cc['cc'])]) ? 1 + $data['cc_fails_'.\MyAdmin\App::decrypt($cc['cc'])] : 1]);
+                        // increment(), not `1 + $data[...]`: the old form computed the
+                        // new value from a request-start snapshot, so parallel wrong-amount
+                        // submissions all read the same value and the card never locked.
+                        \MyAdmin\Billing\CcMeta::increment(\MyAdmin\App::session()->account_id, $cc, 'fails');
                     }
                 }
             }
@@ -154,6 +161,10 @@ function manage_cc()
                 $idx = (int)\MyAdmin\App::variables()->request['idx'];
                 $cc = $ccs[$idx];
                 unset($ccs[$idx]);
+                // Soft-delete the account_ccs row and clear its primary flag in the same
+                // statement. The row is never removed: its account_cc_fails preserves the
+                // verification lock across a delete/re-add cycle.
+                \MyAdmin\Billing\CcMeta::softDelete(\MyAdmin\App::session()->account_id, $cc);
                 $new_data = ['ccs' => myadmin_stringify($ccs, 'json')];
                 if (isset($data['cc']) && isset($cc['cc']) && \MyAdmin\App::decrypt($cc['cc']) == \MyAdmin\App::decrypt($data['cc'])) {
                     $new_data['cc'] = '';

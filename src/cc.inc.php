@@ -196,7 +196,12 @@ function can_use_cc($data, $ccData = false, $check_disabled_cc = true, $cc_field
     $cc_usable = true;
     $reason = '';
     if (!isset($data['cc_whitelist']) || $data['cc_whitelist'] != 1) {
-        if (!isset($ccData[$cc_field]) || !isset($data['cc_auth_'.App::decrypt($ccData[$cc_field])])) {
+        // CcMeta::has() reads the flat cc_auth_<PAN> row exactly as this line always
+        // has -- the key is still built from the RAW decrypt, never a normalized PAN --
+        // and additionally consults the card's account_ccs row once the table is live.
+        // 🔴 It reads LIVE rows only, so a card that was deleted and re-added does not
+        // inherit the old grant. That is the bug this migration exists to fix.
+        if (!isset($ccData[$cc_field]) || !\MyAdmin\Billing\CcMeta::has($data, $ccData, 'auth', $cc_field)) {
             if (!isset($ccData[$cc_field]) || trim(App::decrypt($ccData[$cc_field])) == '') {
                 $reason .= '  No Credit-Card Number set or the number is blank.';
                 $cc_usable = false;
