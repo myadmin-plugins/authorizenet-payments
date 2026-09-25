@@ -153,6 +153,9 @@ function manage_cc()
                     'cc_exp' => $ccs[$idx]['cc_exp']
                                                          ]
                 );
+                // This card is now $data['cc']. account_cc_primary mirrors that field and
+                // nothing kept the two in step -- 56 accounts drifted within a day of F2.
+                \MyAdmin\Billing\CcMeta::setPrimary((int)\MyAdmin\App::session()->account_id, $ccs[$idx]);
                 \MyAdmin\App::output()->redirect(\MyAdmin\App::link('index.php', 'choice=none.manage_cc&orig_url='.htmlspecial($orig_url)));
             }
             break;

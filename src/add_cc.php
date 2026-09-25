@@ -49,6 +49,11 @@ function add_cc_new_data($cc, $ccs, $data, $new_data, $prefix, $force = false)
     // those was a card about to lose its verification state silently. addCard() is a
     // no-op unless CCMETA_WRITE_TABLE is on, and is idempotent per live PAN.
     \MyAdmin\Billing\CcMeta::addCard((int)$data['account_id'], $cc);
+    // add_cc_new_data() sets $data['cc'] when the card is usable, which makes it the
+    // account default. account_cc_primary mirrors that field, so mirror it here too.
+    if (isset($new_data['cc'])) {
+        \MyAdmin\Billing\CcMeta::setPrimary((int)$data['account_id'], $cc);
+    }
 }
 
 /**

@@ -81,6 +81,9 @@ function verify_cc($cc, $data)
             'disable_cc' => 0,
         ]);
         \MyAdmin\Billing\CcMeta::set($data['account_id'], $cc, ['auth' => 1]);
+        // This card just became $data['cc']. account_cc_primary mirrors that field and
+        // nothing was keeping the two in step -- 56 accounts drifted within a day of F2.
+        \MyAdmin\Billing\CcMeta::setPrimary((int)$data['account_id'], $cc);
     } else {
         // 🔴 increment(), not `1 + $data[...]`. The old form computed the new value from
         // an array read at request start, so four parallel wrong-amount submissions all
