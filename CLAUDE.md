@@ -47,7 +47,7 @@ Config: `phpunit.xml.dist` · Bootstrap: `vendor/autoload.php` · Tests: `tests/
 - `authorize_cc.php` — sets `cc_whitelist=1` and `disable_cc=0`
 - `enable_cc_whitelist.php` · `disable_cc_whitelist.php` — toggle `cc_whitelist` flag
 
-**Bin Scripts** (`bin/`): `decrypt_ccs.php` · `fix_double_encrypted_ccs.php` · `recrypt_cc.php` · `recrypt_ccs.php` · `recrypt_cc_log.php` · `recrypt_history.php` — CC encryption migration tools. `parse_cc_charges.php` · `rebuild_cc_log.php` · `rebuild_cc_maxlengths.php` · `rebuild_cc_requests.php` · `rebuild_cc_results.php` — log reconstruction utilities.
+**Bin Scripts** (`bin/`): `fix_double_encrypted_ccs.php` · `recrypt_cc.php` · `recrypt_ccs.php` — CC encryption migration tools. **Archived** (`archive/`, not run, kept for history): `decrypt_ccs.php` · `recrypt_cc_log.php` · `recrypt_history.php` (one-off recrypt / `decryptOld` tools). `parse_cc_charges.php` · `rebuild_cc_log.php` · `rebuild_cc_maxlengths.php` · `rebuild_cc_requests.php` · `rebuild_cc_results.php` — log reconstruction utilities.
 
 ## Namespace & Autoloading
 

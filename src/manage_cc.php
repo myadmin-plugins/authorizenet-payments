@@ -45,7 +45,7 @@ function manage_cc()
                 $table->add_hidden('action', 'verify');
 
                 //myadmin_log('billing', 'info', json_encode($data), __LINE__, __FILE__);
-                myadmin_log('billing', 'info', 'Checking CC '.\MyAdmin\App::decrypt($cc['cc']), __LINE__, __FILE__);
+                myadmin_log('billing', 'info', 'Checking CC ending in '.mb_substr((string) \MyAdmin\App::decrypt($cc['cc']), -4), __LINE__, __FILE__);
                 if ((!isset(\MyAdmin\App::variables()->request['terms']) && !\MyAdmin\Billing\CcMeta::has($data, $cc, 'amt1')) || !verify_csrf('manage_cc_verify')) {
                     add_output('<b>Credit Card Verification</b><br>');
                     $table->csrf('manage_cc_verify');

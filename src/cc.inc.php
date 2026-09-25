@@ -40,6 +40,24 @@ function mask_cc($cc, $last = true)
     //return $out;
 }
 
+/**
+* Makes a cc_log row safe to store: the card security code (CVV2) is never
+* kept after authorisation, and the card number is stored only as
+* mask_cc() output (the last four digits), which is the form the penny
+* coupon check in core matches against.
+*
+* @param array $cc_log the cc_log row built from the request fields
+* @return array the same row with cc_request_card_code blanked and cc_request_card_num masked
+*/
+function cc_log_redact_request($cc_log)
+{
+    $cc_log['cc_request_card_code'] = '';
+    if (isset($cc_log['cc_request_card_num'])) {
+        $cc_log['cc_request_card_num'] = mask_cc(str_replace([' ', '_', '-'], ['', '', ''], trim((string) $cc_log['cc_request_card_num'])));
+    }
+    return $cc_log;
+}
+
 
 /**
 * @param $cc
@@ -206,10 +224,6 @@ function can_use_cc($data, $ccData = false, $check_disabled_cc = true, $cc_field
                 $reason .= '  No Credit-Card Number set or the number is blank.';
                 $cc_usable = false;
             }
-            /*if (isset($cc_holder[$cc_field]) && (!isset($data['cc_auth_'.App::decrypt($cc_holder[$cc_field])]) || trim($data['cc_auth_'.App::decrypt($cc_holder[$cc_field])]) == '')) {
-                $reason .= " ".App::decrypt($cc_holder[$cc_field])." is not verified.";
-                $cc_usable = false;
-            }*/
             if (!isset($data['maxmind_riskscore']) && !isset($ccData['maxmind_riskscore'])) {
                 $reason .= '  MaxMind Fraud Risk Score is blank';
                 $cc_usable = false;
@@ -494,6 +508,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
         foreach ($rargs as $field => $value) {
             $cc_log['cc_request_'.mb_substr(strtolower($field), 2)] = $value;
         }
+        $cc_log = cc_log_redact_request($cc_log);
         $fields = ['code', 'subcode', 'reason_code', 'reason_text', 'auth_code', 'avs_code', 'trans_id', 'invoice_num', 'description', 'amount', 'method', 'customer_id', 'trans_type', 'first_name', 'last_name', 'company', 'address', 'city', 'state', 'zip', 'country', 'phone', 'fax', 'email', 'shipto_last_name', 'shipto_first_name', 'shipto_company', 'shipto_address', 'shipto_city', 'shipto_state', 'shipto_zip', 'shipto_country', 'tax', 'duty', 'freight', 'tax_exempt', 'purchase_order_num', 'md5', 'card_code', 'card_verification', '', '', '', '', '', '', '', '', '', '', 'account_num', 'card_type', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
         foreach ($tresponse as $idx => $value) {
             if (isset($fields[$idx]) && $fields[$idx] != '') {
@@ -751,7 +766,11 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
             CURLOPT_SSL_VERIFYPEER => false, // whether or not to validate the ssl cert of the peer
             // 'CURLOPT_CAINFO' => '/usr/share/curl/curl-ca-bundle.crt', // this option really is only useful if CURLOIPT_SSL_VERIFYPEER is TRUE
         ];
-        myadmin_log('billing', 'debug', 'CC Request: '.json_encode($args, true), __LINE__, __FILE__);
+        $logArgs = $args;
+        unset($logArgs['x_Login'], $logArgs['x_Password'], $logArgs['x_Card_Code']);
+        $logArgs['x_Card_Num'] = mask_cc(str_replace([' ', '_', '-'], ['', '', ''], trim((string) $logArgs['x_Card_Num'])));
+        myadmin_log('billing', 'debug', 'CC Request: '.json_encode($logArgs, true), __LINE__, __FILE__);
+        unset($logArgs);
         $cc_response = getcurlpage('https://secure.authorize.net/gateway/transact.dll', $args, $options);
         myadmin_log('billing', 'debug', 'CC Response: '.$cc_response, __LINE__, __FILE__);
         $tresponse = str_getcsv($cc_response);
@@ -765,6 +784,7 @@ function auth_charge_card($custid, $cc, $cc_exp, $amount, $module = 'default', $
         foreach ($rargs as $field => $value) {
             $cc_log['cc_request_'.mb_substr(strtolower($field), 2)] = $value;
         }
+        $cc_log = cc_log_redact_request($cc_log);
         $fields = ['code', 'subcode', 'reason_code', 'reason_text', 'auth_code', 'avs_code', 'trans_id', 'invoice_num', 'description', 'amount', 'method', 'customer_id', 'trans_type', 'first_name', 'last_name', 'company', 'address', 'city', 'state', 'zip', 'country', 'phone', 'fax', 'email', 'shipto_last_name', 'shipto_first_name', 'shipto_company', 'shipto_address', 'shipto_city', 'shipto_state', 'shipto_zip', 'shipto_country', 'tax', 'duty', 'freight', 'tax_exempt', 'purchase_order_num', 'md5', 'card_code', 'card_verification', '', '', '', '', '', '', '', '', '', '', 'account_num', 'card_type', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
         foreach ($tresponse as $idx => $value) {
             if (array_key_exists($idx, $fields) && $fields[$idx] != '') {

@@ -24,7 +24,7 @@ function verify_cc_charge($cc, $data)
     if (!\MyAdmin\Billing\CcMeta::has($data, $cc, 'amt1')) {
         $amt1 = mt_rand(1, 99) / 100;
         $amt2 = mt_rand(1, 99) / 100;
-        myadmin_log('billing', 'info', "charging {$data['account_lid']} CC {$cc_decrypted} Amounts {$amt1} and {$amt2}", __LINE__, __FILE__);
+        myadmin_log('billing', 'info', "charging {$data['account_lid']} CC ending in ".mb_substr((string) $cc_decrypted, -4)." Amounts {$amt1} and {$amt2}", __LINE__, __FILE__);
         if (!auth_charge_card($data['account_id'], $cc_decrypted, $cc['cc_exp'], $amt1, 'default', 'Validation Random Charge', $cc)
          || !auth_charge_card($data['account_id'], $cc_decrypted, $cc['cc_exp'], $amt2, 'default', 'Validation Random Charge', $cc)) {
             $return['status'] = 'error';

@@ -97,7 +97,7 @@ function add_cc($data, $prefix = '', $force = false, $request = false)
     if (!valid_cc(trim(str_replace([' ', '_', '-'], ['', '', ''], $request[$prefix.'cc'])))) {
         $return['status'] = 'error';
         $return['text'] = "Invalid card format.";
-        myadmin_log('myadmin', 'debug', 'add_cc gave invalid card format for:'.trim(str_replace([' ', '_', '-'], ['', '', ''], $request[$prefix.'cc'])), __LINE__, __FILE__);
+        myadmin_log('myadmin', 'debug', 'add_cc gave invalid card format for card ending in '.mb_substr(trim(str_replace([' ', '_', '-'], ['', '', ''], $request[$prefix.'cc'])), -4), __LINE__, __FILE__);
         return $return;
     }
     $new_data = [];

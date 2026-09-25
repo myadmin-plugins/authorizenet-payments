@@ -59,6 +59,7 @@ class Plugin
         $loader = $event->getSubject();
         $loader->add_page_requirement('charge_card_invoice', '/../vendor/detain/myadmin-authorizenet-payments/src/charge_card_invoice.php');
         $loader->add_requirement('mask_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
+        $loader->add_requirement('cc_log_redact_request', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
         $loader->add_requirement('valid_cc', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
         $loader->add_requirement('get_locked_ccs', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
         $loader->add_requirement('select_cc_exp', '/../vendor/detain/myadmin-authorizenet-payments/src/cc.inc.php');
