@@ -209,6 +209,11 @@ function manage_cc()
                     $new_data['ccs'] = myadmin_stringify($ccs, 'json');
                 }
                 \MyAdmin\App::accounts()->update(\MyAdmin\App::session()->account_id, $new_data);
+                // plan_ccs.md: this is the SECOND add path -- it builds its own $cc and
+                // writes the blob without ever calling add_cc(), so hooking add_cc() alone
+                // would have left this one silently not creating account_ccs rows.
+                // No-op unless CCMETA_WRITE_TABLE is on; idempotent per live PAN.
+                \MyAdmin\Billing\CcMeta::addCard((int)\MyAdmin\App::session()->account_id, $cc);
                 if (can_use_cc($data)) {
                     \MyAdmin\App::output()->redirect(\MyAdmin\App::link('index.php', 'choice=none.manage_cc&orig_url='.htmlspecial($orig_url)));
                 } else {

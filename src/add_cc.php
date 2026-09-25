@@ -42,6 +42,13 @@ function add_cc_new_data($cc, $ccs, $data, $new_data, $prefix, $force = false)
         $new_data['ccs'] = myadmin_stringify($ccs, 'json');
     }
     \MyAdmin\App::accounts()->update($data['account_id'], $new_data);
+    // plan_ccs.md: the blob write above is only half the record. Nothing created the
+    // account_ccs row for a newly added card, so from the moment the backfill finished
+    // every new card lived in the blob only -- 127 accounts in the first 30 hours. Reads
+    // still answered via the flat fallback, which is exactly what F3 removes, so each of
+    // those was a card about to lose its verification state silently. addCard() is a
+    // no-op unless CCMETA_WRITE_TABLE is on, and is idempotent per live PAN.
+    \MyAdmin\Billing\CcMeta::addCard((int)$data['account_id'], $cc);
 }
 
 /**
