@@ -167,7 +167,7 @@ function manage_cc()
                 // Soft-delete the account_ccs row and clear its primary flag in the same
                 // statement. The row is never removed: its account_cc_fails preserves the
                 // verification lock across a delete/re-add cycle.
-                \MyAdmin\Billing\CcMeta::softDelete(\MyAdmin\App::session()->account_id, $cc);
+                \MyAdmin\Billing\CcMeta::softDelete(\MyAdmin\App::session()->account_id, $cc, 'cc', $idx);
                 $new_data = ['ccs' => myadmin_stringify($ccs, 'json')];
                 if (isset($data['cc']) && isset($cc['cc']) && \MyAdmin\App::decrypt($cc['cc']) == \MyAdmin\App::decrypt($data['cc'])) {
                     $new_data['cc'] = '';
