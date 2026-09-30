@@ -217,6 +217,13 @@ function manage_cc()
                 // would have left this one silently not creating account_ccs rows.
                 // No-op unless CCMETA_WRITE_TABLE is on; idempotent per live PAN.
                 \MyAdmin\Billing\CcMeta::addCard((int)\MyAdmin\App::session()->account_id, $cc);
+                // When the account had no default card, the branch above makes THIS card
+                // $data['cc']. account_cc_primary mirrors that field, so it has to be set
+                // here too -- this was the sixth default-card write site and the only one
+                // still drifting after the first five were wired (custid 685765).
+                if (isset($new_data['cc'])) {
+                    \MyAdmin\Billing\CcMeta::setPrimary((int)\MyAdmin\App::session()->account_id, $cc);
+                }
                 if (can_use_cc($data)) {
                     \MyAdmin\App::output()->redirect(\MyAdmin\App::link('index.php', 'choice=none.manage_cc&orig_url='.htmlspecial($orig_url)));
                 } else {
