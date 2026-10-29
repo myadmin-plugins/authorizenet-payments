@@ -668,7 +668,9 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
                 if (!in_array($cc, $dec_ccs)) {
                     App::history()->add('users', 'carddecline', $cc_encrypted, $cc_exp, $custid);
                 }
-                $retval = retry_charge_card($custid, $amount, $invoice, $module,  $returnURL, $useHandlePayment, $queue);
+                // retry with the full original amount: the retried charge_card() takes the prepay off again itself,
+                // so passing the already-reduced $amount would subtract it twice and leave the rest uncollected
+                $retval = retry_charge_card($custid, $orig_amount, $invoice, $module,  $returnURL, $useHandlePayment, $queue);
              } else {
                 $new_data = [
                     'cc_auto' => '0'
