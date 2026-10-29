@@ -434,7 +434,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
     }
     $prepay_amount = 0;
     if (!$skip_prepay) {
-        $prepay_amount = get_prepay_related_amount($invoice, $module, $custid);
+        $prepay_amount = get_prepay_related_amount($invoice, $module, $custid, true);
         if ($prepay_amount > 0) {
             if ($amount - $prepay_amount < 0) {
                 $prepay_amount = $amount;
@@ -530,7 +530,7 @@ function charge_card($custid, $amount = false, $invoice = false, $module = 'defa
         case '1':
             $retval = true;
             if ($prepay_amount > 0) {
-                use_prepay_related_amount($invoice, $module, $prepay_amount, $custid);
+                use_prepay_related_amount($invoice, $module, $prepay_amount, $custid, true);
                 if ($useHandlePayment === true) {
                     handle_payment($custid, $prepay_amount, $invoice, 12, $module, '', 'USD', $queue);
                 }
